@@ -130,7 +130,7 @@
                 <ImageView
                     android:id="@+id/icon_2"
                     style="@style/icons"
-                    android:src="@drawable/store"
+                    android:src="@drawable/calculator"
                     tools:ignore="MissingConstraints,ImageContrastCheck"
                     tools:layout_editor_absoluteX="10dp"
                     tools:layout_editor_absoluteY="9dp" />
