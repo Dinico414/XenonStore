@@ -8,7 +8,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.xenon.store.R.id.download_1
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -20,13 +19,12 @@ import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
-    private val baseUrl = "https://raw.githubusercontent.com"
-    private val owner = "Dinico414"
-    private val repo = "TodoList"
-    private val filePath = "app/release/app-release.apk"
-    private val personalAccessToken = "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"
-
     private lateinit var sharedPreferences: SharedPreferences
+
+    private var owner = "Dinico414"
+    private var repo = "TodoList"
+    private var filePath = "app/release/app-release.apk"
+    private var personalAccessToken = "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"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,16 +32,23 @@ class MainActivity : AppCompatActivity() {
 
         sharedPreferences = getPreferences(MODE_PRIVATE)
 
-        val downloadButton: Button = findViewById(download_1)
-        downloadButton.setOnClickListener {
-            if (!isStoragePermissionGranted()) {
-                // Request storage access using SAF
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                requestPermissionLauncher.launch(intent)
-            } else {
-                // Permission already granted, proceed with download
-                downloadFile()
-            }
+        val downloadButton1: Button = findViewById(R.id.download_1)
+        val downloadButton2: Button = findViewById(R.id.download_2)
+        val downloadButton3: Button = findViewById(R.id.download_3)
+
+        downloadButton1.setOnClickListener {
+            setRepositoryDetails("Dinico414", "TodoList", "app/release/app-release.apk", "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")
+            downloadFile()
+        }
+
+        downloadButton2.setOnClickListener {
+            setRepositoryDetails("Dinico414", "Calculator", "app/release/app-release.apk", "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")
+            downloadFile()
+        }
+
+        downloadButton3.setOnClickListener {
+            setRepositoryDetails("Dinico414", "XenonStore", "app/release/app-release.apk", "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")
+            downloadFile()
         }
     }
 
@@ -52,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 // Permission granted, proceed with download
                 setStoragePermissionGranted(true)
+                downloadFile()
             } else {
                 // Permission denied
                 Toast.makeText(
@@ -70,7 +76,21 @@ class MainActivity : AppCompatActivity() {
         sharedPreferences.edit().putBoolean(KEY_STORAGE_PERMISSION_GRANTED, granted).apply()
     }
 
+    private fun setRepositoryDetails(owner: String, repo: String, filePath: String, personalAccessToken: String) {
+        this.owner = owner
+        this.repo = repo
+        this.filePath = filePath
+        this.personalAccessToken = personalAccessToken
+    }
+
     private fun downloadFile() {
+        if (!isStoragePermissionGranted()) {
+            // Request storage access using SAF
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            requestPermissionLauncher.launch(intent)
+            return
+        }
+
         val client = OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
@@ -81,13 +101,13 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         val request = Request.Builder()
-            .url("$baseUrl/$owner/$repo/master/$filePath")
+            .url("https://raw.githubusercontent.com/$owner/$repo/master/$filePath")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    val fileName = "Todo.apk"
+                    val fileName = "$repo.apk"
                     val file = File(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                         fileName
