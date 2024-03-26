@@ -37,6 +37,7 @@ android {
 
 dependencies {
 
+    implementation(libs.accesspoint)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

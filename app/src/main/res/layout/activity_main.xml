@@ -1,18 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center"
-    android:gravity="center"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:ignore="HardcodedText"
+    android:background="@color/background">
 
-    <Button
-        android:id="@+id/download_button"
+    <LinearLayout
+
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Download TodoList" />
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        tools:context=".MainActivity"
+        android:background="@drawable/tile_background"
+        android:layout_margin="15dp"
+        android:backgroundTint="@color/surface">
 
-</LinearLayout>
+        <Button
+            android:id="@+id/download_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Download TodoList"
+            android:layout_marginHorizontal="10dp"
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/onPrimary"
+            tools:ignore="VisualLintButtonSize" />
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
