@@ -1,6 +1,5 @@
 package com.xenon.store
 
-
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -9,6 +8,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.xenon.store.R.id.download_1
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         sharedPreferences = getPreferences(MODE_PRIVATE)
 
-        val downloadButton: Button = findViewById(R.id.download_button)
+        val downloadButton: Button = findViewById(download_1)
         downloadButton.setOnClickListener {
             if (!isStoragePermissionGranted()) {
                 // Request storage access using SAF
@@ -45,12 +45,6 @@ class MainActivity : AppCompatActivity() {
                 downloadFile()
             }
         }
-
-        // Check if permission is already granted
-        if (isStoragePermissionGranted()) {
-            // Permission already granted, proceed with download
-            downloadFile()
-        }
     }
 
     private val requestPermissionLauncher =
@@ -58,7 +52,6 @@ class MainActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 // Permission granted, proceed with download
                 setStoragePermissionGranted(true)
-                downloadFile()
             } else {
                 // Permission denied
                 Toast.makeText(
