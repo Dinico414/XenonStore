@@ -41,9 +41,7 @@
                     android:id="@+id/icon_3"
                     style="@style/icons"
                     android:src="@drawable/store"
-                    tools:ignore="MissingConstraints,ImageContrastCheck"
-                    tools:layout_editor_absoluteX="10dp"
-                    tools:layout_editor_absoluteY="10dp" />
+                    tools:ignore="MissingConstraints,ImageContrastCheck" />
 
                 <TextView
                     android:id="@+id/name_3"
