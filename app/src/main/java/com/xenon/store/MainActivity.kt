@@ -2,6 +2,7 @@ package com.xenon.store
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
@@ -9,7 +10,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.progressindicator.CircularProgressIndicator
+import androidx.core.content.FileProvider
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import okhttp3.Call
 import okhttp3.Callback
@@ -150,6 +151,18 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(applicationContext, "Download completed", Toast.LENGTH_SHORT).show()
                         // Hide progress indicator after download completion
                         progressBar.visibility = View.GONE
+
+                        // Launch installation prompt
+                        val uri = FileProvider.getUriForFile(
+                            applicationContext,
+                            "${applicationContext.packageName}.provider",
+                            file
+                        )
+
+                        val installIntent = Intent(Intent.ACTION_VIEW)
+                        installIntent.setDataAndType(uri, "application/vnd.android.package-archive")
+                        installIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        startActivity(installIntent)
                     }
                 } else {
                     runOnUiThread {
