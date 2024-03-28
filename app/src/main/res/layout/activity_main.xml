@@ -40,7 +40,7 @@
                 <ImageView
                     android:id="@+id/icon_3"
                     style="@style/icons"
-                    android:src="@drawable/store"
+                    android:src="@mipmap/xenon_store"
                     tools:ignore="MissingConstraints,ImageContrastCheck" />
 
                 <TextView
@@ -85,7 +85,7 @@
                 <ImageView
                     android:id="@+id/icon_1"
                     style="@style/icons"
-                    android:src="@drawable/todolist"
+                    android:src="@mipmap/todo_list"
                     tools:ignore="MissingConstraints" />
 
                 <TextView
@@ -128,7 +128,7 @@
                 <ImageView
                     android:id="@+id/icon_2"
                     style="@style/icons"
-                    android:src="@drawable/calculator"
+                    android:src="@mipmap/calculator"
                     tools:ignore="MissingConstraints,ImageContrastCheck"
                     tools:layout_editor_absoluteX="10dp"
                     tools:layout_editor_absoluteY="9dp" />
