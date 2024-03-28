@@ -72,11 +72,11 @@ class MainActivity : AppCompatActivity() {
         return sharedPreferences.getBoolean(KEY_STORAGE_PERMISSION_GRANTED, false)
     }
 
-    private fun setStoragePermissionGranted(granted: Boolean) {
+    private fun setStoragePermissionGranted(@Suppress("SameParameterValue") granted: Boolean) {
         sharedPreferences.edit().putBoolean(KEY_STORAGE_PERMISSION_GRANTED, granted).apply()
     }
 
-    private fun setRepositoryDetails(owner: String, repo: String, filePath: String, personalAccessToken: String) {
+    private fun setRepositoryDetails(@Suppress("SameParameterValue") owner: String, repo: String, @Suppress("SameParameterValue") filePath: String, @Suppress("SameParameterValue") personalAccessToken: String) {
         this.owner = owner
         this.repo = repo
         this.filePath = filePath
