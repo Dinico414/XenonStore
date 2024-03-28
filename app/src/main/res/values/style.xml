@@ -30,4 +30,27 @@
         <item name="layout_constraintBottom_toBottomOf">parent</item>
         <item name="layout_constraintStart_toStartOf">parent</item>
     </style>
+
+    <style name="cardStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="background">@drawable/tile_popup</item>
+        <item name="backgroundTint">@color/primaryContainer</item>
+        <item name="android:clipToOutline">true</item>
+        <item name="elevation">0dp</item>
+        <item name="android:outlineAmbientShadowColor">@color/transparent</item>
+        <item name="android:outlineSpotShadowColor">@color/transparent</item>
+        <item name="cardCornerRadius">25dp</item>
+    </style>
+
+    <style name="progressbarStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">5dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:visibility">gone</item>
+        <item name="indicatorColor">@color/primary</item>
+        <item name="trackColor">@color/primaryContainer</item>
+        <item name="trackCornerRadius">3dp</item>
+        <item name="trackThickness">5dp</item>
+    </style>
 </resources>
