@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.xenon.store.R
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -26,7 +27,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
 
     private var owner = "Dinico414"
-    private var repo = "TodoList"
+    private var todoRepo = "TodoList"
+    private var calculatorRepo = "Calculator"
+    private var xenonStoreRepo = "XenonStore"
     private var filePath = "app/release/app-release.apk"
     private var personalAccessToken = "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"
 
@@ -40,20 +43,34 @@ class MainActivity : AppCompatActivity() {
         val downloadButton2: Button = findViewById(R.id.download_2)
         val downloadButton3: Button = findViewById(R.id.download_3)
 
+        // Check installation status of each app and update button text accordingly
+        updateButtonText(downloadButton1, todoRepo)
+        updateButtonText(downloadButton2, calculatorRepo)
+        updateButtonText(downloadButton3, xenonStoreRepo)
+
         downloadButton1.setOnClickListener {
-            setRepositoryDetails("Dinico414", "TodoList", "app/release/app-release.apk", "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")
-            downloadFile(R.id.progressbar_1)
+            setRepositoryDetails("Dinico414", todoRepo, "app/release/app-release.apk", "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")
+            downloadFile(R.id.progressbar_1, downloadButton1, todoRepo)
         }
 
         downloadButton2.setOnClickListener {
-            setRepositoryDetails("Dinico414", "Calculator", "app/release/app-release.apk", "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")
-            downloadFile(R.id.progressbar_2)
+            setRepositoryDetails("Dinico414", calculatorRepo, "app/release/app-release.apk", "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")
+            downloadFile(R.id.progressbar_2, downloadButton2, calculatorRepo)
         }
 
         downloadButton3.setOnClickListener {
-            setRepositoryDetails("Dinico414", "XenonStore", "app/release/app-release.apk", "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")
-            downloadFile(R.id.progressbar_3)
+            setRepositoryDetails("Dinico414", xenonStoreRepo, "app/release/app-release.apk", "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")
+            downloadFile(R.id.progressbar_3, downloadButton3, xenonStoreRepo)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Update button texts when the activity resumes
+        updateButtonText(findViewById(R.id.download_1), todoRepo)
+        updateButtonText(findViewById(R.id.download_2), calculatorRepo)
+        updateButtonText(findViewById(R.id.download_3), xenonStoreRepo)
     }
 
     private val requestPermissionLauncher =
@@ -61,7 +78,7 @@ class MainActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 // Permission granted, proceed with download
                 setStoragePermissionGranted(true)
-                downloadFile(R.id.progressbar_3)
+                downloadFile(R.id.progressbar_3, findViewById(R.id.download_3), xenonStoreRepo)
             } else {
                 // Permission denied
                 Toast.makeText(
@@ -82,12 +99,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun setRepositoryDetails(@Suppress("SameParameterValue") owner: String, repo: String, @Suppress("SameParameterValue") filePath: String, @Suppress("SameParameterValue") personalAccessToken: String) {
         this.owner = owner
-        this.repo = repo
         this.filePath = filePath
         this.personalAccessToken = personalAccessToken
     }
 
-    private fun downloadFile(progressBarId: Int) {
+    private fun downloadFile(progressBarId: Int, button: Button, repo: String) {
         if (!isStoragePermissionGranted()) {
             // Request storage access using SAF
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
@@ -95,11 +111,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Find the progress indicator
         val progressBar: LinearProgressIndicator = findViewById(progressBarId)
-        // Show progress indicator
         progressBar.visibility = View.VISIBLE
-        // Reset progress
         progressBar.progress = 0
 
         val client = OkHttpClient.Builder()
@@ -128,19 +141,15 @@ class MainActivity : AppCompatActivity() {
                     val outputStream = FileOutputStream(file)
                     inputStream?.use { input ->
                         outputStream.use { output ->
-                            // Prepare buffer
                             val buffer = ByteArray(4096)
                             var bytesRead: Int
                             var totalBytesRead: Long = 0
                             val fileSize: Long = response.body!!.contentLength()
 
-                            // Read from input stream and write to output stream
                             while (input.read(buffer).also { bytesRead = it } != -1) {
                                 output.write(buffer, 0, bytesRead)
                                 totalBytesRead += bytesRead
-                                // Calculate progress
                                 val progress = ((totalBytesRead * 100) / fileSize).toInt()
-                                // Update progress bar on UI thread
                                 runOnUiThread {
                                     progressBar.progress = progress
                                 }
@@ -149,25 +158,15 @@ class MainActivity : AppCompatActivity() {
                     }
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Download completed", Toast.LENGTH_SHORT).show()
-                        // Hide progress indicator after download completion
                         progressBar.visibility = View.GONE
-
+                        // Set button text to "Update" or "Install" after successful installation
+                        updateButtonText(button, repo)
                         // Launch installation prompt
-                        val uri = FileProvider.getUriForFile(
-                            applicationContext,
-                            "${applicationContext.packageName}.provider",
-                            file
-                        )
-
-                        val installIntent = Intent(Intent.ACTION_VIEW)
-                        installIntent.setDataAndType(uri, "application/vnd.android.package-archive")
-                        installIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        startActivity(installIntent)
+                        launchInstallPrompt(file)
                     }
                 } else {
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Download failed", Toast.LENGTH_SHORT).show()
-                        // Hide progress indicator if download failed
                         progressBar.visibility = View.GONE
                     }
                 }
@@ -180,11 +179,51 @@ class MainActivity : AppCompatActivity() {
                         "Download failed: ${e.message}",
                         Toast.LENGTH_SHORT
                     ).show()
-                    // Hide progress indicator if download failed
                     progressBar.visibility = View.GONE
                 }
             }
         })
+    }
+
+    private fun launchInstallPrompt(file: File) {
+        val uri = FileProvider.getUriForFile(
+            applicationContext,
+            "${applicationContext.packageName}.provider",
+            file
+        )
+
+        val installIntent = Intent(Intent.ACTION_VIEW)
+        installIntent.setDataAndType(uri, "application/vnd.android.package-archive")
+        installIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        startActivity(installIntent)
+    }
+
+    private fun updateButtonText(button: Button, repo: String) {
+        val packageName = packageNameFromRepo(repo)
+        if (isAppInstalled(packageName)) {
+            button.text = getString(R.string.update)
+        } else {
+            button.text = getString(R.string.install)
+        }
+    }
+
+    private fun isAppInstalled(packageName: String): Boolean {
+        val packageManager = packageManager
+        return try {
+            packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun packageNameFromRepo(repo: String): String {
+        return when (repo) {
+            todoRepo -> "com.xenon.todolist"
+            calculatorRepo -> "com.xenon.calculator"
+            xenonStoreRepo -> "com.xenon.store"
+            else -> ""
+        }
     }
 
     companion object {

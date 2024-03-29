@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Xenon Store</string>
+    <string name="download_completed">Download completed</string>
+    <string name="download_failed">Download failed</string>
+    <string name="permission_denied_cannot_download_the_file">Permission denied. Cannot download the file.</string>
+    <string name="update">Update</string>
+    <string name="install">Install</string>
 </resources>
