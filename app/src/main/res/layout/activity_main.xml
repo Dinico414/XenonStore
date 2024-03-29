@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,167 +8,219 @@
     android:background="@color/background"
     tools:ignore="HardcodedText">
 
-    <LinearLayout
-
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_margin="15dp"
-        android:background="@drawable/tile_background"
-        android:backgroundTint="@color/surface"
-        android:gravity="top"
-        android:orientation="vertical"
-        android:padding="10dp"
-        tools:context=".MainActivity"
-        tools:layout_editor_absoluteX="15dp"
-        tools:layout_editor_absoluteY="15dp">
+        android:layout_height="280dp"
+        android:layout_marginBottom="4dp"
+        android:backgroundTint="@android:color/transparent"
+        android:fitsSystemWindows="true">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_3"
-            style="@style/cardStyle"
-            android:backgroundTint="@color/tertiaryContainer"
-            tools:ignore="ContentDescription">
-
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progressbar_3"
-                style="@style/progressbarStyle"
-                app:indicatorColor="@color/tertiary"
-                app:trackColor="@color/tertiaryContainer" />
-
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/card_con_3"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="10dp">
-
-
-                <ImageView
-                    android:id="@+id/icon_3"
-                    style="@style/icons"
-                    android:src="@mipmap/xenon_store"
-                    tools:ignore="MissingConstraints,ImageContrastCheck" />
-
-                <TextView
-                    android:id="@+id/name_3"
-                    style="@style/textView"
-                    android:text="Xenon Store"
-                    app:layout_constraintBottom_toBottomOf="@+id/icon_3"
-                    app:layout_constraintStart_toEndOf="@+id/icon_3"
-                    app:layout_constraintTop_toTopOf="@+id/icon_3" />
-
-                <Button
-                    android:id="@+id/download_3"
-                    style="@style/buttonStyle"
-                    android:backgroundTint="@color/tertiary"
-                    android:text="Update"
-                    android:textColor="@color/onTertiary"
-                    app:layout_constraintTop_toBottomOf="@id/icon_3"
-                    tools:ignore="MissingConstraints,VisualLintButtonSize" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <Space
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="10dp" />
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:collapsedTitleGravity="left"
+            app:collapsedTitleTextAppearance="@style/ActionBar.XenonCollapsedTitleStyle"
+            app:collapsedTitleTextColor="@color/textOnPrimary"
+            app:expandedTitleGravity="center|center_vertical"
+            app:expandedTitleTextAppearance="@style/ActionBar.XenonExpanedTitleStyle"
+            app:expandedTitleTextColor="@color/primary"
+            app:layout_constraintVertical_weight="100"
+            app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
+            app:title="@string/app_name"
+            app:titleCollapseMode="scale"
+            app:titleEnabled="true">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_1"
-            style="@style/cardStyle"
-            android:backgroundTint="@color/primaryContainer"
-            tools:ignore="ContentDescription">
-
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progressbar_1"
-                style="@style/progressbarStyle"/>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/card_con_1"
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/dummy_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="10dp">
+                android:layout_height="?attr/actionBarSize"
+                android:layout_marginTop="4dp"
+                app:layout_collapseMode="pin"
+                app:navigationIconTint="@color/transparent" />
 
-                <ImageView
-                    android:id="@+id/icon_1"
-                    style="@style/icons"
-                    android:src="@mipmap/todo_list"
-                    tools:ignore="MissingConstraints" />
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
 
-                <TextView
-                    android:id="@+id/name_1"
-                    style="@style/textView"
-                    android:text="Todo List"
-                    app:layout_constraintBottom_toBottomOf="@+id/icon_1"
-                    app:layout_constraintStart_toEndOf="@+id/icon_1"
-                    app:layout_constraintTop_toTopOf="@+id/icon_1" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-                <Button
-                    android:id="@+id/download_1"
-                    style="@style/buttonStyle"
-                    android:text="Download"
-                    app:layout_constraintTop_toBottomOf="@id/icon_1"
-                    tools:ignore="DuplicateSpeakableTextCheck,MissingConstraints,VisualLintButtonSize" />
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationIconTint="@color/onSurface"
+        app:layout_collapseMode="pin"
+        android:layout_gravity="top"
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_anchorGravity="top" />
 
-        </androidx.cardview.widget.CardView>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+        <LinearLayout
 
-        <Space
             android:layout_width="match_parent"
-            android:layout_height="10dp" />
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:background="@drawable/tile_background"
+            android:backgroundTint="@color/surface"
+            android:gravity="top"
+            android:orientation="vertical"
+            android:padding="10dp"
+            tools:context=".MainActivity"
+            tools:layout_editor_absoluteX="15dp"
+            tools:layout_editor_absoluteY="15dp"
+            >
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_2"
-            style="@style/cardStyle"
-            android:backgroundTint="@color/primaryContainer"
-            tools:ignore="ContentDescription">
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_3"
+                style="@style/cardStyle"
+                android:backgroundTint="@color/tertiaryContainer"
+                tools:ignore="ContentDescription">
 
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progressbar_2"
-                style="@style/progressbarStyle"
-                />
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progressbar_3"
+                    style="@style/progressbarStyle"
+                    app:indicatorColor="@color/tertiary"
+                    app:trackColor="@color/tertiaryContainer" />
 
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/card_con_2"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/card_con_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp">
+
+
+                    <ImageView
+                        android:id="@+id/icon_3"
+                        style="@style/icons"
+                        android:src="@mipmap/xenon_store"
+                        tools:ignore="MissingConstraints,ImageContrastCheck" />
+
+                    <TextView
+                        android:id="@+id/name_3"
+                        style="@style/textView"
+                        android:text="Xenon Store"
+                        app:layout_constraintBottom_toBottomOf="@+id/icon_3"
+                        app:layout_constraintStart_toEndOf="@+id/icon_3"
+                        app:layout_constraintTop_toTopOf="@+id/icon_3" />
+
+                    <Button
+                        android:id="@+id/download_3"
+                        style="@style/buttonStyle"
+                        android:backgroundTint="@color/tertiary"
+                        android:text="Update"
+                        android:textColor="@color/onTertiary"
+                        app:layout_constraintTop_toBottomOf="@id/icon_3"
+                        tools:ignore="MissingConstraints,VisualLintButtonSize" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <Space
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="10dp">
+                android:layout_height="10dp" />
 
-                <ImageView
-                    android:id="@+id/icon_2"
-                    style="@style/icons"
-                    android:src="@mipmap/calculator"
-                    tools:ignore="MissingConstraints,ImageContrastCheck"
-                    tools:layout_editor_absoluteX="10dp"
-                    tools:layout_editor_absoluteY="9dp" />
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_1"
+                style="@style/cardStyle"
+                android:backgroundTint="@color/primaryContainer"
+                tools:ignore="ContentDescription">
 
-                <TextView
-                    android:id="@+id/name_2"
-                    style="@style/textView"
-                    android:text="Calculator"
-                    app:layout_constraintBottom_toBottomOf="@+id/icon_2"
-                    app:layout_constraintStart_toEndOf="@+id/icon_2"
-                    app:layout_constraintTop_toTopOf="@+id/icon_2" />
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progressbar_1"
+                    style="@style/progressbarStyle"/>
 
-                <Button
-                    android:id="@+id/download_2"
-                    style="@style/buttonStyle"
-                    android:text="Download"
-                    app:layout_constraintTop_toBottomOf="@id/icon_2"
-                    tools:ignore="MissingConstraints,VisualLintButtonSize" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/card_con_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp">
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    <ImageView
+                        android:id="@+id/icon_1"
+                        style="@style/icons"
+                        android:src="@mipmap/todo_list"
+                        tools:ignore="MissingConstraints" />
 
-        </androidx.cardview.widget.CardView>
+                    <TextView
+                        android:id="@+id/name_1"
+                        style="@style/textView"
+                        android:text="Todo List"
+                        app:layout_constraintBottom_toBottomOf="@+id/icon_1"
+                        app:layout_constraintStart_toEndOf="@+id/icon_1"
+                        app:layout_constraintTop_toTopOf="@+id/icon_1" />
+
+                    <Button
+                        android:id="@+id/download_1"
+                        style="@style/buttonStyle"
+                        android:text="Download"
+                        app:layout_constraintTop_toBottomOf="@id/icon_1"
+                        tools:ignore="DuplicateSpeakableTextCheck,MissingConstraints,VisualLintButtonSize" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_2"
+                style="@style/cardStyle"
+                android:backgroundTint="@color/primaryContainer"
+                tools:ignore="ContentDescription">
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progressbar_2"
+                    style="@style/progressbarStyle"
+                    />
 
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/card_con_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp">
+
+                    <ImageView
+                        android:id="@+id/icon_2"
+                        style="@style/icons"
+                        android:src="@mipmap/calculator"
+                        tools:ignore="MissingConstraints,ImageContrastCheck"
+                        tools:layout_editor_absoluteX="10dp"
+                        tools:layout_editor_absoluteY="9dp" />
+
+                    <TextView
+                        android:id="@+id/name_2"
+                        style="@style/textView"
+                        android:text="Calculator"
+                        app:layout_constraintBottom_toBottomOf="@+id/icon_2"
+                        app:layout_constraintStart_toEndOf="@+id/icon_2"
+                        app:layout_constraintTop_toTopOf="@+id/icon_2" />
+
+                    <Button
+                        android:id="@+id/download_2"
+                        style="@style/buttonStyle"
+                        android:text="Download"
+                        app:layout_constraintTop_toBottomOf="@id/icon_2"
+                        tools:ignore="MissingConstraints,VisualLintButtonSize" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
 
 
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
