@@ -219,7 +219,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun packageNameFromRepo(repo: String): String {
         return when (repo) {
-            todoRepo -> "com.xenon.todolist"
+            todoRepo -> "com.xenon.todolist.debug"
             calculatorRepo -> "com.xenon.calculator"
             xenonStoreRepo -> "com.xenon.store"
             else -> ""
