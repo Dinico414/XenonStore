@@ -2,7 +2,6 @@ package com.xenon.store
 
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
@@ -12,7 +11,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.google.android.material.progressindicator.LinearProgressIndicator
-import com.xenon.store.R
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -43,7 +41,6 @@ class MainActivity : AppCompatActivity() {
         val downloadButton2: Button = findViewById(R.id.download_2)
         val downloadButton3: Button = findViewById(R.id.download_3)
 
-        // Check installation status of each app and update button text accordingly
         updateButtonText(downloadButton1, todoRepo)
         updateButtonText(downloadButton2, calculatorRepo)
         updateButtonText(downloadButton3, xenonStoreRepo)
@@ -67,7 +64,6 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        // Update button texts when the activity resumes
         updateButtonText(findViewById(R.id.download_1), todoRepo)
         updateButtonText(findViewById(R.id.download_2), calculatorRepo)
         updateButtonText(findViewById(R.id.download_3), xenonStoreRepo)
@@ -76,11 +72,9 @@ class MainActivity : AppCompatActivity() {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                // Permission granted, proceed with download
                 setStoragePermissionGranted(true)
                 downloadFile(R.id.progressbar_3, findViewById(R.id.download_3), xenonStoreRepo)
             } else {
-                // Permission denied
                 Toast.makeText(
                     this,
                     "Permission denied. Cannot download the file.",
@@ -105,7 +99,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun downloadFile(progressBarId: Int, button: Button, repo: String) {
         if (!isStoragePermissionGranted()) {
-            // Request storage access using SAF
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
             requestPermissionLauncher.launch(intent)
             return
@@ -159,9 +152,7 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Download completed", Toast.LENGTH_SHORT).show()
                         progressBar.visibility = View.GONE
-                        // Set button text to "Update" or "Install" after successful installation
                         updateButtonText(button, repo)
-                        // Launch installation prompt
                         launchInstallPrompt(file)
                     }
                 } else {
@@ -219,7 +210,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun packageNameFromRepo(repo: String): String {
         return when (repo) {
-            todoRepo -> "com.xenon.todolist.debug"
+            todoRepo -> "com.xenon.todolist"
             calculatorRepo -> "com.xenon.calculator"
             xenonStoreRepo -> "com.xenon.store"
             else -> ""
