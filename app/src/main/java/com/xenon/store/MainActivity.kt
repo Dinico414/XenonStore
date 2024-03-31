@@ -73,7 +73,6 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 setStoragePermissionGranted(true)
-                downloadFile(R.id.progressbar_3, findViewById(R.id.download_3), xenonStoreRepo)
             } else {
                 Toast.makeText(
                     this,
