@@ -11,8 +11,8 @@ android {
         applicationId = "com.xenon.store"
         minSdk = 31
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.0.2"
+        versionCode = 6
+        versionName = "1.0.2-1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -43,6 +43,8 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.ui.text.android)
+    implementation(libs.protolite.well.known.types)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -50,4 +52,5 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation(libs.desugar.jdk.libs)
 }

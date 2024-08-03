@@ -2,6 +2,7 @@ package com.xenon.store
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
@@ -16,9 +17,13 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
 
@@ -191,11 +196,72 @@ class MainActivity : AppCompatActivity() {
     private fun updateButtonText(button: Button, repo: String) {
         val packageName = packageNameFromRepo(repo)
         if (isAppInstalled(packageName)) {
-            button.text = getString(R.string.update)
+            // App is installed, check for updates
+            checkUpdates(button, repo)
         } else {
+            // App is not installed
             button.text = getString(R.string.install)
         }
     }
+
+
+    private fun checkUpdates(button: Button, repo: String) {
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://api.github.com/repos/$owner/$repo/releases/latest")
+            .header("Authorization", "Bearer $personalAccessToken")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Update check failed", Toast.LENGTH_SHORT).show()
+                    button.text = getString(R.string.open)
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string()
+                    val jsonObject = JSONObject(responseBody)
+                    val latestReleaseDate = jsonObject.getString("published_at")
+                    val installedAppDate = getInstalledAppDate(packageNameFromRepo(repo))
+
+                    runOnUiThread {
+                        if (installedAppDate != null && isNewerDate(latestReleaseDate, installedAppDate)) {
+                            button.text = getString(R.string.update)
+                        } else {
+                            button.text = getString(R.string.open)
+                        }
+                    }
+                } else {
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, "Update check failed", Toast.LENGTH_SHORT).show()
+                        button.text = getString(R.string.open)
+                    }
+                }
+            }
+        })
+    }
+
+    private fun isNewerDate(date1: String, date2: String): Boolean {
+        val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+        val dateObj1 = OffsetDateTime.parse(date1, formatter)
+        val dateObj2 = OffsetDateTime.parse(date2, formatter)
+        return dateObj1.isAfter(dateObj2)
+    }
+
+    private fun getInstalledAppDate(packageName: String): String? {
+        return try {
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            val installTime = packageInfo.lastUpdateTime
+            val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+            formatter.format(OffsetDateTime.from(Instant.ofEpochMilli(installTime)))
+        } catch (e: PackageManager.NameNotFoundException) {
+            null
+        }
+    }
+
 
     private fun isAppInstalled(packageName: String): Boolean {
         val packageManager = packageManager
