@@ -90,7 +90,7 @@
                         android:id="@+id/progressbar_3"
                         style="@style/progressbarStyle"
                         app:indicatorColor="@color/tertiary"
-                        app:trackColor="@color/tertiaryContainer" />
+                        app:trackColor="#88888888" />
 
 
                     <androidx.constraintlayout.widget.ConstraintLayout

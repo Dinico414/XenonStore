@@ -49,7 +49,7 @@
         <item name="android:layout_marginBottom">4dp</item>
         <item name="android:visibility">gone</item>
         <item name="indicatorColor">@color/primary</item>
-        <item name="trackColor">@color/primaryContainer</item>
+        <item name="trackColor">#88888888</item>
         <item name="trackCornerRadius">3dp</item>
         <item name="trackThickness">5dp</item>
     </style>
