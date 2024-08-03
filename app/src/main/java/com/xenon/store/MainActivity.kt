@@ -5,12 +5,14 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import okhttp3.Call
 import okhttp3.Callback
@@ -21,8 +23,11 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Suppress("UNUSED_PARAMETER")
@@ -64,6 +69,14 @@ class MainActivity : AppCompatActivity() {
         downloadButton3.setOnClickListener {
             setRepositoryDetails("Dinico414", xenonStoreRepo, "app/release/app-release.apk", "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")
             downloadFile(R.id.progressbar_3, downloadButton3, xenonStoreRepo)
+        }
+        val swipeRefreshLayout: SwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout)
+        swipeRefreshLayout.setOnRefreshListener {
+            // Refresh all buttons
+            updateButtonText(findViewById(R.id.download_1), todoRepo)
+            updateButtonText(findViewById(R.id.download_2), calculatorRepo)
+            updateButtonText(findViewById(R.id.download_3), xenonStoreRepo)
+            swipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -234,7 +247,13 @@ class MainActivity : AppCompatActivity() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
-                    Toast.makeText(applicationContext, "Update check failed", Toast.LENGTH_SHORT).show()
+                    Log.e("UpdateCheck", "Error checking for updates", e)
+                    val errorMessage = when (e) {
+                        is SocketTimeoutException -> "Connection timed out"
+                        is UnknownHostException -> "No internet connection"
+                        else -> "Update check failed: ${e.message}"
+                    }
+                    Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
                     button.text = getString(R.string.open)
                 }
             }
@@ -245,6 +264,7 @@ class MainActivity : AppCompatActivity() {
                     val jsonObject = responseBody?.let { JSONObject(it) }
                     val latestReleaseDate = jsonObject?.getString("published_at")
                     val installedAppDate = getInstalledAppDate(packageNameFromRepo(repo))
+                    Log.d("UpdateCheck", "Response: $responseBody")
 
                     runOnUiThread {
                         if (installedAppDate != null && isNewerDate(latestReleaseDate.toString(), installedAppDate)) {
@@ -274,8 +294,10 @@ class MainActivity : AppCompatActivity() {
         return try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
             val installTime = packageInfo.lastUpdateTime
+            val instant = Instant.ofEpochMilli(installTime)
+            val offsetDateTime = OffsetDateTime.ofInstant(instant, ZoneId.systemDefault())
             val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-            formatter.format(OffsetDateTime.from(Instant.ofEpochMilli(installTime)))
+            formatter.format(offsetDateTime)
         } catch (e: PackageManager.NameNotFoundException) {
             null
         }
