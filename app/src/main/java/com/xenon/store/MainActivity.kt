@@ -25,6 +25,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
+@Suppress("UNUSED_PARAMETER")
 class MainActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -198,9 +199,27 @@ class MainActivity : AppCompatActivity() {
         if (isAppInstalled(packageName)) {
             // App is installed, check for updates
             checkUpdates(button, repo)
+            // Set click listener to open the app
+            button.setOnClickListener {
+                val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+                startActivity(launchIntent)
+            }
         } else {
             // App is not installed
             button.text = getString(R.string.install)
+            // Keep the original download logic
+            button.setOnClickListener {
+                setRepositoryDetails("Dinico414", repo, "app/release/app-release.apk", "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")
+                downloadFile(getProgressBarId(repo), button, repo)
+            }
+        }
+    }
+    private fun getProgressBarId(repo: String): Int {
+        return when (repo) {
+            todoRepo -> R.id.progressbar_1
+            calculatorRepo -> R.id.progressbar_2
+            xenonStoreRepo -> R.id.progressbar_3
+            else -> throw IllegalArgumentException("Invalid repository name")
         }
     }
 
@@ -223,12 +242,12 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
                     val responseBody = response.body?.string()
-                    val jsonObject = JSONObject(responseBody)
-                    val latestReleaseDate = jsonObject.getString("published_at")
+                    val jsonObject = responseBody?.let { JSONObject(it) }
+                    val latestReleaseDate = jsonObject?.getString("published_at")
                     val installedAppDate = getInstalledAppDate(packageNameFromRepo(repo))
 
                     runOnUiThread {
-                        if (installedAppDate != null && isNewerDate(latestReleaseDate, installedAppDate)) {
+                        if (installedAppDate != null && isNewerDate(latestReleaseDate.toString(), installedAppDate)) {
                             button.text = getString(R.string.update)
                         } else {
                             button.text = getString(R.string.open)
