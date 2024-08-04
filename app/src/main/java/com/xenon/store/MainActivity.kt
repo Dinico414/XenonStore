@@ -56,19 +56,22 @@ class MainActivity : AppCompatActivity() {
         updateButtonText(downloadButton2, calculatorRepo)
         updateButtonText(downloadButton3, xenonStoreRepo)
 
-        downloadButton1.setOnClickListener {
-            setRepositoryDetails("Dinico414", todoRepo, "app/release/app-release.apk", "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")
-            downloadFile(R.id.progressbar_1, downloadButton1, todoRepo)
-        }
+        val debugButton: Button = findViewById(R.id.debug)
+        debugButton.setOnClickListener {
+            downloadButton1.setOnClickListener {
+                setRepositoryDetails("Dinico414", todoRepo, "app/release/app-release.apk", "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")
+                downloadFile(R.id.progressbar_1, downloadButton1, todoRepo)
+            }
 
-        downloadButton2.setOnClickListener {
-            setRepositoryDetails("Dinico414", calculatorRepo, "app/release/app-release.apk", "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")
-            downloadFile(R.id.progressbar_2, downloadButton2, calculatorRepo)
-        }
+            downloadButton2.setOnClickListener {
+                setRepositoryDetails("Dinico414", calculatorRepo, "app/release/app-release.apk", "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")
+                downloadFile(R.id.progressbar_2, downloadButton2, calculatorRepo)
+            }
 
-        downloadButton3.setOnClickListener {
-            setRepositoryDetails("Dinico414", xenonStoreRepo, "app/release/app-release.apk", "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")
-            downloadFile(R.id.progressbar_3, downloadButton3, xenonStoreRepo)
+            downloadButton3.setOnClickListener {
+                setRepositoryDetails("Dinico414", xenonStoreRepo, "app/release/app-release.apk", "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")
+                downloadFile(R.id.progressbar_3, downloadButton3, xenonStoreRepo)
+            }
         }
         val swipeRefreshLayout: SwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout)
         swipeRefreshLayout.setOnRefreshListener {
