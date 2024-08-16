@@ -20,7 +20,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.json.JSONArray
-import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -37,11 +36,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
 
     private var owner = "XenonOSProduction"
-    private var todoRepo = "TodoList"
-    private var calculatorRepo = "Calculator"
-    private var xenonStoreRepo = "XenonStore"
     private var filePath = "app/release/app-release.apk"
     private var personalAccessToken = "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"
+
+    private var xenonStoreRepo = "XenonStore"
+    private var todoRepo = "TodoList"
+    private var calculatorRepo = "Calculator"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,33 +53,16 @@ class MainActivity : AppCompatActivity() {
         val downloadButton2: Button = findViewById(R.id.download_2)
         val downloadButton3: Button = findViewById(R.id.download_3)
 
-        updateButtonText(downloadButton1, todoRepo)
-        updateButtonText(downloadButton2, calculatorRepo)
-        updateButtonText(downloadButton3, xenonStoreRepo)
+        updateButtonText(downloadButton1, xenonStoreRepo)
+        updateButtonText(downloadButton2, todoRepo)
+        updateButtonText(downloadButton3, calculatorRepo)
 
-        val debugButton: Button = findViewById(R.id.debug)
-        debugButton.setOnClickListener {
-            downloadButton1.setOnClickListener {
-                setRepositoryDetails("Dinico414", todoRepo, "app/release/app-release.apk", "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")
-                downloadFile(R.id.progressbar_1, downloadButton1, todoRepo)
-            }
-
-            downloadButton2.setOnClickListener {
-                setRepositoryDetails("Dinico414", calculatorRepo, "app/release/app-release.apk", "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")
-                downloadFile(R.id.progressbar_2, downloadButton2, calculatorRepo)
-            }
-
-            downloadButton3.setOnClickListener {
-                setRepositoryDetails("Dinico414", xenonStoreRepo, "app/release/app-release.apk", "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")
-                downloadFile(R.id.progressbar_3, downloadButton3, xenonStoreRepo)
-            }
-        }
         val swipeRefreshLayout: SwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout)
         swipeRefreshLayout.setOnRefreshListener {
             // Refresh all buttons
-            updateButtonText(findViewById(R.id.download_1), todoRepo)
-            updateButtonText(findViewById(R.id.download_2), calculatorRepo)
-            updateButtonText(findViewById(R.id.download_3), xenonStoreRepo)
+            updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
+            updateButtonText(findViewById(R.id.download_2), todoRepo)
+            updateButtonText(findViewById(R.id.download_3), calculatorRepo)
             swipeRefreshLayout.isRefreshing = false
         }
     }
@@ -87,9 +70,9 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        updateButtonText(findViewById(R.id.download_1), todoRepo)
-        updateButtonText(findViewById(R.id.download_2), calculatorRepo)
-        updateButtonText(findViewById(R.id.download_3), xenonStoreRepo)
+        updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
+        updateButtonText(findViewById(R.id.download_2), todoRepo)
+        updateButtonText(findViewById(R.id.download_3), calculatorRepo)
     }
 
     private val requestPermissionLauncher =
@@ -113,7 +96,12 @@ class MainActivity : AppCompatActivity() {
         sharedPreferences.edit().putBoolean(KEY_STORAGE_PERMISSION_GRANTED, granted).apply()
     }
 
-    private fun setRepositoryDetails(@Suppress("SameParameterValue") owner: String, repo: String, @Suppress("SameParameterValue") filePath: String, @Suppress("SameParameterValue") personalAccessToken: String) {
+    private fun setRepositoryDetails(
+        @Suppress("SameParameterValue") owner: String,
+        repo: String,
+        @Suppress("SameParameterValue") filePath: String,
+        @Suppress("SameParameterValue") personalAccessToken: String
+    ) {
         this.owner = owner
         this.filePath = filePath
         this.personalAccessToken = personalAccessToken
@@ -172,14 +160,16 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     runOnUiThread {
-                        Toast.makeText(applicationContext, "Download completed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(applicationContext, "Download completed", Toast.LENGTH_SHORT)
+                            .show()
                         progressBar.visibility = View.GONE
                         updateButtonText(button, repo)
                         launchInstallPrompt(file)
                     }
                 } else {
                     runOnUiThread {
-                        Toast.makeText(applicationContext, "Download failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(applicationContext, "Download failed", Toast.LENGTH_SHORT)
+                            .show()
                         progressBar.visibility = View.GONE
                     }
                 }
@@ -212,30 +202,43 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateButtonText(button: Button, repo: String) {
-        val packageName = packageNameFromRepo(repo)
-        if (isAppInstalled(packageName)) {
-            // App is installed, check for updates
-            checkUpdates(button, repo)
-            // Set click listener to open the app
-            button.setOnClickListener {
-                val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
-                startActivity(launchIntent)
+        if (button == findViewById(R.id.download_1)) { // Only apply this logic to download_button_1
+            val packageName = packageNameFromRepo(repo)
+            if (isAppInstalled(packageName)) {
+                // App is installed, check for updates
+                checkUpdates(button, repo)
+            } else {
+                // App is not installed, hide the button
+                button.visibility = View.GONE
             }
         } else {
-            // App is not installed
-            button.text = getString(R.string.install)
-            // Keep the original download logic
-            button.setOnClickListener {
-                setRepositoryDetails("Dinico414", repo, "app/release/app-release.apk", "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")
-                downloadFile(getProgressBarId(repo), button, repo)
+            // For other buttons, keep the original logic
+            val packageName = packageNameFromRepo(repo)
+            if (isAppInstalled(packageName)) {
+                // App is installed, check for updates
+                checkUpdates(button, repo)
+                // Set click listener to open the app
+                button.setOnClickListener {
+                    val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+                    startActivity(launchIntent)
+                }
+            } else {
+                // App is not installed
+                button.text = getString(R.string.install)
+                // Keep the original download logic
+                button.setOnClickListener {
+                    setRepositoryDetails(owner, repo, filePath, personalAccessToken)
+                    downloadFile(getProgressBarId(repo), button, repo)
+                }
             }
         }
     }
+
     private fun getProgressBarId(repo: String): Int {
         return when (repo) {
-            todoRepo -> R.id.progressbar_1
-            calculatorRepo -> R.id.progressbar_2
-            xenonStoreRepo -> R.id.progressbar_3
+            xenonStoreRepo -> R.id.progressbar_1
+            todoRepo -> R.id.progressbar_2
+            calculatorRepo -> R.id.progressbar_3
             else -> throw IllegalArgumentException("Invalid repository name")
         }
     }
@@ -273,15 +276,38 @@ class MainActivity : AppCompatActivity() {
                     Log.d("UpdateCheck", "Response: $responseBody")
 
                     runOnUiThread {
-                        if (installedAppDate != null && isNewerDate(latestReleaseDate.toString(), installedAppDate)) {
+                        if (installedAppDate != null && isNewerDate(
+                                latestReleaseDate.toString(),
+                                installedAppDate
+                            )
+                        ) {
                             button.text = getString(R.string.update)
+                            button.visibility = View.VISIBLE
+                            // Set click listener to download the update
+                            button.setOnClickListener {
+                                setRepositoryDetails(owner, repo, filePath, personalAccessToken)
+                                downloadFile(getProgressBarId(repo), button, repo)
+                            }
                         } else {
-                            button.text = getString(R.string.open)
+                            if (button == findViewById(R.id.download_1)) { // Only hide if it's download_button_1
+                                button.visibility = View.GONE // Hide the button if no update is available
+                            } else {
+                                button.text = getString(R.string.open)
+                                // Set click listener to open the app
+                                button.setOnClickListener {
+                                    val launchIntent = packageManager.getLaunchIntentForPackage(packageNameFromRepo(repo))
+                                    startActivity(launchIntent)
+                                }
+                            }
                         }
                     }
                 } else {
                     runOnUiThread {
-                        Toast.makeText(applicationContext, "Update check failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            applicationContext,
+                            "Update check failed",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         Log.d("Update check", "Error on request: $response")
                         button.text = getString(R.string.open)
                     }
@@ -323,9 +349,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun packageNameFromRepo(repo: String): String {
         return when (repo) {
+            xenonStoreRepo -> "com.xenon.store"
             todoRepo -> "com.xenon.todolist"
             calculatorRepo -> "com.xenon.calculator"
-            xenonStoreRepo -> "com.xenon.store"
             else -> ""
         }
     }
