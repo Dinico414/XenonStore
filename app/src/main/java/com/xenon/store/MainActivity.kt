@@ -19,6 +19,7 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
 
-    private var owner = "Dinico414"
+    private var owner = "XenonOSProduction"
     private var todoRepo = "TodoList"
     private var calculatorRepo = "Calculator"
     private var xenonStoreRepo = "XenonStore"
@@ -243,7 +244,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkUpdates(button: Button, repo: String) {
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("https://api.github.com/repos/$owner/$repo/releases/latest")
+            .url("https://api.github.com/repos/$owner/$repo/commits")
             .header("Authorization", "Bearer $personalAccessToken")
             .build()
 
@@ -264,8 +265,10 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
                     val responseBody = response.body?.string()
-                    val jsonObject = responseBody?.let { JSONObject(it) }
-                    val latestReleaseDate = jsonObject?.getString("published_at")
+                    val jsonArray = responseBody?.let { JSONArray(it) }
+                    val firstCommit = jsonArray?.getJSONObject(0)?.getJSONObject("commit")
+                    val author = firstCommit?.getJSONObject("author")
+                    val latestReleaseDate = author?.getString("date")
                     val installedAppDate = getInstalledAppDate(packageNameFromRepo(repo))
                     Log.d("UpdateCheck", "Response: $responseBody")
 
@@ -279,6 +282,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Update check failed", Toast.LENGTH_SHORT).show()
+                        Log.d("Update check", "Error on request: $response")
                         button.text = getString(R.string.open)
                     }
                 }
