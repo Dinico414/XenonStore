@@ -6,18 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/background"
     tools:ignore="HardcodedText">
-    <Button
-        android:id="@+id/download_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/tertiary"
-        android:layout_marginTop="200dp"
-        android:visibility="gone"
-        android:text="Update"
-        android:textColor="@color/onTertiary"
-        app:layout_anchor="@+id/coordinatorLayout"
-        app:layout_anchorGravity="top|center"
-        tools:ignore="MissingConstraints,VisualLintButtonSize" />
+
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
@@ -242,4 +231,16 @@
             </androidx.core.widget.NestedScrollView>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <Button
+        android:id="@+id/download_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/tertiary"
+        android:layout_marginTop="200dp"
+        android:visibility="gone"
+        android:text="Update"
+        android:textColor="@color/onTertiary"
+        app:layout_anchor="@+id/coordinatorLayout"
+        app:layout_anchorGravity="top|center"
+        tools:ignore="MissingConstraints,VisualLintButtonSize" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

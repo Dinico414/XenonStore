@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import okhttp3.Call
 import okhttp3.Callback
@@ -53,17 +54,26 @@ class MainActivity : AppCompatActivity() {
         val downloadButton2: Button = findViewById(R.id.download_2)
         val downloadButton3: Button = findViewById(R.id.download_3)
 
+
         updateButtonText(downloadButton1, xenonStoreRepo)
         updateButtonText(downloadButton2, todoRepo)
         updateButtonText(downloadButton3, calculatorRepo)
 
         val swipeRefreshLayout: SwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout)
         swipeRefreshLayout.setOnRefreshListener {
-            // Refresh all buttons
+
             updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
             updateButtonText(findViewById(R.id.download_2), todoRepo)
             updateButtonText(findViewById(R.id.download_3), calculatorRepo)
             swipeRefreshLayout.isRefreshing = false
+        }
+        findViewById<AppBarLayout>(R.id.appbar).also {
+
+            it.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
+                val totalScrollRange = appBarLayout.totalScrollRange
+                val alpha = 1.0f + (verticalOffset.toFloat() / totalScrollRange * 5)
+                downloadButton1.alpha = alpha
+            }
         }
     }
 
@@ -81,9 +91,7 @@ class MainActivity : AppCompatActivity() {
                 setStoragePermissionGranted(true)
             } else {
                 Toast.makeText(
-                    this,
-                    "Permission denied. Cannot download the file.",
-                    Toast.LENGTH_SHORT
+                    this, "Permission denied. Cannot download the file.", Toast.LENGTH_SHORT
                 ).show()
             }
         }
@@ -118,18 +126,16 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         progressBar.progress = 0
 
-        val client = OkHttpClient.Builder()
-            .addInterceptor { chain ->
-                val request = chain.request().newBuilder()
-                    .header("Authorization", "Bearer $personalAccessToken")
+        val client = OkHttpClient.Builder().addInterceptor { chain ->
+            val request =
+                chain.request().newBuilder().header("Authorization", "Bearer $personalAccessToken")
                     .build()
-                chain.proceed(request)
-            }
-            .build()
+            chain.proceed(request)
+        }.build()
 
-        val request = Request.Builder()
-            .url("https://raw.githubusercontent.com/$owner/$repo/master/$filePath")
-            .build()
+        val request =
+            Request.Builder().url("https://raw.githubusercontent.com/$owner/$repo/master/$filePath")
+                .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
@@ -178,9 +184,7 @@ class MainActivity : AppCompatActivity() {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
                     Toast.makeText(
-                        applicationContext,
-                        "Download failed: ${e.message}",
-                        Toast.LENGTH_SHORT
+                        applicationContext, "Download failed: ${e.message}", Toast.LENGTH_SHORT
                     ).show()
                     progressBar.visibility = View.GONE
                 }
@@ -190,9 +194,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun launchInstallPrompt(file: File) {
         val uri = FileProvider.getUriForFile(
-            applicationContext,
-            "${applicationContext.packageName}.provider",
-            file
+            applicationContext, "${applicationContext.packageName}.provider", file
         )
 
         val installIntent = Intent(Intent.ACTION_VIEW)
@@ -202,30 +204,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateButtonText(button: Button, repo: String) {
-        if (button == findViewById(R.id.download_1)) { // Only apply this logic to download_button_1
+        if (button == findViewById(R.id.download_1)) {
             val packageName = packageNameFromRepo(repo)
             if (isAppInstalled(packageName)) {
-                // App is installed, check for updates
                 checkUpdates(button, repo)
             } else {
-                // App is not installed, hide the button
                 button.visibility = View.GONE
             }
         } else {
-            // For other buttons, keep the original logic
+
             val packageName = packageNameFromRepo(repo)
             if (isAppInstalled(packageName)) {
-                // App is installed, check for updates
+
                 checkUpdates(button, repo)
-                // Set click listener to open the app
+
                 button.setOnClickListener {
                     val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
                     startActivity(launchIntent)
                 }
             } else {
-                // App is not installed
+
                 button.text = getString(R.string.install)
-                // Keep the original download logic
+
                 button.setOnClickListener {
                     setRepositoryDetails(owner, repo, filePath, personalAccessToken)
                     downloadFile(getProgressBarId(repo), button, repo)
@@ -246,10 +246,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkUpdates(button: Button, repo: String) {
         val client = OkHttpClient()
-        val request = Request.Builder()
-            .url("https://api.github.com/repos/$owner/$repo/commits")
-            .header("Authorization", "Bearer $personalAccessToken")
-            .build()
+        val request = Request.Builder().url("https://api.github.com/repos/$owner/$repo/commits")
+            .header("Authorization", "Bearer $personalAccessToken").build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -277,25 +275,28 @@ class MainActivity : AppCompatActivity() {
 
                     runOnUiThread {
                         if (installedAppDate != null && isNewerDate(
-                                latestReleaseDate.toString(),
-                                installedAppDate
+                                latestReleaseDate.toString(), installedAppDate
                             )
                         ) {
                             button.text = getString(R.string.update)
-                            button.visibility = View.VISIBLE
-                            // Set click listener to download the update
-                            button.setOnClickListener {
-                                setRepositoryDetails(owner, repo, filePath, personalAccessToken)
-                                downloadFile(getProgressBarId(repo), button, repo)
+                            button.visibility = View.VISIBLE // Ensure button is visible
+                            fadeIn(button)
+                            if (button == findViewById(R.id.download_1) && repo == xenonStoreRepo) {
+                                button.setOnClickListener {
+                                    setRepositoryDetails(owner, repo, filePath, personalAccessToken)
+                                    downloadFile(getProgressBarId(repo), button, repo)
+                                }
                             }
                         } else {
-                            if (button == findViewById(R.id.download_1)) { // Only hide if it's download_button_1
-                                button.visibility = View.GONE // Hide the button if no update is available
+                            if (button == findViewById(R.id.download_1)) {
+                                button.visibility = View.GONE
                             } else {
                                 button.text = getString(R.string.open)
-                                // Set click listener to open the app
+
                                 button.setOnClickListener {
-                                    val launchIntent = packageManager.getLaunchIntentForPackage(packageNameFromRepo(repo))
+                                    val launchIntent = packageManager.getLaunchIntentForPackage(
+                                        packageNameFromRepo(repo)
+                                    )
                                     startActivity(launchIntent)
                                 }
                             }
@@ -304,9 +305,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     runOnUiThread {
                         Toast.makeText(
-                            applicationContext,
-                            "Update check failed",
-                            Toast.LENGTH_SHORT
+                            applicationContext, "Update check failed", Toast.LENGTH_SHORT
                         ).show()
                         Log.d("Update check", "Error on request: $response")
                         button.text = getString(R.string.open)
@@ -314,6 +313,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+    private fun fadeIn(view: View) {
+        view.visibility = View.VISIBLE
+        view.alpha = 0f
+        view.animate().alpha(1f).setDuration(300).setListener(null)
     }
 
     private fun isNewerDate(date1: String, date2: String): Boolean {

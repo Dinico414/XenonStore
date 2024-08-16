@@ -15,6 +15,7 @@ constraintlayout = "2.1.4"
 swiperefreshlayout = "1.1.0"
 uiTextAndroid = "1.6.8"
 protoliteWellKnownTypes = "18.0.0"
+animationAndroid = "1.6.8"
 
 [libraries]
 accesspoint = { module = "com.xenon.commons:accesspoint", version.ref = "accesspoint" }
@@ -33,6 +34,7 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "loggingInterce
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converterGson" }
 androidx-ui-text-android = { group = "androidx.compose.ui", name = "ui-text-android", version.ref = "uiTextAndroid" }
 protolite-well-known-types = { group = "com.google.firebase", name = "protolite-well-known-types", version.ref = "protoliteWellKnownTypes" }
+androidx-animation-android = { group = "androidx.compose.animation", name = "animation-android", version.ref = "animationAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
