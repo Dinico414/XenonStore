@@ -44,6 +44,8 @@ class MainActivity : AppCompatActivity() {
     private var todoRepo = "TodoList"
     private var calculatorRepo = "Calculator"
 
+    private var hasCheckedForUpdates = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -61,11 +63,11 @@ class MainActivity : AppCompatActivity() {
 
         val swipeRefreshLayout: SwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout)
         swipeRefreshLayout.setOnRefreshListener {
-
             updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
             updateButtonText(findViewById(R.id.download_2), todoRepo)
             updateButtonText(findViewById(R.id.download_3), calculatorRepo)
             swipeRefreshLayout.isRefreshing = false
+            hasCheckedForUpdates = false
         }
         findViewById<AppBarLayout>(R.id.appbar).also {
 
@@ -79,11 +81,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
-        updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
-        updateButtonText(findViewById(R.id.download_2), todoRepo)
-        updateButtonText(findViewById(R.id.download_3), calculatorRepo)
+        if (!hasCheckedForUpdates) {
+            updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
+            updateButtonText(findViewById(R.id.download_2), todoRepo)
+            updateButtonText(findViewById(R.id.download_3), calculatorRepo)
+            hasCheckedForUpdates = true
+        }
     }
+
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -274,18 +279,15 @@ class MainActivity : AppCompatActivity() {
                     Log.d("UpdateCheck", "Response: $responseBody")
 
                     runOnUiThread {
-                        if (installedAppDate != null && isNewerDate(
-                                latestReleaseDate.toString(), installedAppDate
-                            )
-                        ) {
+                        if (installedAppDate != null && isNewerDate(latestReleaseDate.toString(), installedAppDate)) {
                             button.text = getString(R.string.update)
-                            button.visibility = View.VISIBLE // Ensure button is visible
+                            button.visibility = View.VISIBLE
                             fadeIn(button)
-                            if (button == findViewById(R.id.download_1) && repo == xenonStoreRepo) {
-                                button.setOnClickListener {
-                                    setRepositoryDetails(owner, repo, filePath, personalAccessToken)
-                                    downloadFile(getProgressBarId(repo), button, repo)
-                                }
+
+                            // Set click listener to download the update
+                            button.setOnClickListener {
+                                setRepositoryDetails(owner, repo, filePath, personalAccessToken)
+                                downloadFile(getProgressBarId(repo), button, repo)
                             }
                         } else {
                             if (button == findViewById(R.id.download_1)) {
