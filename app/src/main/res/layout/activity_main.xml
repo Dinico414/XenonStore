@@ -78,6 +78,7 @@
                 android:backgroundTint="@color/surface"
                 android:clipToOutline="true">
 
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -87,18 +88,20 @@
                     tools:context=".MainActivity"
                     tools:layout_editor_absoluteX="15dp"
                     tools:layout_editor_absoluteY="15dp">
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progressbar_1"
+                        style="@style/progressbarStyle"
+                        app:indicatorColor="@color/tertiary"
+                        app:trackColor="#88888888"/>
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_1"
                         style="@style/cardStyle"
                         android:backgroundTint="@color/tertiaryContainer"
-                        tools:ignore="ContentDescription">
+                        tools:ignore="ContentDescription"
+                        android:visibility="gone">
 
-                        <com.google.android.material.progressindicator.LinearProgressIndicator
-                            android:id="@+id/progressbar_1"
-                            style="@style/progressbarStyle"
-                            app:indicatorColor="@color/tertiary"
-                            app:trackColor="#88888888" />
+
 
 
                         <androidx.constraintlayout.widget.ConstraintLayout
@@ -128,7 +131,8 @@
 
                     <Space
                         android:layout_width="match_parent"
-                        android:layout_height="10dp" />
+                        android:layout_height="10dp"
+                        android:visibility="gone"/>
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_2"
