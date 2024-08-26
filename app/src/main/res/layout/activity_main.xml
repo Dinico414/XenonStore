@@ -60,8 +60,10 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:layout_gravity="top"
-            app:layout_anchorGravity="top"
+            app:layout_anchor="@+id/appbar"
+            app:layout_anchorGravity="bottom|center"
             app:layout_collapseMode="pin"
+            app:menu="@menu/menu_main"
             app:navigationIconTint="@color/onSurface" />
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

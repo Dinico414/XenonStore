@@ -7,4 +7,5 @@
     <string name="update">Aktualisieren</string>
     <string name="install">Installieren</string>
     <string name="open">Öffnen</string>
+    <string name="action_share">Teilen</string>
 </resources>
