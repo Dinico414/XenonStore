@@ -53,7 +53,9 @@
             </com.google.android.material.appbar.CollapsingToolbarLayout>
 
 
+
         </com.google.android.material.appbar.AppBarLayout>
+
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -65,6 +67,7 @@
             app:layout_collapseMode="pin"
             app:menu="@menu/menu_main"
             app:navigationIconTint="@color/onSurface" />
+
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh_layout"
@@ -199,18 +202,20 @@
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <Button
+            android:id="@+id/download_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="200dp"
+            android:backgroundTint="@color/tertiary"
+            android:text="Update"
+            android:textColor="@color/onTertiary"
+            android:visibility="gone"
+            app:layout_anchor="@+id/toolbar"
+            app:layout_anchorGravity="center"
+            tools:ignore="MissingConstraints,VisualLintButtonSize" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <Button
-        android:id="@+id/download_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="200dp"
-        android:backgroundTint="@color/tertiary"
-        android:text="Update"
-        android:textColor="@color/onTertiary"
-        android:visibility="gone"
-        app:layout_anchor="@+id/coordinatorLayout"
-        app:layout_anchorGravity="top|center"
-        tools:ignore="MissingConstraints,VisualLintButtonSize" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

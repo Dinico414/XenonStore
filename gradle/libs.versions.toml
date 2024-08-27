@@ -1,5 +1,5 @@
 [versions]
-accesspoint = "1.0.5-1"
+accesspoint = "1.0.5-5"
 agp = "8.5.2"
 converterGson = "2.11.0"
 desugar_jdk_libs = "2.0.4"
