@@ -79,9 +79,10 @@
             <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/tile_background"
-                android:backgroundTint="@color/surface"
-                android:clipToOutline="true">
+                android:background="@drawable/tile_background_100"
+                android:backgroundTint="@color/surfaceContainer"
+                android:clipToOutline="true"
+                tools:ignore="PrivateResource">
 
 
                 <LinearLayout
@@ -105,7 +106,7 @@
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_2"
                         style="@style/cardStyle"
-                        android:backgroundTint="@color/primaryContainer"
+                        android:backgroundTint="@color/secondaryContainer"
                         tools:ignore="ContentDescription">
 
                         <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -150,7 +151,7 @@
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_3"
                         style="@style/cardStyle"
-                        android:backgroundTint="@color/primaryContainer"
+                        android:backgroundTint="@color/secondaryContainer"
                         tools:ignore="ContentDescription">
 
                         <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -211,10 +212,10 @@
             android:backgroundTint="@color/tertiary"
             android:text="Update"
             android:textColor="@color/onTertiary"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_anchor="@+id/toolbar"
             app:layout_anchorGravity="center"
-            tools:ignore="MissingConstraints,VisualLintButtonSize" />
+            tools:ignore="MissingConstraints,VisualLintButtonSize"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 

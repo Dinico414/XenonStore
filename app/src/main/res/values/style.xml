@@ -35,7 +35,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="background">@drawable/tile_popup</item>
-        <item name="backgroundTint">@color/primaryContainer</item>
+        <item name="backgroundTint">@color/secondaryContainer</item>
         <item name="android:clipToOutline">true</item>
         <item name="elevation">0dp</item>
         <item name="android:outlineAmbientShadowColor">@color/transparent</item>
