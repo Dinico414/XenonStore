@@ -217,7 +217,7 @@
             android:textColor="@color/onTertiary"
             android:visibility="visible"
             app:layout_anchor="@+id/toolbar"
-            app:layout_anchorGravity="center"
+            app:layout_anchorGravity="top|center"
             tools:ignore="MissingConstraints,VisualLintButtonSize" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
