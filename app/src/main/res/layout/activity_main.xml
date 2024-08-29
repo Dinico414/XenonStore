@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@color/surfaceContainerLowest"
     tools:ignore="HardcodedText">
 
 
@@ -217,7 +217,7 @@
             android:textColor="@color/onTertiary"
             android:visibility="visible"
             app:layout_anchor="@+id/toolbar"
-            app:layout_anchorGravity="top|center"
+            app:layout_anchorGravity="center"
             tools:ignore="MissingConstraints,VisualLintButtonSize" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
