@@ -90,16 +90,21 @@ class MainActivity : AppCompatActivity() {
             hasCheckedForUpdates = true
         }
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_share -> {
                 val sendIntent: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, "https://github.com/XenonOSProduction/XenonStore/raw/master/app/release/app-release.apk")
+                    putExtra(
+                        Intent.EXTRA_TEXT,
+                        "https://github.com/XenonOSProduction/XenonStore/raw/master/app/release/app-release.apk"
+                    )
                     type = "text/plain"
                 }
 
@@ -107,6 +112,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(shareIntent)
                 true // This line was moved after startActivity
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -300,7 +306,11 @@ class MainActivity : AppCompatActivity() {
                     Log.d("UpdateCheck", "Response: $responseBody")
 
                     runOnUiThread {
-                        if (installedAppDate != null && isNewerDate(latestReleaseDate.toString(), installedAppDate)) {
+                        if (installedAppDate != null && isNewerDate(
+                                latestReleaseDate.toString(),
+                                installedAppDate
+                            )
+                        ) {
                             button.text = getString(R.string.update)
                             button.visibility = View.VISIBLE
                             fadeIn(button)
@@ -337,6 +347,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
     private fun fadeIn(view: View) {
         view.visibility = View.VISIBLE
         view.alpha = 0f

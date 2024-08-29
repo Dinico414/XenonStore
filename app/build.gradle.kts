@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.xenon.store"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.xenon.store"
         minSdk = 31
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 9
         versionName = "1.2.0"
 
@@ -19,13 +19,14 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("debug")
         }
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -37,7 +38,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.accesspoint)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

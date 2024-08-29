@@ -86,6 +86,7 @@
 
 
                 <LinearLayout
+                    android:id="@+id/linearLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="top"
@@ -96,12 +97,14 @@
                     <com.google.android.material.progressindicator.LinearProgressIndicator
                         android:id="@+id/progressbar_1"
                         style="@style/progressbarStyle"
+                        android:visibility="invisible"
+                        android:layout_marginBottom="0dp"
                         app:indicatorColor="@color/tertiary"
                         app:trackColor="#88888888" />
 
                     <Space
                         android:layout_width="match_parent"
-                        android:layout_height="10dp" />
+                        android:layout_height="5dp" />
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_2"

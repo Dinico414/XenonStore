@@ -1,9 +1,9 @@
 [versions]
-accesspoint = "1.0.6"
+accesspoint = "1.0.6.2"
 agp = "8.5.2"
 converterGson = "2.11.0"
 desugar_jdk_libs = "2.1.1"
-kotlin = "1.9.0"
+kotlin = "1.9.10"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
