@@ -217,7 +217,6 @@
             android:textColor="@color/onTertiary"
             android:visibility="visible"
             app:layout_anchor="@+id/collapsing_toolbar"
-            app:layout_anchorGravity="bottom|right|end"
             app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
             tools:ignore="MissingConstraints,VisualLintButtonSize"/>    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
