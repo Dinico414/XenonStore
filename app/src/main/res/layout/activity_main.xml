@@ -216,7 +216,7 @@
             android:text="Update"
             android:textColor="@color/onTertiary"
             android:visibility="visible"
-            app:layout_anchor="@+id/toolbar"
+            app:layout_anchor="@+id/appbar"
             app:layout_anchorGravity="center"
             app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
             tools:ignore="MissingConstraints,VisualLintButtonSize" />

@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
-import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -15,7 +14,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.FileProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.appbar.AppBarLayout
@@ -35,7 +33,6 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.math.abs
 
 @Suppress("UNUSED_PARAMETER")
 class MainActivity : AppCompatActivity() {
@@ -84,19 +81,6 @@ class MainActivity : AppCompatActivity() {
                 downloadButton1.alpha = alpha
             }
         }
-        val appbar = findViewById<AppBarLayout>(R.id.appbar)
-        val download1 = findViewById<Button>(R.id.download_1)
-
-        appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
-            if (abs(verticalOffset) >= appBarLayout.totalScrollRange) {
-                // Collapsed
-                (download1.layoutParams as CoordinatorLayout.LayoutParams).gravity = Gravity.BOTTOM or Gravity.END
-            } else {
-                // Expanded
-                (download1.layoutParams as CoordinatorLayout.LayoutParams).gravity = Gravity.CENTER
-            }
-            download1.requestLayout()
-        })
     }
 
     override fun onResume() {
