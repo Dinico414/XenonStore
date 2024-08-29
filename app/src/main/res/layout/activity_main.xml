@@ -216,9 +216,11 @@
             android:text="Update"
             android:textColor="@color/onTertiary"
             android:visibility="visible"
-            app:layout_anchor="@+id/collapsing_toolbar"
+            app:layout_anchor="@+id/toolbar"
+            app:layout_anchorGravity="center"
             app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
-            tools:ignore="MissingConstraints,VisualLintButtonSize"/>    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+            tools:ignore="MissingConstraints,VisualLintButtonSize" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
