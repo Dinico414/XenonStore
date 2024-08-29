@@ -155,7 +155,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         val progressBar: LinearProgressIndicator = findViewById(progressBarId)
-        progressBar.visibility = View.VISIBLE
+        if (progressBarId == R.id.progressbar_1) {
+            progressBar.visibility = View.VISIBLE
+        } else {
+            progressBar.visibility = View.VISIBLE
+        }
         progressBar.progress = 0
 
         val client = OkHttpClient.Builder().addInterceptor { chain ->
@@ -200,7 +204,11 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Download completed", Toast.LENGTH_SHORT)
                             .show()
-                        progressBar.visibility = View.GONE
+                        if (progressBarId == R.id.progressbar_1) {
+                            progressBar.visibility = View.INVISIBLE
+                        } else {
+                            progressBar.visibility = View.GONE
+                        }
                         updateButtonText(button, repo)
                         launchInstallPrompt(file)
                     }
@@ -208,7 +216,11 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Download failed", Toast.LENGTH_SHORT)
                             .show()
-                        progressBar.visibility = View.GONE
+                        if (progressBarId == R.id.progressbar_1) {
+                            progressBar.visibility = View.INVISIBLE
+                        } else {
+                            progressBar.visibility = View.GONE
+                        }
                     }
                 }
             }
@@ -218,7 +230,11 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(
                         applicationContext, "Download failed: ${e.message}", Toast.LENGTH_SHORT
                     ).show()
-                    progressBar.visibility = View.GONE
+                    if (progressBarId == R.id.progressbar_1) {
+                        progressBar.visibility = View.INVISIBLE
+                    } else {
+                        progressBar.visibility = View.GONE
+                    }
                 }
             }
         })
