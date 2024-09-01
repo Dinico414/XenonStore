@@ -7,4 +7,7 @@
     <string name="install">Install</string>
     <string name="open">Open</string>
     <string name="action_share">Share</string>
+    <string name="todo_list">Todo-List</string>
+    <string name="calculator">Calculator</string>
+    <string name="fileexplorer">File-Manager</string>
 </resources>

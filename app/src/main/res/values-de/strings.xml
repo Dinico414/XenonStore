@@ -8,4 +8,7 @@
     <string name="install">Installieren</string>
     <string name="open">Öffnen</string>
     <string name="action_share">Teilen</string>
+    <string name="todo_list">Todo-Liste</string>
+    <string name="calculator">Taschenrechner</string>
+    <string name="fileexplorer">Datei-Manager</string>
 </resources>

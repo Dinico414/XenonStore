@@ -20,7 +20,7 @@
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appbar"
             android:layout_width="match_parent"
-            android:layout_height="280dp"
+            android:layout_height="?attr/actionBarSize"
             android:layout_marginBottom="4dp"
             android:backgroundTint="@android:color/transparent"
             android:fitsSystemWindows="true">
@@ -28,15 +28,15 @@
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/collapsing_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fitsSystemWindows="true"
-                app:collapsedTitleGravity="left"
+                android:layout_height="?attr/actionBarSize"
+                android:fitsSystemWindows="false"
+                android:textAlignment="center"
+                app:collapsedTitleGravity="left|center_vertical"
                 app:collapsedTitleTextAppearance="@style/ActionBar.XenonCollapsedTitleStyle"
                 app:collapsedTitleTextColor="@color/textOnPrimary"
-                app:expandedTitleGravity="center|center_vertical"
-                app:expandedTitleTextAppearance="@style/ActionBar.XenonExpanedTitleStyle"
-                app:expandedTitleTextColor="@color/primary"
-                app:layout_constraintVertical_weight="100"
+                app:expandedTitleGravity="left|center_vertical"
+                app:expandedTitleTextAppearance="@style/ActionBar.XenonCollapsedTitleStyle"
+                app:expandedTitleTextColor="@color/textOnPrimary"
                 app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
                 app:title="@string/app_name"
                 app:titleCollapseMode="scale"
@@ -47,10 +47,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"
                     app:layout_collapseMode="pin"
                     app:navigationIconTint="@color/transparent" />
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
+
 
 
         </com.google.android.material.appbar.AppBarLayout>
@@ -96,8 +98,8 @@
                     <com.google.android.material.progressindicator.LinearProgressIndicator
                         android:id="@+id/progressbar_1"
                         style="@style/progressbarStyle"
-                        android:layout_marginBottom="0dp"
                         android:visibility="invisible"
+                        android:layout_marginBottom="0dp"
                         app:indicatorColor="@color/tertiary"
                         app:trackColor="#88888888" />
 
@@ -130,7 +132,7 @@
                             <TextView
                                 android:id="@+id/name_2"
                                 style="@style/textView"
-                                android:text="@string/todo_list"
+                                android:text="Todo List"
                                 app:layout_constraintBottom_toBottomOf="@+id/icon_2"
                                 app:layout_constraintStart_toEndOf="@+id/icon_2"
                                 app:layout_constraintTop_toTopOf="@+id/icon_2" />
@@ -178,7 +180,7 @@
                             <TextView
                                 android:id="@+id/name_3"
                                 style="@style/textView"
-                                android:text="@string/calculator"
+                                android:text="Calculator"
                                 app:layout_constraintBottom_toBottomOf="@+id/icon_3"
                                 app:layout_constraintStart_toEndOf="@+id/icon_3"
                                 app:layout_constraintTop_toTopOf="@+id/icon_3" />
@@ -197,7 +199,8 @@
 
                     <Space
                         android:layout_width="match_parent"
-                        android:layout_height="10dp" />
+                        android:layout_height="10dp"
+                        android:visibility="visible"/>
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_4"
@@ -243,10 +246,11 @@
 
                     </androidx.cardview.widget.CardView>
 
+
                     <Space
                         android:layout_width="match_parent"
-                        android:layout_height="10dp" />
-
+                        android:layout_height="10dp"
+                        android:visibility="visible"/>
 
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
@@ -262,7 +266,7 @@
             android:textColor="@color/onTertiary"
             android:visibility="visible"
             app:layout_anchor="@+id/toolbar"
-            app:layout_anchorGravity="top|center"
+            app:layout_anchorGravity="center"
             tools:ignore="MissingConstraints,VisualLintButtonSize" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private var xenonStoreRepo = "XenonStore"
     private var todoRepo = "TodoList"
     private var calculatorRepo = "Calculator"
+    private var fileexplorerRepo = "FileExplorer"
 
     private var hasCheckedForUpdates = false
 
@@ -59,17 +60,20 @@ class MainActivity : AppCompatActivity() {
         val downloadButton1: Button = findViewById(R.id.download_1)
         val downloadButton2: Button = findViewById(R.id.download_2)
         val downloadButton3: Button = findViewById(R.id.download_3)
+        val downloadButton4: Button = findViewById(R.id.download_4)
 
 
         updateButtonText(downloadButton1, xenonStoreRepo)
         updateButtonText(downloadButton2, todoRepo)
         updateButtonText(downloadButton3, calculatorRepo)
+        updateButtonText(downloadButton4, fileexplorerRepo)
 
         val swipeRefreshLayout: SwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout)
         swipeRefreshLayout.setOnRefreshListener {
             updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
             updateButtonText(findViewById(R.id.download_2), todoRepo)
             updateButtonText(findViewById(R.id.download_3), calculatorRepo)
+            updateButtonText(findViewById(R.id.download_4), fileexplorerRepo)
             swipeRefreshLayout.isRefreshing = false
             hasCheckedForUpdates = false
         }
@@ -89,6 +93,7 @@ class MainActivity : AppCompatActivity() {
             updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
             updateButtonText(findViewById(R.id.download_2), todoRepo)
             updateButtonText(findViewById(R.id.download_3), calculatorRepo)
+            updateButtonText(findViewById(R.id.download_4), fileexplorerRepo)
             hasCheckedForUpdates = true
         }
     }
@@ -289,6 +294,7 @@ class MainActivity : AppCompatActivity() {
             xenonStoreRepo -> R.id.progressbar_1
             todoRepo -> R.id.progressbar_2
             calculatorRepo -> R.id.progressbar_3
+            fileexplorerRepo -> R.id.progressbar_4
             else -> throw IllegalArgumentException("Invalid repository name")
         }
     }
@@ -408,6 +414,7 @@ class MainActivity : AppCompatActivity() {
             xenonStoreRepo -> "com.xenon.store"
             todoRepo -> "com.xenon.todolist"
             calculatorRepo -> "com.xenon.calculator"
+            fileexplorerRepo -> "com.xenon.fileexplorer"
             else -> ""
         }
     }
