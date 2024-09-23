@@ -1,9 +1,9 @@
 [versions]
-accesspoint = "1.0.6.2"
-agp = "8.5.2"
+accesspoint = "1.0.6.2-2"
+agp = "8.6.1"
 converterGson = "2.11.0"
-desugar_jdk_libs = "2.1.1"
-kotlin = "1.9.10"
+desugar_jdk_libs = "2.1.2"
+kotlin = "1.9.24"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -13,9 +13,9 @@ loggingInterceptor = "4.12.0"
 material = "1.12.0"
 constraintlayout = "2.1.4"
 swiperefreshlayout = "1.1.0"
-uiTextAndroid = "1.6.8"
+uiTextAndroid = "1.7.2"
 protoliteWellKnownTypes = "18.0.0"
-animationAndroid = "1.6.8"
+animationAndroid = "1.7.2"
 
 [libraries]
 accesspoint = { module = "com.xenon.commons:accesspoint", version.ref = "accesspoint" }
