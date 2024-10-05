@@ -6,4 +6,8 @@
         android:icon="@drawable/share"
         android:title="@string/action_share"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/settings"
+        android:title="@string/settings"
+        app:showAsAction="never" />
 </menu>

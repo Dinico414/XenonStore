@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Xenon Store</string>
+    <string name="settings">Einstellungen</string>
+    <string name="general">Allgemein</string>
+    <string name="language">Sprache</string>
+    <string name="theme">Theme</string>
+    <string name="clear_data">Daten zurücksetzen</string>
     <string name="download_completed">Download abgeschlossen</string>
     <string name="download_failed">Download fehlgeschlagen</string>
     <string name="permission_denied_cannot_download_the_file">Zugriff verweigert. Datei konnte nicht heruntergeladen werden.</string>
@@ -11,4 +16,9 @@
     <string name="todo_list">Todo-Liste</string>
     <string name="calculator">Taschenrechner</string>
     <string name="fileexplorer">Datei-Manager</string>
+    <string name="ok">Okay</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
+    <string name="cancel">Abbruch</string>
+    <string name="clear_data_dialog">Willst du wirklich alle App Daten löschen?</string>
 </resources>

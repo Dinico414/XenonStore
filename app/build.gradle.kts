@@ -10,13 +10,17 @@ android {
     defaultConfig {
         applicationId = "com.xenon.store"
         minSdk = 31
-        //noinspection EditedTargetSdkVersion
         targetSdk = 35
         versionCode = 9
         versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    buildFeatures {
+        viewBinding = true
+    }
+
 
     buildTypes {
         release {
@@ -34,8 +38,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlin {
-        jvmToolchain(21)
+    kotlinOptions {
+        jvmTarget = "21"
     }
 }
 

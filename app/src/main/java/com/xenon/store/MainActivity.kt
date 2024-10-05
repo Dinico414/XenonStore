@@ -1,6 +1,5 @@
 package com.xenon.store
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -14,10 +13,16 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.FileProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.xenon.commons.accesspoint.databinding.ActivityMainBinding
+import com.xenon.store.R.id
+import com.xenon.store.R.string
+import com.xenon.store.activities.SettingsActivity
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -34,9 +39,10 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-@Suppress("UNUSED_PARAMETER")
-class MainActivity : AppCompatActivity() {
 
+@Suppress("UNUSED_PARAMETER", "SameParameterValue")
+class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
     private lateinit var sharedPreferences: SharedPreferences
 
     private var owner = "XenonOSProduction"
@@ -50,17 +56,47 @@ class MainActivity : AppCompatActivity() {
 
     private var hasCheckedForUpdates = false
 
-    @SuppressLint("CutPasteId")
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedPreferenceManager = SharedPreferenceManager(this)
+        AppCompatDelegate.setDefaultNightMode(sharedPreferenceManager.themeFlag[sharedPreferenceManager.theme])
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                id.action_share -> {
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "https://github.com/XenonOSProduction/XenonStore/raw/master/app/release/app-release.apk"
+                        )
+                        type = "text/plain"
+                    }
+
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    startActivity(shareIntent)
+                    true
+                }
+                id.settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
 
         sharedPreferences = getPreferences(MODE_PRIVATE)
 
-        val downloadButton1: Button = findViewById(R.id.download_1)
-        val downloadButton2: Button = findViewById(R.id.download_2)
-        val downloadButton3: Button = findViewById(R.id.download_3)
-        val downloadButton4: Button = findViewById(R.id.download_4)
+        val downloadButton1: Button = findViewById(id.download_1)
+        val downloadButton2: Button = findViewById(id.download_2)
+        val downloadButton3: Button = findViewById(id.download_3)
+        val downloadButton4: Button = findViewById(id.download_4)
 
 
         updateButtonText(downloadButton1, xenonStoreRepo)
@@ -68,16 +104,16 @@ class MainActivity : AppCompatActivity() {
         updateButtonText(downloadButton3, calculatorRepo)
         updateButtonText(downloadButton4, fileexplorerRepo)
 
-        val swipeRefreshLayout: SwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout)
+        val swipeRefreshLayout: SwipeRefreshLayout = findViewById(id.swipe_refresh_layout)
         swipeRefreshLayout.setOnRefreshListener {
-            updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
-            updateButtonText(findViewById(R.id.download_2), todoRepo)
-            updateButtonText(findViewById(R.id.download_3), calculatorRepo)
-            updateButtonText(findViewById(R.id.download_4), fileexplorerRepo)
+            updateButtonText(findViewById(id.download_1), xenonStoreRepo)
+            updateButtonText(findViewById(id.download_2), todoRepo)
+            updateButtonText(findViewById(id.download_3), calculatorRepo)
+            updateButtonText(findViewById(id.download_4), fileexplorerRepo)
             swipeRefreshLayout.isRefreshing = false
             hasCheckedForUpdates = false
         }
-        findViewById<AppBarLayout>(R.id.appbar).also {
+        findViewById<AppBarLayout>(id.appbar).also {
 
             it.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
                 val totalScrollRange = appBarLayout.totalScrollRange
@@ -90,10 +126,10 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (!hasCheckedForUpdates) {
-            updateButtonText(findViewById(R.id.download_1), xenonStoreRepo)
-            updateButtonText(findViewById(R.id.download_2), todoRepo)
-            updateButtonText(findViewById(R.id.download_3), calculatorRepo)
-            updateButtonText(findViewById(R.id.download_4), fileexplorerRepo)
+            updateButtonText(findViewById(id.download_1), xenonStoreRepo)
+            updateButtonText(findViewById(id.download_2), todoRepo)
+            updateButtonText(findViewById(id.download_3), calculatorRepo)
+            updateButtonText(findViewById(id.download_4), fileexplorerRepo)
             hasCheckedForUpdates = true
         }
     }
@@ -105,7 +141,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_share -> {
+            id.action_share -> {
                 val sendIntent: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(
@@ -139,15 +175,15 @@ class MainActivity : AppCompatActivity() {
         return sharedPreferences.getBoolean(KEY_STORAGE_PERMISSION_GRANTED, false)
     }
 
-    private fun setStoragePermissionGranted(@Suppress("SameParameterValue") granted: Boolean) {
+    private fun setStoragePermissionGranted(granted: Boolean) {
         sharedPreferences.edit().putBoolean(KEY_STORAGE_PERMISSION_GRANTED, granted).apply()
     }
 
     private fun setRepositoryDetails(
-        @Suppress("SameParameterValue") owner: String,
+        owner: String,
         repo: String,
-        @Suppress("SameParameterValue") filePath: String,
-        @Suppress("SameParameterValue") personalAccessToken: String
+        filePath: String,
+        personalAccessToken: String
     ) {
         this.owner = owner
         this.filePath = filePath
@@ -162,7 +198,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val progressBar: LinearProgressIndicator = findViewById(progressBarId)
-        if (progressBarId == R.id.progressbar_1) {
+        if (progressBarId == id.progressbar_1) {
             progressBar.visibility = View.VISIBLE
         } else {
             progressBar.visibility = View.VISIBLE
@@ -211,7 +247,7 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Download completed", Toast.LENGTH_SHORT)
                             .show()
-                        if (progressBarId == R.id.progressbar_1) {
+                        if (progressBarId == id.progressbar_1) {
                             progressBar.visibility = View.INVISIBLE
                         } else {
                             progressBar.visibility = View.GONE
@@ -223,7 +259,7 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         Toast.makeText(applicationContext, "Download failed", Toast.LENGTH_SHORT)
                             .show()
-                        if (progressBarId == R.id.progressbar_1) {
+                        if (progressBarId == id.progressbar_1) {
                             progressBar.visibility = View.INVISIBLE
                         } else {
                             progressBar.visibility = View.GONE
@@ -237,7 +273,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(
                         applicationContext, "Download failed: ${e.message}", Toast.LENGTH_SHORT
                     ).show()
-                    if (progressBarId == R.id.progressbar_1) {
+                    if (progressBarId == id.progressbar_1) {
                         progressBar.visibility = View.INVISIBLE
                     } else {
                         progressBar.visibility = View.GONE
@@ -259,7 +295,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateButtonText(button: Button, repo: String) {
-        if (button == findViewById(R.id.download_1)) {
+        if (button == findViewById(id.download_1)) {
             val packageName = packageNameFromRepo(repo)
             if (isAppInstalled(packageName)) {
                 checkUpdates(button, repo)
@@ -279,7 +315,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
 
-                button.text = getString(R.string.install)
+                button.text = getString(string.install)
 
                 button.setOnClickListener {
                     setRepositoryDetails(owner, repo, filePath, personalAccessToken)
@@ -291,10 +327,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun getProgressBarId(repo: String): Int {
         return when (repo) {
-            xenonStoreRepo -> R.id.progressbar_1
-            todoRepo -> R.id.progressbar_2
-            calculatorRepo -> R.id.progressbar_3
-            fileexplorerRepo -> R.id.progressbar_4
+            xenonStoreRepo -> id.progressbar_1
+            todoRepo -> id.progressbar_2
+            calculatorRepo -> id.progressbar_3
+            fileexplorerRepo -> id.progressbar_4
             else -> throw IllegalArgumentException("Invalid repository name")
         }
     }
@@ -315,7 +351,7 @@ class MainActivity : AppCompatActivity() {
                         else -> "Update check failed: ${e.message}"
                     }
                     Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
-                    button.text = getString(R.string.open)
+                    button.text = getString(string.open)
                 }
             }
 
@@ -335,7 +371,7 @@ class MainActivity : AppCompatActivity() {
                                 installedAppDate
                             )
                         ) {
-                            button.text = getString(R.string.update)
+                            button.text = getString(string.update)
                             button.visibility = View.VISIBLE
                             fadeIn(button)
 
@@ -345,10 +381,10 @@ class MainActivity : AppCompatActivity() {
                                 downloadFile(getProgressBarId(repo), button, repo)
                             }
                         } else {
-                            if (button == findViewById(R.id.download_1)) {
+                            if (button == findViewById(id.download_1)) {
                                 button.visibility = View.GONE
                             } else {
-                                button.text = getString(R.string.open)
+                                button.text = getString(string.open)
 
                                 button.setOnClickListener {
                                     val launchIntent = packageManager.getLaunchIntentForPackage(
@@ -365,7 +401,7 @@ class MainActivity : AppCompatActivity() {
                             applicationContext, "Update check failed", Toast.LENGTH_SHORT
                         ).show()
                         Log.d("Update check", "Error on request: $response")
-                        button.text = getString(R.string.open)
+                        button.text = getString(string.open)
                     }
                 }
             }

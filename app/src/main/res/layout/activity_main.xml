@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/surfaceContainerLowest"
+    tools:context=".MainActivity"
     tools:ignore="HardcodedText">
 
 
@@ -260,7 +261,7 @@
             android:backgroundTint="@color/tertiary"
             android:text="Update"
             android:textColor="@color/onTertiary"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layout_anchor="@+id/toolbar"
             app:layout_anchorGravity="top|center"
             tools:ignore="MissingConstraints,VisualLintButtonSize" />
