@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.xenon.store.MainActivity">
     <item
         android:id="@+id/action_share"
         android:icon="@drawable/share"
@@ -9,5 +11,5 @@
     <item
         android:id="@+id/settings"
         android:title="@string/settings"
-        app:showAsAction="never" />
+        app:showAsAction="collapseActionView"/>
 </menu>

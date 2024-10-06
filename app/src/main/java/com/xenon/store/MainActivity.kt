@@ -17,12 +17,11 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.FileProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.progressindicator.LinearProgressIndicator
-import com.xenon.commons.accesspoint.databinding.ActivityMainBinding
 import com.xenon.store.R.id
 import com.xenon.store.R.string
 import com.xenon.store.activities.SettingsActivity
+import com.xenon.store.databinding.ActivityMainBinding
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -64,33 +63,35 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+//        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+//        setSupportActionBar(toolbar)
+//
+//        toolbar.setOnMenuItemClickListener { menuItem ->
+//            when (menuItem.itemId) {
+//                id.action_share -> {
+//                    val sendIntent: Intent = Intent().apply {
+//                        action = Intent.ACTION_SEND
+//                        putExtra(
+//                            Intent.EXTRA_TEXT,
+//                            "https://github.com/XenonOSProduction/XenonStore/raw/master/app/release/app-release.apk"
+//                        )
+//                        type = "text/plain"
+//                    }
+//
+//                    val shareIntent = Intent.createChooser(sendIntent, null)
+//                    startActivity(shareIntent)
+//                    true
+//                }
+//                id.settings -> {
+//                    startActivity(Intent(this, SettingsActivity::class.java))
+//                    true
+//                }
+//                else -> false
+//            }
+//        }
 
-        toolbar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                id.action_share -> {
-                    val sendIntent: Intent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(
-                            Intent.EXTRA_TEXT,
-                            "https://github.com/XenonOSProduction/XenonStore/raw/master/app/release/app-release.apk"
-                        )
-                        type = "text/plain"
-                    }
 
-                    val shareIntent = Intent.createChooser(sendIntent, null)
-                    startActivity(shareIntent)
-                    true
-                }
-                id.settings -> {
-                    startActivity(Intent(this, SettingsActivity::class.java))
-                    true
-                }
-                else -> false
-            }
-        }
-
+        setupToolbar()
         sharedPreferences = getPreferences(MODE_PRIVATE)
 
         val downloadButton1: Button = findViewById(id.download_1)
@@ -123,6 +124,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     override fun onResume() {
         super.onResume()
         if (!hasCheckedForUpdates) {
@@ -131,6 +133,30 @@ class MainActivity : AppCompatActivity() {
             updateButtonText(findViewById(id.download_3), calculatorRepo)
             updateButtonText(findViewById(id.download_4), fileexplorerRepo)
             hasCheckedForUpdates = true
+        }
+    }
+
+    private fun setupToolbar() {
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                id.action_share -> {
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "https://github.com/XenonOSProduction/XenonStore/raw/master/app/release/app-release.apk"
+                        )
+                        type = "text/plain"
+                    }
+
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    startActivity(shareIntent)
+                }
+
+                id.settings -> openSettingsActivity()
+                else -> return@setOnMenuItemClickListener false
+            }
+            return@setOnMenuItemClickListener true
         }
     }
 
@@ -170,6 +196,10 @@ class MainActivity : AppCompatActivity() {
                 ).show()
             }
         }
+
+    private fun openSettingsActivity() {
+        startActivity(Intent(applicationContext, SettingsActivity::class.java))
+    }
 
     private fun isStoragePermissionGranted(): Boolean {
         return sharedPreferences.getBoolean(KEY_STORAGE_PERMISSION_GRANTED, false)

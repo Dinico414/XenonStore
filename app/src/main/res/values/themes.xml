@@ -1,5 +1,5 @@
 <resources>
-    <style name="Base.Theme.Xenon" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.Xenon" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <item name="fontFamily">@font/product_sans_regular_new</item>
     </style>
 
