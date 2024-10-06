@@ -203,6 +203,7 @@
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_4"
                         style="@style/cardStyle"
+                        android:visibility="gone"
                         android:backgroundTint="@color/secondaryContainer"
                         tools:ignore="ContentDescription">
 
