@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
@@ -62,33 +61,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-//        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
-//        setSupportActionBar(toolbar)
-//
-//        toolbar.setOnMenuItemClickListener { menuItem ->
-//            when (menuItem.itemId) {
-//                id.action_share -> {
-//                    val sendIntent: Intent = Intent().apply {
-//                        action = Intent.ACTION_SEND
-//                        putExtra(
-//                            Intent.EXTRA_TEXT,
-//                            "https://github.com/XenonOSProduction/XenonStore/raw/master/app/release/app-release.apk"
-//                        )
-//                        type = "text/plain"
-//                    }
-//
-//                    val shareIntent = Intent.createChooser(sendIntent, null)
-//                    startActivity(shareIntent)
-//                    true
-//                }
-//                id.settings -> {
-//                    startActivity(Intent(this, SettingsActivity::class.java))
-//                    true
-//                }
-//                else -> false
-//            }
-//        }
 
 
         setupToolbar()
@@ -165,26 +137,6 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            id.action_share -> {
-                val sendIntent: Intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(
-                        Intent.EXTRA_TEXT,
-                        "https://github.com/XenonOSProduction/XenonStore/raw/master/app/release/app-release.apk"
-                    )
-                    type = "text/plain"
-                }
-
-                val shareIntent = Intent.createChooser(sendIntent, null)
-                startActivity(shareIntent)
-                true // This line was moved after startActivity
-            }
-
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
