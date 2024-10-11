@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.xenon.store"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.xenon.store"
         minSdk = 31
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 9
         versionName = "1.2.0"
 

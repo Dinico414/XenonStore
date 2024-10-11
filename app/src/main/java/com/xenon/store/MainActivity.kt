@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
 
     private var owner = "XenonOSProduction"
     private var filePath = "app/release/app-release.apk"
-    private var personalAccessToken = "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"
+    private var personalAccessToken = "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"
 
     private var xenonStoreRepo = "XenonStore"
     private var todoRepo = "TodoList"
