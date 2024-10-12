@@ -13,8 +13,8 @@ android {
         applicationId = "com.xenon.store"
         minSdk = 31
         targetSdk = 34
-        versionCode = 9
-        versionName = "1.2.0"
+        versionCode = 11
+        versionName = "1.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
