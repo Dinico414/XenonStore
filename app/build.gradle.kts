@@ -26,6 +26,16 @@ android {
             "personalAccessToken",
             "\"${localProperties.getProperty("personalAccessToken")}\""
         )
+        buildConfigField(
+            "String",
+            "arcverseRepositoryUsername",
+            "\"${localProperties.getProperty("arcverseRepositoryUsername")}\""
+        )
+        buildConfigField(
+            "String",
+            "arcverseRepositoryPassword",
+            "\"${localProperties.getProperty("arcverseRepositoryPassword")}\""
+        )
     }
 
     buildFeatures {
@@ -54,6 +64,7 @@ android {
         jvmTarget = "21"
     }
 }
+
 
 dependencies {
     implementation(libs.accesspoint)

@@ -5,6 +5,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -13,7 +14,10 @@ dependencyResolutionManagement {
         maven {
             name = "arcverseRepository"
             url = uri("https://repo.arcver.se/private")
-            credentials(PasswordCredentials::class)
+            credentials {
+                username = providers.environmentVariable("arcverseRepositoryUsername").orNull ?: ""
+                password = providers.environmentVariable("arcverseRepositoryPassword").orNull ?: ""
+            }
             authentication {
                 create<BasicAuthentication>("basic")
             }
@@ -23,4 +27,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Xenon Store"
 include(":app")
- 
