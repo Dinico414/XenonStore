@@ -1,5 +1,5 @@
 [versions]
-accesspoint = "1.0.7-2"
+accesspoint = "1.0.8-1"
 agp = "8.6.1"
 converterGson = "2.11.0"
 kotlin = "1.9.24"
