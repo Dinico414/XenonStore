@@ -19,9 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:backgroundTint="@android:color/transparent"
-            android:fitsSystemWindows="true"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
-            tools:ignore="MissingConstraints">
+            android:fitsSystemWindows="true">
 
                 <com.google.android.material.appbar.MaterialToolbar
                     android:id="@+id/toolbar"
@@ -29,8 +27,8 @@
                     android:layout_height="?attr/actionBarSize"
                     app:navigationIcon="@drawable/ic_arrow_left_vector"
                     app:navigationIconTint="@color/onSurface"
+                    android:textAlignment="center"
                     app:title="@string/settings"
-                    app:buttonGravity="bottom"
                     app:layout_collapseMode="pin" />
         </com.google.android.material.appbar.AppBarLayout>
 
