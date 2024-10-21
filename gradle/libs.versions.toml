@@ -1,6 +1,6 @@
 [versions]
 accesspoint = "1.0.8-1"
-agp = "8.6.1"
+agp = "8.7.1"
 converterGson = "2.11.0"
 kotlin = "1.9.24"
 coreKtx = "1.13.1"
@@ -12,9 +12,9 @@ loggingInterceptor = "4.12.0"
 material = "1.12.0"
 constraintlayout = "2.1.4"
 swiperefreshlayout = "1.1.0"
-uiTextAndroid = "1.7.3"
+uiTextAndroid = "1.7.4"
 protoliteWellKnownTypes = "18.0.0"
-animationAndroid = "1.7.3"
+animationAndroid = "1.7.4"
 
 [libraries]
 accesspoint = { module = "com.xenon.commons:accesspoint", version.ref = "accesspoint" }
