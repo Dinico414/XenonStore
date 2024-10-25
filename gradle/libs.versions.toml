@@ -2,7 +2,7 @@
 accesspoint = "1.0.8-1"
 agp = "8.7.1"
 converterGson = "2.11.0"
-kotlin = "1.9.24"
+kotlin = "2.0.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
