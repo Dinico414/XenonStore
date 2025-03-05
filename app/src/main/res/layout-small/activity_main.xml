@@ -229,6 +229,55 @@
                         android:layout_height="10dp"
                         android:visibility="visible"/>
 
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/card_5"
+                        style="@style/cardStyle"
+                        android:visibility="gone"
+                        android:backgroundTint="@color/secondaryContainer"
+                        tools:ignore="ContentDescription">
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progressbar_5"
+                            style="@style/progressbarStyle" />
+
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/card_con_5"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp">
+
+                            <ImageView
+                                android:id="@+id/icon_5"
+                                style="@style/icons"
+                                android:src="@mipmap/files"
+                                tools:ignore="MissingConstraints,ImageContrastCheck"
+                                tools:layout_editor_absoluteX="10dp"
+                                tools:layout_editor_absoluteY="9dp" />
+
+                            <TextView
+                                android:id="@+id/name_5"
+                                style="@style/textView"
+                                android:text="@string/fileexplorer"
+                                app:layout_constraintBottom_toBottomOf="@+id/icon_5"
+                                app:layout_constraintStart_toEndOf="@+id/icon_5"
+                                app:layout_constraintTop_toTopOf="@+id/icon_5" />
+
+                            <Button
+                                android:id="@+id/download_5"
+                                style="@style/buttonStyle"
+                                android:text="Download"
+                                app:layout_constraintTop_toBottomOf="@id/icon_5"
+                                tools:ignore="MissingConstraints,VisualLintButtonSize" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+                       <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp" />
+
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
