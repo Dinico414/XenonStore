@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     private var todoRepo = "TodoList"
     private var calculatorRepo = "Calculator"
     private var fileexplorerRepo = "FileExplorer"
+    private vae nocturneRepo = "Nocturne"
 
     private var hasCheckedForUpdates = false
 
@@ -68,13 +69,15 @@ class MainActivity : AppCompatActivity() {
         val downloadButton1: Button = findViewById(id.download_1)
         val downloadButton2: Button = findViewById(id.download_2)
         val downloadButton3: Button = findViewById(id.download_3)
-        val downloadButton4: Button = findViewById(id.download_4)
+        val downloadButton4: Button = findViewById(id.download_4
+        val downloadButton5: Button = findViewById(id.download_5)
 
 
         updateButtonText(downloadButton1, xenonStoreRepo)
         updateButtonText(downloadButton2, todoRepo)
         updateButtonText(downloadButton3, calculatorRepo)
         updateButtonText(downloadButton4, fileexplorerRepo)
+        updateButtonText(downloadButton5, nocturneRepo)
 
         val swipeRefreshLayout: SwipeRefreshLayout = findViewById(id.swipe_refresh_layout)
         swipeRefreshLayout.setOnRefreshListener {
@@ -82,6 +85,7 @@ class MainActivity : AppCompatActivity() {
             updateButtonText(findViewById(id.download_2), todoRepo)
             updateButtonText(findViewById(id.download_3), calculatorRepo)
             updateButtonText(findViewById(id.download_4), fileexplorerRepo)
+            updateButtonText(findViewById(id.download_5), nocturneRepo)
             swipeRefreshLayout.isRefreshing = false
             hasCheckedForUpdates = false
         }
@@ -103,6 +107,7 @@ class MainActivity : AppCompatActivity() {
             updateButtonText(findViewById(id.download_2), todoRepo)
             updateButtonText(findViewById(id.download_3), calculatorRepo)
             updateButtonText(findViewById(id.download_4), fileexplorerRepo)
+            updateButtonText(findViewById(id.download_5), nocturneRepo, "Dinico414")
             hasCheckedForUpdates = true
         }
     }
@@ -313,6 +318,7 @@ class MainActivity : AppCompatActivity() {
             todoRepo -> id.progressbar_2
             calculatorRepo -> id.progressbar_3
             fileexplorerRepo -> id.progressbar_4
+            nocturneRepo -> id.progressbar_5
             else -> throw IllegalArgumentException("Invalid repository name")
         }
     }
@@ -433,6 +439,7 @@ class MainActivity : AppCompatActivity() {
             todoRepo -> "com.xenon.todolist"
             calculatorRepo -> "com.xenon.calculator"
             fileexplorerRepo -> "com.xenon.fileexplorer"
+            nocturneRepo -> "com.xenon.nocturne"
             else -> ""
         }
     }
