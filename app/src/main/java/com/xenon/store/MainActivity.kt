@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
     private var todoRepo = "TodoList"
     private var calculatorRepo = "Calculator"
     private var fileexplorerRepo = "FileExplorer"
-    private vae nocturneRepo = "Nocturne"
+    private var nocturneRepo = "Nocturne"
 
     private var hasCheckedForUpdates = false
 
