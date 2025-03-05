@@ -203,7 +203,7 @@
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_4"
                         style="@style/cardStyle"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         android:backgroundTint="@color/secondaryContainer"
                         tools:ignore="ContentDescription">
 
@@ -252,7 +252,7 @@
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_5"
                         style="@style/cardStyle"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         android:backgroundTint="@color/secondaryContainer"
                         tools:ignore="ContentDescription">
 
@@ -270,7 +270,7 @@
                             <ImageView
                                 android:id="@+id/icon_5"
                                 style="@style/icons"
-                                android:src="@mipmap/files"
+                                android:src="@mipmap/nocturne"
                                 tools:ignore="MissingConstraints,ImageContrastCheck"
                                 tools:layout_editor_absoluteX="10dp"
                                 tools:layout_editor_absoluteY="9dp" />
@@ -278,7 +278,7 @@
                             <TextView
                                 android:id="@+id/name_5"
                                 style="@style/textView"
-                                android:text="@string/fileexplorer"
+                                android:text="@string/nocturne"
                                 app:layout_constraintBottom_toBottomOf="@+id/icon_5"
                                 app:layout_constraintStart_toEndOf="@+id/icon_5"
                                 app:layout_constraintTop_toTopOf="@+id/icon_5" />
