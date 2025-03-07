@@ -1,26 +1,28 @@
 [versions]
-accesspoint = "1.0.8-1"
-agp = "8.7.1"
+#accesspoint = "1.0.8-1"
+agp = "8.9.0"
 converterGson = "2.11.0"
-kotlin = "2.0.0"
-coreKtx = "1.13.1"
+githubXenonCommons = "1.0.1"
+kotlin = "2.0.21"
+coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 loggingInterceptor = "4.12.0"
 material = "1.12.0"
-constraintlayout = "2.1.4"
+constraintlayout = "2.2.1"
 swiperefreshlayout = "1.1.0"
-uiTextAndroid = "1.7.4"
+uiTextAndroid = "1.7.8"
 protoliteWellKnownTypes = "18.0.0"
-animationAndroid = "1.7.4"
+animationAndroid = "1.7.8"
 
 [libraries]
-accesspoint = { module = "com.xenon.commons:accesspoint", version.ref = "accesspoint" }
+#accesspoint = { module = "com.xenon.commons:accesspoint", version.ref = "accesspoint" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+github-xenon-commons = { module = "com.github.Dinico414:Xenon-Commons", version.ref = "githubXenonCommons" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
