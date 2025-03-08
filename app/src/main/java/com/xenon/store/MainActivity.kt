@@ -1,24 +1,25 @@
 package com.xenon.store
 
+import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.view.Menu
 import android.view.View
+import android.view.animation.AlphaAnimation
 import android.widget.Button
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.xenon.store.R.id
-import com.xenon.store.R.string
 import com.xenon.store.activities.SettingsActivity
 import com.xenon.store.databinding.ActivityMainBinding
 import okhttp3.Call
@@ -26,7 +27,9 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -36,74 +39,54 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 
 
-@Suppress("UNUSED_PARAMETER", "SameParameterValue")
 class MainActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityMainBinding
     private lateinit var sharedPreferences: SharedPreferences
-
-    private var owner = "Dinico414"
-    private var filePath = "app/release/app-release.apk"
-    private var personalAccessToken = BuildConfig.personalAccessToken
-
-    private var xenonStoreRepo = "XenonStore"
-    private var todoRepo = "TodoList"
-    private var calculatorRepo = "Calculator"
-    private var fileexplorerRepo = "FileExplorer"
-
     private var hasCheckedForUpdates = false
-
+    private var owner = "Xenon-Universe"
+    private var filePath = "app-release.apk"
+    private val xenonStoreRepo = "Xenon-Store"
+    private val todoRepo = "To-Do-List"
+    private val calculatorRepo = "Calculator"
+    private val fileexplorerRepo = "FileExplorer"
+    private val KEY_PRE_RELEASES = "pre_releases"
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val sharedPreferenceManager = SharedPreferenceManager(this)
-        AppCompatDelegate.setDefaultNightMode(sharedPreferenceManager.themeFlag[sharedPreferenceManager.theme])
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-//        Log.d("MainActivity", "Token: ${BuildConfig.personalAccessToken}")
-
+        sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
         setupToolbar()
-        sharedPreferences = getPreferences(MODE_PRIVATE)
-
-        val downloadButton1: Button = findViewById(id.download_1)
-        val downloadButton2: Button = findViewById(id.download_2)
-        val downloadButton3: Button = findViewById(id.download_3)
-        val downloadButton4: Button = findViewById(id.download_4)
-
-
-        updateButtonText(downloadButton1, xenonStoreRepo)
-        updateButtonText(downloadButton2, todoRepo)
-        updateButtonText(downloadButton3, calculatorRepo)
-        updateButtonText(downloadButton4, fileexplorerRepo)
-
-        val swipeRefreshLayout: SwipeRefreshLayout = findViewById(id.swipe_refresh_layout)
-        swipeRefreshLayout.setOnRefreshListener {
-            updateButtonText(findViewById(id.download_1), xenonStoreRepo)
-            updateButtonText(findViewById(id.download_2), todoRepo)
-            updateButtonText(findViewById(id.download_3), calculatorRepo)
-            updateButtonText(findViewById(id.download_4), fileexplorerRepo)
-            swipeRefreshLayout.isRefreshing = false
-            hasCheckedForUpdates = false
-        }
-        findViewById<AppBarLayout>(id.appbar).also {
-
-            it.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
-                val totalScrollRange = appBarLayout.totalScrollRange
-                val alpha = 1.0f + (verticalOffset.toFloat() / totalScrollRange * 5)
-                downloadButton1.alpha = alpha
-            }
-        }
+        setupButtons()
     }
 
+    private fun setupButtons() {
+        binding.download1.setOnClickListener {
+            setRepositoryDetails(owner, xenonStoreRepo, filePath)
+            downloadFile(id.progressbar_1, binding.download1, xenonStoreRepo)
+        }
+        binding.download2.setOnClickListener {
+            setRepositoryDetails(owner, todoRepo, filePath)
+            downloadFile(id.progressbar_2, binding.download2, todoRepo)
+        }
+        binding.download3.setOnClickListener {
+            setRepositoryDetails(owner, calculatorRepo, filePath)
+            downloadFile(id.progressbar_3, binding.download3, calculatorRepo)
+        }
+        binding.download4.setOnClickListener {
+            setRepositoryDetails(owner, fileexplorerRepo, filePath)
+            downloadFile(id.progressbar_4, binding.download4, fileexplorerRepo)
+        }
 
-    override fun onResume() {
-        super.onResume()
         if (!hasCheckedForUpdates) {
-            updateButtonText(findViewById(id.download_1), xenonStoreRepo)
-            updateButtonText(findViewById(id.download_2), todoRepo)
-            updateButtonText(findViewById(id.download_3), calculatorRepo)
-            updateButtonText(findViewById(id.download_4), fileexplorerRepo)
+            updateButtonText(binding.download1, xenonStoreRepo)
+            updateButtonText(binding.download2, todoRepo)
+            updateButtonText(binding.download3, calculatorRepo)
+            updateButtonText(binding.download4, fileexplorerRepo)
             hasCheckedForUpdates = true
         }
     }
@@ -138,46 +121,42 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                setStoragePermissionGranted(true)
-            } else {
-                Toast.makeText(
-                    this, "Permission denied. Cannot download the file.", Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-
     private fun openSettingsActivity() {
         startActivity(Intent(applicationContext, SettingsActivity::class.java))
     }
 
-    private fun isStoragePermissionGranted(): Boolean {
-        return sharedPreferences.getBoolean(KEY_STORAGE_PERMISSION_GRANTED, false)
-    }
-
-    private fun setStoragePermissionGranted(granted: Boolean) {
-        sharedPreferences.edit().putBoolean(KEY_STORAGE_PERMISSION_GRANTED, granted).apply()
-    }
 
     private fun setRepositoryDetails(
         owner: String,
         repo: String,
-        filePath: String,
-        personalAccessToken: String
+        filePath: String
     ) {
         this.owner = owner
         this.filePath = filePath
-        this.personalAccessToken = personalAccessToken
     }
 
+    private val STORAGE_PERMISSION_REQUEST_CODE = 1001
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+                if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
+                        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                                // Permission granted, proceed with download
+                                // ...
+                            } else {
+                                // Permission denied, handle accordingly
+                                Toast.makeText(this, "Storage permission denied", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+            }
+
     private fun downloadFile(progressBarId: Int, button: Button, repo: String) {
-        if (!isStoragePermissionGranted()) {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-            requestPermissionLauncher.launch(intent)
-            return
-        }
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE)
+                               return
+                            }
+                    }
 
         val progressBar: LinearProgressIndicator = findViewById(progressBarId)
         if (progressBarId == id.progressbar_1) {
@@ -187,12 +166,7 @@ class MainActivity : AppCompatActivity() {
         }
         progressBar.progress = 0
 
-        val client = OkHttpClient.Builder().addInterceptor { chain ->
-            val request =
-                chain.request().newBuilder().header("Authorization", "Bearer $personalAccessToken")
-                    .build()
-            chain.proceed(request)
-        }.build()
+        val client = OkHttpClient.Builder().build()
 
         val request =
             Request.Builder().url("https://raw.githubusercontent.com/$owner/$repo/master/$filePath")
@@ -266,62 +240,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun launchInstallPrompt(file: File) {
-        val uri = FileProvider.getUriForFile(
-            applicationContext, "${applicationContext.packageName}.provider", file
-        )
+        val uri: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            FileProvider.getUriForFile(this, "${packageName}.provider", file)
+        } else {
+            Uri.fromFile(file)
+        }
 
-        val installIntent = Intent(Intent.ACTION_VIEW)
-        installIntent.setDataAndType(uri, "application/vnd.android.package-archive")
-        installIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        val installIntent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        }
+
         startActivity(installIntent)
     }
 
     private fun updateButtonText(button: Button, repo: String) {
-        if (button == findViewById(id.download_1)) {
-            val packageName = packageNameFromRepo(repo)
-            if (isAppInstalled(packageName)) {
-                checkUpdates(button, repo)
-            } else {
-                button.visibility = View.GONE
-            }
-        } else {
-
-            val packageName = packageNameFromRepo(repo)
-            if (isAppInstalled(packageName)) {
-
-                checkUpdates(button, repo)
-
-                button.setOnClickListener {
-                    val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
-                    startActivity(launchIntent)
-                }
-            } else {
-
-                button.text = getString(string.install)
-
-                button.setOnClickListener {
-                    setRepositoryDetails(owner, repo, filePath, personalAccessToken)
-                    downloadFile(getProgressBarId(repo), button, repo)
-                }
-            }
-        }
+        checkUpdates(button, repo)
     }
-
-    private fun getProgressBarId(repo: String): Int {
-        return when (repo) {
-            xenonStoreRepo -> id.progressbar_1
-            todoRepo -> id.progressbar_2
-            calculatorRepo -> id.progressbar_3
-            fileexplorerRepo -> id.progressbar_4
-            else -> throw IllegalArgumentException("Invalid repository name")
-        }
-    }
-
 
     private fun checkUpdates(button: Button, repo: String) {
-        val client = OkHttpClient()
-        val request = Request.Builder().url("https://api.github.com/repos/$owner/$repo/commits")
-            .header("Authorization", "Bearer $personalAccessToken").build()
+        val client = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+            .build()
+
+        val isPreReleaseEnabled = sharedPreferences.getBoolean(KEY_PRE_RELEASES, false)
+        val releasesUrl = "https://api.github.com/repos/$owner/$repo/releases"
+
+        val request = Request.Builder().url(releasesUrl).build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -333,7 +281,7 @@ class MainActivity : AppCompatActivity() {
                         else -> "Update check failed: ${e.message}"
                     }
                     Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
-                    button.text = getString(string.open)
+                    button.text = getString(R.string.open)
                 }
             }
 
@@ -341,32 +289,85 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val responseBody = response.body?.string()
                     val jsonArray = responseBody?.let { JSONArray(it) }
-                    val firstCommit = jsonArray?.getJSONObject(0)?.getJSONObject("commit")
-                    val author = firstCommit?.getJSONObject("author")
-                    val latestReleaseDate = author?.getString("date")
-                    val installedAppDate = getInstalledAppDate(packageNameFromRepo(repo))
-                    Log.d("UpdateCheck", "Response: $responseBody")
 
-                    runOnUiThread {
-                        if (installedAppDate != null && isNewerDate(
-                                latestReleaseDate.toString(),
-                                installedAppDate
-                            )
-                        ) {
-                            button.text = getString(string.update)
-                            button.visibility = View.VISIBLE
-                            fadeIn(button)
+                    if (jsonArray != null && jsonArray.length() > 0) {
+                        var latestRelease: JSONObject? = null
+                        for (i in 0 until jsonArray.length()) {
+                            val release = jsonArray.getJSONObject(i)
+                            val isPreRelease = release.getBoolean("prerelease")
 
-                            // Set click listener to download the update
-                            button.setOnClickListener {
-                                setRepositoryDetails(owner, repo, filePath, personalAccessToken)
-                                downloadFile(getProgressBarId(repo), button, repo)
+                            if (isPreReleaseEnabled || !isPreRelease) {
+                                latestRelease = release
+                                break // Found the first matching release
+                            }
+                        }
+
+                        if (latestRelease != null) {
+                            val latestReleaseDate = latestRelease.getString("published_at")
+                            val packageName = packageNameFromRepo(repo)
+                            val isInstalled = isAppInstalled(packageName)
+                            val installedAppDate = getInstalledAppDate(packageName)
+
+                            runOnUiThread {
+                                if (!isInstalled) {
+                                    button.text = getString(R.string.install)
+                                    button.visibility = View.VISIBLE
+                                    fadeIn(button)
+                                    button.setOnClickListener {
+                                        setRepositoryDetails(owner, repo, filePath)
+                                        downloadFile(getProgressBarId(repo), button, repo)
+                                    }
+                                } else if (installedAppDate != null && isNewerDate(
+                                        latestReleaseDate,
+                                        installedAppDate
+                                    )
+                                ) {
+                                    button.text = getString(R.string.update)
+                                    button.visibility = View.VISIBLE
+                                    fadeIn(button)
+
+                                    // Set click listener to download the update
+                                    button.setOnClickListener {
+                                        setRepositoryDetails(owner, repo, filePath)
+                                        downloadFile(getProgressBarId(repo), button, repo)
+                                    }
+                                } else {
+                                    if (button == findViewById(id.download_1)) {
+                                        button.visibility = View.GONE
+                                    } else {
+                                        button.text = getString(R.string.open)
+
+                                        button.setOnClickListener {
+                                            val launchIntent = packageManager.getLaunchIntentForPackage(
+                                                packageNameFromRepo(repo)
+                                            )
+                                            startActivity(launchIntent)
+                                        }
+                                    }
+                                }
                             }
                         } else {
+                            runOnUiThread {
+                                if (button == findViewById(id.download_1)) {
+                                    button.visibility = View.GONE
+                                } else {
+                                    button.text = getString(R.string.open)
+
+                                    button.setOnClickListener {
+                                        val launchIntent = packageManager.getLaunchIntentForPackage(
+                                            packageNameFromRepo(repo)
+                                        )
+                                        startActivity(launchIntent)
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        runOnUiThread {
                             if (button == findViewById(id.download_1)) {
                                 button.visibility = View.GONE
                             } else {
-                                button.text = getString(string.open)
+                                button.text = getString(R.string.open)
 
                                 button.setOnClickListener {
                                     val launchIntent = packageManager.getLaunchIntentForPackage(
@@ -383,31 +384,18 @@ class MainActivity : AppCompatActivity() {
                             applicationContext, "Update check failed", Toast.LENGTH_SHORT
                         ).show()
                         Log.d("Update check", "Error on request: $response")
-                        button.text = getString(string.open)
+                        button.text = getString(R.string.open)
                     }
                 }
             }
         })
     }
 
-    private fun fadeIn(view: View) {
-        view.visibility = View.VISIBLE
-        view.alpha = 0f
-        view.animate().alpha(1f).setDuration(300).setListener(null)
-    }
-
-    private fun isNewerDate(date1: String, date2: String): Boolean {
-        val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-        val dateObj1 = OffsetDateTime.parse(date1, formatter)
-        val dateObj2 = OffsetDateTime.parse(date2, formatter)
-        return dateObj1.isAfter(dateObj2)
-    }
-
     private fun getInstalledAppDate(packageName: String): String? {
         return try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
-            val installTime = packageInfo.lastUpdateTime
-            val instant = Instant.ofEpochMilli(installTime)
+            val lastUpdateTime = packageInfo.lastUpdateTime
+            val instant = Instant.ofEpochMilli(lastUpdateTime)
             val offsetDateTime = OffsetDateTime.ofInstant(instant, ZoneId.systemDefault())
             val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
             formatter.format(offsetDateTime)
@@ -416,28 +404,45 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun isAppInstalled(packageName: String): Boolean {
-        val packageManager = packageManager
-        return try {
-            packageManager.getPackageInfo(packageName, 0)
-            true
-        } catch (e: Exception) {
-            false
-        }
+    private fun isNewerDate(date1: String, date2: String): Boolean {
+        val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+        val dateTime1 = OffsetDateTime.parse(date1, formatter)
+        val dateTime2 = OffsetDateTime.parse(date2, formatter)
+        return dateTime1.isAfter(dateTime2)
     }
 
     private fun packageNameFromRepo(repo: String): String {
         return when (repo) {
             xenonStoreRepo -> "com.xenon.store"
-            todoRepo -> "com.xenon.todolist"
+            todoRepo -> "com.xenon.todo"
             calculatorRepo -> "com.xenon.calculator"
             fileexplorerRepo -> "com.xenon.fileexplorer"
-            else -> ""
+            else -> throw IllegalArgumentException("Unknown repository: $repo")
         }
     }
 
-    companion object {
-        private const val KEY_STORAGE_PERMISSION_GRANTED = "storage_permission_granted"
+    private fun getProgressBarId(repo: String): Int {
+        return when (repo) {
+            xenonStoreRepo -> id.progressbar_1
+            todoRepo -> id.progressbar_2
+            calculatorRepo -> id.progressbar_3
+            fileexplorerRepo -> id.progressbar_4
+            else -> throw IllegalArgumentException("Unknown repository: $repo")
+        }
+    }
+
+    private fun fadeIn(view: View) {
+        val fadeIn = AlphaAnimation(0f, 1f)
+        fadeIn.duration = 500
+        fadeIn.fillAfter = true
+        view.startAnimation(fadeIn)
+    }
+
+    private fun isAppInstalled(packageName: String): Boolean {
+        return try {
+            packageManager.getLaunchIntentForPackage(packageName) != null
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
     }
 }

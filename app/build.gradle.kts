@@ -21,11 +21,6 @@ android {
         val localProperties = Properties()
         localProperties.load(rootProject.file("local.properties").inputStream())
 
-        buildConfigField(
-            "String",
-            "personalAccessToken",
-            "\"${localProperties.getProperty("personalAccessToken")}\""
-        )
     }
     buildFeatures {
         buildConfig = true
