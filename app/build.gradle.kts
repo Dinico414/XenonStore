@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.xenon.store"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.xenon.store"
@@ -26,23 +26,11 @@ android {
             "personalAccessToken",
             "\"${localProperties.getProperty("personalAccessToken")}\""
         )
-        buildConfigField(
-            "String",
-            "arcverseRepositoryUsername",
-            "\"${localProperties.getProperty("arcverseRepositoryUsername")}\""
-        )
-        buildConfigField(
-            "String",
-            "arcverseRepositoryPassword",
-            "\"${localProperties.getProperty("arcverseRepositoryPassword")}\""
-        )
     }
-
     buildFeatures {
         buildConfig = true
         viewBinding = true
     }
-
 
     buildTypes {
         release {
@@ -64,9 +52,7 @@ android {
     }
 }
 
-
 dependencies {
-    // implementation(libs.accesspoint)
     implementation(libs.github.xenon.commons)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

@@ -1,5 +1,4 @@
 [versions]
-#accesspoint = "1.0.8-1"
 agp = "8.9.0"
 converterGson = "2.11.0"
 githubXenonCommons = "1.0.1"
@@ -18,7 +17,6 @@ protoliteWellKnownTypes = "18.0.0"
 animationAndroid = "1.7.8"
 
 [libraries]
-#accesspoint = { module = "com.xenon.commons:accesspoint", version.ref = "accesspoint" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }

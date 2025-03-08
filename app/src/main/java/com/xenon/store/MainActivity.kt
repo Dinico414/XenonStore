@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var sharedPreferences: SharedPreferences
 
-    private var owner = "XenonOSProduction"
+    private var owner = "Dinico414"
     private var filePath = "app/release/app-release.apk"
     private var personalAccessToken = BuildConfig.personalAccessToken
 
@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+//        Log.d("MainActivity", "Token: ${BuildConfig.personalAccessToken}")
 
         setupToolbar()
         sharedPreferences = getPreferences(MODE_PRIVATE)
@@ -115,7 +116,6 @@ class MainActivity : AppCompatActivity() {
                         action = Intent.ACTION_SEND
                         putExtra(
                             Intent.EXTRA_TEXT,
-//                            "https://github.com/XenonOSProduction/XenonStore/raw/master/app/release/app-release.apk"
                             "https://www.dropbox.com/scl/fi/xopqi9tvgr1vphukyozr5/app-release.apk?rlkey=z5qeobkr3wxuhby588ix8n0o9&st=bl0e41h0&dl=1"
                         )
                         type = "text/plain"
