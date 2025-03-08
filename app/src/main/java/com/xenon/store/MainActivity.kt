@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var sharedPreferences: SharedPreferences
     private var hasCheckedForUpdates = false
-    private var owner = "Xenon-Universe"
+    private var owner = "Dinico414"
     private var filePath = "app-release.apk"
     private val xenonStoreRepo = "Xenon-Store"
     private val todoRepo = "To-Do-List"
