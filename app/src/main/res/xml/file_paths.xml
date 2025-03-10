@@ -1,3 +1,4 @@
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <cache-path name="temp_files" path="." />
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-path name="my_app_files" path="Android/data/com.xenon.store/files/" />
 </paths>
