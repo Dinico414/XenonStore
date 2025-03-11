@@ -62,10 +62,6 @@ class MainActivity : AppCompatActivity() {
         swipeRefreshLayout.setOnRefreshListener {
             checkAllUpdates()
         }
-        setupToolbar()
-        setupButtons()
-        checkAllUpdates()
-
         installPermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
             if (checkInstallPermission()) {
                 Toast.makeText(this, "Install permission granted", Toast.LENGTH_SHORT).show()
@@ -73,6 +69,9 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Install permission denied", Toast.LENGTH_SHORT).show()
             }
         }
+        setupToolbar()
+        setupButtons()
+        checkAllUpdates()
     }
     private fun checkInstallPermission(): Boolean {
         return packageManager.canRequestPackageInstalls()
@@ -105,11 +104,9 @@ class MainActivity : AppCompatActivity() {
             .writeTimeout(15, TimeUnit.SECONDS)
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
             .build()
-
         val request = Request.Builder()
             .url("https://api.github.com/repos/$owner/$repo/releases")
             .build()
-
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
@@ -123,19 +120,16 @@ class MainActivity : AppCompatActivity() {
                     updateButton(button, getString(R.string.open))
                 }
             }
-
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     runOnUiThread { updateButton(button, getString(R.string.open)) }
                     return
                 }
-
                 val responseBody = response.body?.string()
                 if (responseBody == null) {
                     runOnUiThread { showToast("Empty response body for $repo") }
                     return
                 }
-
                 try {
                     val releases = JSONArray(responseBody)
                     val latestRelease = findLatestRelease(releases)
@@ -214,8 +208,6 @@ class MainActivity : AppCompatActivity() {
     private fun showToast(message: String) {
         Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
     }
-
-
 
     private fun updateButtonText(button: Button, repo: String) {
         val packageName = packageNameFromRepo(repo)
