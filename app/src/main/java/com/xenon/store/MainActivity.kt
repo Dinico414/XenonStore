@@ -11,6 +11,8 @@ import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -33,7 +35,6 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 
-
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     private val preReleaseKey = "pre_releases"
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
-    private val installRequestCode = 102
+    private lateinit var installPermissionLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedPreferenceManager = SharedPreferenceManager(this)
@@ -64,24 +65,24 @@ class MainActivity : AppCompatActivity() {
         setupToolbar()
         setupButtons()
         checkAllUpdates()
-    }
 
-
-    private fun checkInstallPermission(): Boolean {
-        return packageManager.canRequestPackageInstalls()
-    }
-
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == installRequestCode) {
+        installPermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
             if (checkInstallPermission()) {
                 Toast.makeText(this, "Install permission granted", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this, "Install permission denied", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+    private fun checkInstallPermission(): Boolean {
+        return packageManager.canRequestPackageInstalls()
+    }
+    private fun launchInstallPrompt(uri: Uri) {
+        val installIntent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        }
+        installPermissionLauncher.launch(installIntent)
     }
 
     private fun checkAllUpdates() {
@@ -214,13 +215,7 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
     }
 
-    private fun launchInstallPrompt(uri: Uri) {
-        val installIntent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-        }
-        startActivity(installIntent)
-    }
+
 
     private fun updateButtonText(button: Button, repo: String) {
         val packageName = packageNameFromRepo(repo)
