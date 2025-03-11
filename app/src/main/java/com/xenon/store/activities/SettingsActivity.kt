@@ -22,7 +22,7 @@ class SettingsActivity : BaseActivity() {
     private lateinit var binding: ActivitySettingsBinding
     private val themeTitleList = arrayOf("Light", "Dark", "System")
     private lateinit var sharedPreferences: SharedPreferences
-    private val KEY_PRE_RELEASES = "pre_releases"
+    private val preReleaseKey = "pre_releases"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,7 +58,7 @@ class SettingsActivity : BaseActivity() {
             val builder = AlertDialog.Builder(this)
             builder.setPositiveButton(R.string.yes) { _, _ ->
                 val sharedPref = getSharedPreferences(packageName, Context.MODE_PRIVATE)
-                sharedPref.edit().clear().commit()
+                sharedPref.edit().clear().apply()
                 this.restartApplication()
             }
             builder.setNegativeButton(R.string.cancel, null)
@@ -71,13 +71,13 @@ class SettingsActivity : BaseActivity() {
         }
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
 
-        // Correctly use SwitchMaterial
+
         val preReleasesSwitch = findViewById<SwitchMaterial>(R.id.release_switch)
 
-        preReleasesSwitch.isChecked = sharedPreferences.getBoolean(KEY_PRE_RELEASES, false)
+        preReleasesSwitch.isChecked = sharedPreferences.getBoolean(preReleaseKey, false)
 
         preReleasesSwitch.setOnCheckedChangeListener { _, isChecked ->
-            sharedPreferences.edit().putBoolean(KEY_PRE_RELEASES, isChecked).apply()
+            sharedPreferences.edit().putBoolean(preReleaseKey, isChecked).apply()
         }
 
     }

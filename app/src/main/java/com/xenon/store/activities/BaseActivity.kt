@@ -44,7 +44,7 @@ open class BaseActivity : AppCompatActivity() {
 
         return if (resourceId > 0) {
             resources.getDimensionPixelSize(resourceId)
-        } else 0 // Return 0 as default when navigation bar height is not found
+        } else 0
     }
 
     private fun Int.dpToPx(): Int {

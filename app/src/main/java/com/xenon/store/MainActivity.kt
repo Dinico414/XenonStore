@@ -5,14 +5,12 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.Button
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -36,7 +34,6 @@ import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 
 
-@Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
@@ -48,10 +45,9 @@ class MainActivity : AppCompatActivity() {
     private val todoListRepo = "TodoList"
     private val xenonStoreRepo = "XenonStore"
 
-    private val KEY_PRE_RELEASES = "pre_releases"
+    private val preReleaseKey = "pre_releases"
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
-    private val INSTALL_PERMISSION_CODE = 102
-    private var hasCheckedForUpdates = false
+    private val installRequestCode = 102
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedPreferenceManager = SharedPreferenceManager(this)
@@ -70,27 +66,16 @@ class MainActivity : AppCompatActivity() {
         checkAllUpdates()
     }
 
-    private fun requestPermissionsIfNeeded() {
-        if (!checkInstallPermission()) {
-            requestInstallPermission()
-        }
-    }
 
     private fun checkInstallPermission(): Boolean {
         return packageManager.canRequestPackageInstalls()
     }
 
-    private fun requestInstallPermission() {
-        val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
-            data = Uri.parse("package:$packageName")
-        }
-        startActivityForResult(intent, INSTALL_PERMISSION_CODE)
-    }
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == INSTALL_PERMISSION_CODE) {
+        if (requestCode == installRequestCode) {
             if (checkInstallPermission()) {
                 Toast.makeText(this, "Install permission granted", Toast.LENGTH_SHORT).show()
             } else {
@@ -120,7 +105,7 @@ class MainActivity : AppCompatActivity() {
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
             .build()
 
-        val isPreReleaseEnabled = sharedPreferences.getBoolean(KEY_PRE_RELEASES, false)
+        val isPreReleaseEnabled = sharedPreferences.getBoolean(preReleaseKey, false)
         val releasesUrl = "https://api.github.com/repos/$owner/$repo/releases"
 
         val request = Request.Builder().url(releasesUrl).build()
@@ -152,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
                             if (isPreReleaseEnabled || !isPreRelease) {
                                 latestRelease = release
-                                break // Found the first matching release
+                                break
                             }
                         }
 
@@ -188,7 +173,6 @@ class MainActivity : AppCompatActivity() {
                                         button.visibility = View.VISIBLE
                                         fadeIn(button)
 
-                                        // Set click listener to download the update
                                         button.setOnClickListener {
                                             downloadFile(
                                                 getProgressBarId(repo),
@@ -311,7 +295,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             button.text = getString(R.string.install)
             button.setOnClickListener {
-                //downloadFile(getProgressBarId(repo), button, repo)
             }
         }
     }
@@ -377,82 +360,6 @@ class MainActivity : AppCompatActivity() {
         view.startAnimation(fadeIn)
     }
 
-    private fun String.getLatestReleaseDownloadUrl(
-        repo: String,
-        callback: (String?) -> Unit
-    ) {
-        val client = OkHttpClient()
-        val url = "https://api.github.com/repos/${this}/$repo/releases"
-        val request = Request.Builder().url(url).build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    Toast.makeText(
-                        applicationContext,
-                        "Failed to get release info: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                callback(null)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val responseBody = response.body?.string()
-                    if (responseBody != null) {
-                        try {
-                            val jsonObject = JSONObject(responseBody)
-                            val assets = jsonObject.getJSONArray("assets")
-                            for (i in 0 until assets.length()) {
-                                val asset = assets.getJSONObject(i)
-                                if (asset.getString("name").endsWith(".apk")) {
-                                    val downloadUrl = asset.getString("browser_download_url")
-                                    callback(downloadUrl)
-                                    return
-                                }
-                            }
-                            runOnUiThread {
-                                Toast.makeText(
-                                    applicationContext,
-                                    "No APK asset found for $repo",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                            callback(null)
-                        } catch (e: Exception) {
-                            runOnUiThread {
-                                Toast.makeText(
-                                    applicationContext,
-                                    "Error parsing release info: ${e.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                            callback(null)
-                        }
-                    } else {
-                        runOnUiThread {
-                            Toast.makeText(
-                                applicationContext,
-                                "Empty response from GitHub API",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        callback(null)
-                    }
-                } else {
-                    runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Failed to get release info: ${response.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    callback(null)
-                }
-            }
-        })
-    }
 
     private fun downloadFile(
         progressBarId: Int,
@@ -503,7 +410,6 @@ class MainActivity : AppCompatActivity() {
                             updateButtonText(button, repo)
                             val uri = getUriForFile(tempFile)
                             launchInstallPrompt(uri)
-                            // Delete the file after installation
                             tempFile.deleteOnExit()
                         }
                     } catch (e: Exception) {
@@ -546,11 +452,6 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            // Removed the logic that was here
-        }
-
 
 
     private fun setupButtons() {
@@ -560,7 +461,6 @@ class MainActivity : AppCompatActivity() {
         val download3 = binding.findViewById<Button>(id.download_3)
         val download4 = binding.findViewById<Button>(id.download_4)
 
-        // Set initial text and click listeners for each button
         updateButtonText(download1, xenonStoreRepo)
         updateButtonText(download2, todoListRepo)
         updateButtonText(download3, calculatorRepo)
@@ -574,13 +474,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
-        val settingsItem = menu.findItem(R.id.settings)
+        val settingsItem = menu.findItem(id.settings)
         settingsItem.setOnMenuItemClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
             true
         }
-        val shareItem = menu.findItem(R.id.action_share)
+        val shareItem = menu.findItem(id.action_share)
         shareItem.setOnMenuItemClickListener {
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
