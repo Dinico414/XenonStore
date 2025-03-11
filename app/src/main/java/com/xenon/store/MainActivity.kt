@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.xenon.store.R.id
@@ -53,6 +54,8 @@ class MainActivity : AppCompatActivity() {
     private var hasCheckedForUpdates = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedPreferenceManager = SharedPreferenceManager(this)
+        AppCompatDelegate.setDefaultNightMode(sharedPreferenceManager.themeFlag[sharedPreferenceManager.theme])
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

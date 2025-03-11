@@ -91,8 +91,7 @@
                         style="@style/SettingsSelectionValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="English"
-                        tools:ignore="HardcodedText,TextContrastCheck" />
+                        android:text="English" />
 
                 </LinearLayout>
 

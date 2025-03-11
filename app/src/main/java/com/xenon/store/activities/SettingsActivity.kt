@@ -14,14 +14,16 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.xenon.store.R
 import com.xenon.store.SharedPreferenceManager
-import com.xenon.todolist.databinding.ActivitySettingsBinding
+import com.xenon.store.databinding.ActivitySettingsBinding
 import java.util.Locale
 
 class SettingsActivity : BaseActivity() {
+
     private lateinit var binding: ActivitySettingsBinding
     private val themeTitleList = arrayOf("Light", "Dark", "System")
     private lateinit var sharedPreferences: SharedPreferences
     private val KEY_PRE_RELEASES = "pre_releases"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +69,6 @@ class SettingsActivity : BaseActivity() {
         binding.toolbar.setNavigationOnClickListener {
             finish()
         }
-
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
 
         // Correctly use SwitchMaterial
@@ -78,20 +79,24 @@ class SettingsActivity : BaseActivity() {
         preReleasesSwitch.setOnCheckedChangeListener { _, isChecked ->
             sharedPreferences.edit().putBoolean(KEY_PRE_RELEASES, isChecked).apply()
         }
+
     }
 
-    private fun setupViews() {
-        binding.languageSelectionValue.text = Locale.getDefault().displayLanguage
-        binding.languageSelectionHolder.setOnClickListener {
-            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
-            } else {
-                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            }
-            intent.data = Uri.fromParts("package", packageName, null)
-            startActivity(intent)
+
+private fun setupViews() {
+    binding.languageSelectionValue.text = Locale.getDefault().displayLanguage
+    binding.languageSelectionHolder.setOnClickListener {
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
+        } else {
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         }
+        intent.data = Uri.fromParts("package", packageName, null)
+        startActivity(intent)
     }
+
+
+}
 }
 
 fun Context.restartApplication() {
