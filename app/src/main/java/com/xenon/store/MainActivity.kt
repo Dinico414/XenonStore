@@ -105,172 +105,113 @@ class MainActivity : AppCompatActivity() {
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
             .build()
 
-        val isPreReleaseEnabled = sharedPreferences.getBoolean(preReleaseKey, false)
-        val releasesUrl = "https://api.github.com/repos/$owner/$repo/releases"
-
-        val request = Request.Builder().url(releasesUrl).build()
+        val request = Request.Builder()
+            .url("https://api.github.com/repos/$owner/$repo/releases")
+            .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
                     Log.e("UpdateCheck", "Error checking for updates", e)
-                    val errorMessage = when (e) {
+                    val message = when (e) {
                         is SocketTimeoutException -> "Connection timed out"
                         is UnknownHostException -> "No internet connection"
                         else -> "Update check failed: ${e.message}"
                     }
-                    Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
-                    button.text = getString(R.string.open)
+                    showToast(message)
+                    updateButton(button, getString(R.string.open))
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val responseBody = response.body?.string()
-                    val jsonArray = responseBody?.let { JSONArray(it) }
+                if (!response.isSuccessful) {
+                    runOnUiThread { updateButton(button, getString(R.string.open)) }
+                    return
+                }
 
-                    if (jsonArray != null && jsonArray.length() > 0) {
-                        var latestRelease: JSONObject? = null
-                        for (i in 0 until jsonArray.length()) {
-                            val release = jsonArray.getJSONObject(i)
-                            val isPreRelease = release.getBoolean("prerelease")
+                val responseBody = response.body?.string()
+                if (responseBody == null) {
+                    runOnUiThread { showToast("Empty response body for $repo") }
+                    return
+                }
 
-                            if (isPreReleaseEnabled || !isPreRelease) {
-                                latestRelease = release
-                                break
-                            }
-                        }
+                try {
+                    val releases = JSONArray(responseBody)
+                    val latestRelease = findLatestRelease(releases)
 
-                        if (latestRelease != null) {
-                            val assets = latestRelease.getJSONArray("assets")
-                            if (assets.length() > 0) {
-                                val asset = assets.getJSONObject(0)
-                                val downloadUrl = asset.getString("browser_download_url")
-                                val latestReleaseTag = latestRelease.getString("tag_name")
-                                val packageName = packageNameFromRepo(repo)
-                                val isInstalled = isAppInstalled(packageName)
-                                val installedAppVersion = getInstalledAppVersion(packageName)
-
-                                runOnUiThread {
-                                    if (!isInstalled) {
-                                        button.text = getString(R.string.install)
-                                        button.visibility = View.VISIBLE
-                                        fadeIn(button)
-                                        button.setOnClickListener {
-                                            downloadFile(
-                                                getProgressBarId(repo),
-                                                button,
-                                                repo,
-                                                downloadUrl
-                                            )
-                                        }
-                                    } else if (installedAppVersion != null && isNewerVersion(
-                                            latestReleaseTag,
-                                            installedAppVersion
-                                        )
-                                    ) {
-                                        button.text = getString(R.string.update)
-                                        button.visibility = View.VISIBLE
-                                        fadeIn(button)
-
-                                        button.setOnClickListener {
-                                            downloadFile(
-                                                getProgressBarId(repo),
-                                                button,
-                                                repo,
-                                                downloadUrl
-                                            )
-                                        }
-                                    } else {
-                                        if (button == findViewById(id.download_1)) {
-                                            button.visibility = View.GONE
-                                        } else {
-                                            button.text = getString(R.string.open)
-
-                                            button.setOnClickListener {
-                                                val launchIntent =
-                                                    packageManager.getLaunchIntentForPackage(
-                                                        packageNameFromRepo(repo)
-                                                    )
-                                                startActivity(launchIntent)
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                runOnUiThread {
-                                    Toast.makeText(
-                                        applicationContext,
-                                        "No assets found for $repo",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    if (button == findViewById(id.download_1)) {
-                                        button.visibility = View.GONE
-                                    } else {
-                                        button.text = getString(R.string.open)
-
-                                        button.setOnClickListener {
-                                            val launchIntent =
-                                                packageManager.getLaunchIntentForPackage(
-                                                    packageNameFromRepo(repo)
-                                                )
-                                            startActivity(launchIntent)
-                                        }
-                                    }
-                                }
-                            }
+                    if (latestRelease != null) {
+                        val assets = latestRelease.getJSONArray("assets")
+                        if (assets.length() > 0) {
+                            val asset = assets.getJSONObject(0)
+                            handleUpdate(
+                                button,
+                                repo,
+                                asset.getString("browser_download_url"),
+                                latestRelease.getString("tag_name")
+                            )
                         } else {
-                            runOnUiThread {
-                                Toast.makeText(
-                                    applicationContext,
-                                    "No suitable release found for $repo",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                if (button == findViewById(id.download_1)) {
-                                    button.visibility = View.GONE
-                                } else {
-                                    button.text = getString(R.string.open)
-
-                                    button.setOnClickListener {
-                                        val launchIntent =
-                                            packageManager.getLaunchIntentForPackage(
-                                                packageNameFromRepo(repo)
-                                            )
-                                        startActivity(launchIntent)
-                                    }
-                                }
-                            }
+                            runOnUiThread { showToast("No assets found for $repo") }
                         }
                     } else {
-                        runOnUiThread {
-                            Toast.makeText(
-                                applicationContext,
-                                "No releases found for $repo",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            if (button == findViewById(id.download_1)) {
-                                button.visibility = View.GONE
-                            } else {
-                                button.text = getString(R.string.open)
-
-                                button.setOnClickListener {
-                                    val launchIntent =
-                                        packageManager.getLaunchIntentForPackage(
-                                            packageNameFromRepo(repo)
-                                        )
-                                    startActivity(launchIntent)
-                                }
-                            }
-                        }
+                        runOnUiThread { showToast("No suitable release found for $repo") }
                     }
-                } else {
+                } catch (e: Exception) {
                     runOnUiThread {
-                        Log.d("Update check", "Error on request: $response")
-                        button.text = getString(R.string.open)
+                        showToast("Error parsing response for $repo: ${e.message}")
+                        Log.e("UpdateCheck", "Error parsing response for $repo", e)
                     }
                 }
             }
         })
+    }
+
+    private fun findLatestRelease(releases: JSONArray): JSONObject? {
+        for (i in 0 until releases.length()) {
+            val release = releases.getJSONObject(i)
+            val isPreRelease = release.getBoolean("prerelease")
+            val showPreReleases = sharedPreferences.getBoolean(preReleaseKey, false)
+
+            if (!isPreRelease || showPreReleases) {
+                return release
+            }
+        }
+        return null
+    }
+
+    private fun handleUpdate(button: Button, repo: String, downloadUrl: String, latestTag: String) {
+        val packageName = packageNameFromRepo(repo)
+        val installedVersion = getInstalledAppVersion(packageName)
+        val isInstalled = isAppInstalled(packageName)
+        runOnUiThread {
+            when {
+                !isInstalled -> setupButton(button, getString(R.string.install), repo, downloadUrl)
+                installedVersion != null && isNewerVersion(latestTag, installedVersion) ->
+                    setupButton(button, getString(R.string.update), repo, downloadUrl)
+                else -> setupLaunchButton(button, repo)
+            }
+        }
+    }
+
+    private fun setupButton(button: Button, text: String, repo: String, downloadUrl: String) {
+        button.text = text
+        button.visibility = View.VISIBLE
+        fadeIn(button)
+        button.setOnClickListener { downloadFile(getProgressBarId(repo), button, repo, downloadUrl) }
+    }
+
+    private fun setupLaunchButton(button: Button, repo: String) {
+        button.text = getString(R.string.open)
+        button.setOnClickListener {
+            startActivity(packageManager.getLaunchIntentForPackage(packageNameFromRepo(repo)))
+        }
+    }
+
+    private fun updateButton(button: Button, text: String) {
+        button.text = text
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun launchInstallPrompt(uri: Uri) {
