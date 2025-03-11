@@ -583,7 +583,7 @@ class MainActivity : AppCompatActivity() {
                 action = Intent.ACTION_SEND
                 putExtra(
                     Intent.EXTRA_TEXT,
-                    "https://www.dropbox.com/scl/fi/xopqi9tvgr1vphukyozr5/app-release.apk?rlkey=z5qeobkr3wxuhby588ix8n0o9&st=bl0e41h0&dl=1"
+                    "xenonware.com/store"
                 )
                 type = "text/plain"
             }

@@ -1,4 +1,4 @@
-package com.xenon.calculator.activities
+package com.xenon.store.activities
 
 import android.annotation.SuppressLint
 import android.content.res.Resources
