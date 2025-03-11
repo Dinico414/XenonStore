@@ -360,88 +360,61 @@ class MainActivity : AppCompatActivity() {
         view.startAnimation(fadeIn)
     }
 
-
-    private fun downloadFile(
-        progressBarId: Int,
-        button: Button,
-        repo: String,
-        downloadUrl: String
-    ) {
-        val progressBar: LinearProgressIndicator = findViewById(progressBarId)
-        progressBar.visibility = View.VISIBLE
-        progressBar.progress = 0
-
-        val client = OkHttpClient.Builder().build()
+    private fun downloadFile(progressBarId: Int, button: Button, repo: String, downloadUrl: String) {
+        val progressBar: LinearProgressIndicator = findViewById<LinearProgressIndicator>(progressBarId).apply {
+            visibility = View.VISIBLE
+            progress = 0
+        }
         val request = Request.Builder().url(downloadUrl).build()
-
-        client.newCall(request).enqueue(object : Callback {
+        OkHttpClient().newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val fileName = "$repo.apk"
-                    val tempFile = File(getExternalFilesDir(null), fileName)
+                if (!response.isSuccessful) return showError("Download failed", progressBarId)
 
-                    try {
-                        response.body?.byteStream()?.use { input ->
-                            FileOutputStream(tempFile).use { output ->
-                                val buffer = ByteArray(4096)
-                                var bytesRead: Int
-                                var totalBytesRead: Long = 0
-                                val fileSize: Long = response.body!!.contentLength()
+                val tempFile = File(getExternalFilesDir(null), "$repo.apk")
+                try {
+                    response.body?.byteStream()?.use { input ->
+                        FileOutputStream(tempFile).use { output ->
+                            val buffer = ByteArray(4096)
+                            var totalBytesRead = 0L
+                            val fileSize = response.body!!.contentLength()
 
-                                while (input.read(buffer).also { bytesRead = it } != -1) {
-                                    output.write(buffer, 0, bytesRead)
-                                    totalBytesRead += bytesRead
-                                    val progress = ((totalBytesRead * 100) / fileSize).toInt()
-                                    runOnUiThread {
-                                        progressBar.progress = progress
-                                    }
-                                }
+                            while (true) {
+                                val bytesRead = input.read(buffer)
+                                if (bytesRead == -1) break
+                                output.write(buffer, 0, bytesRead)
+                                totalBytesRead += bytesRead
+                                updateProgress(progressBar, totalBytesRead, fileSize)
                             }
                         }
-
-                        runOnUiThread {
-                            Toast.makeText(
-                                applicationContext,
-                                "Download completed",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                            progressBar.visibility = View.GONE
-                            updateButtonText(button, repo)
-                            val uri = getUriForFile(tempFile)
-                            launchInstallPrompt(uri)
-                            tempFile.deleteOnExit()
-                        }
-                    } catch (e: Exception) {
-                        runOnUiThread {
-                            Toast.makeText(
-                                applicationContext,
-                                "Download failed: ${e.message}",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            progressBar.visibility = View.GONE
-                        }
                     }
-                } else {
-                    runOnUiThread {
-                        Toast.makeText(applicationContext, "Download failed", Toast.LENGTH_SHORT)
-                            .show()
-                        progressBar.visibility = View.GONE
-                    }
+                    onDownloadComplete(tempFile, progressBar, button, repo)
+                } catch (e: Exception) {
+                    showError("Download failed: ${e.message}", progressBarId)
                 }
             }
-
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    Toast.makeText(
-                        applicationContext,
-                        "Download failed: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    progressBar.visibility = View.GONE
-                }
-            }
+            override fun onFailure(call: Call, e: IOException) = showError("Download failed: ${e.message}", progressBarId)
         })
+    }
+
+    private fun showError(message: String, progressBarId: Int) {
+        runOnUiThread {
+            Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+            findViewById<LinearProgressIndicator>(progressBarId).visibility = View.GONE
+        }
+    }
+
+    private fun updateProgress(progressBar: LinearProgressIndicator, bytesRead: Long, fileSize: Long) {
+        runOnUiThread { progressBar.progress = ((bytesRead * 100) / fileSize).toInt() }
+    }
+
+    private fun onDownloadComplete(tempFile: File, progressBar: LinearProgressIndicator, button: Button, repo: String) {
+        runOnUiThread {
+            Toast.makeText(applicationContext, "Download completed", Toast.LENGTH_SHORT).show()
+            progressBar.visibility = View.GONE
+            updateButtonText(button, repo)
+            launchInstallPrompt(getUriForFile(tempFile))
+            tempFile.deleteOnExit()
+        }
     }
 
     private fun getUriForFile(file: File): Uri {
@@ -451,8 +424,6 @@ class MainActivity : AppCompatActivity() {
             file
         )
     }
-
-
 
     private fun setupButtons() {
         val binding = findViewById<View>(android.R.id.content)
