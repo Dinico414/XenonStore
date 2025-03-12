@@ -1,0 +1,44 @@
+package com.xenon.store.adapter
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.xenon.store.R
+
+class AppItemAdapter(private val appList: List<AppItem>, private val itemClickListener: OnItemClickListener) :
+    RecyclerView.Adapter<AppItemAdapter.AppItemViewHolder>() {
+
+    interface OnItemClickListener {
+        fun onButtonClick(position: Int)
+    }
+
+    class AppItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val icon: ImageView = itemView.findViewById(R.id.app_icon)
+        val title: TextView = itemView.findViewById(R.id.app_title)
+        val downloadButton: Button = itemView.findViewById(R.id.download_button)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppItemViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.app_item, parent, false)
+        return AppItemViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: AppItemViewHolder, position: Int) {
+        val appItem = appList[position]
+        holder.title.text = appItem.title
+        holder.icon.setImageResource(appItem.icon) // Assuming appItem.icon is a resource ID
+
+        holder.downloadButton.setOnClickListener {
+            itemClickListener.onButtonClick(position)
+        }
+        // You would add your logic here to set the button text and click listener
+        // based on the app's install state, using methods like
+        // isAppInstalled(), getInstalledAppVersion(), etc.
+    }
+
+    override fun getItemCount(): Int = appList.size
+}
