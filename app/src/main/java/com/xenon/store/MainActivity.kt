@@ -1,5 +1,6 @@
 package com.xenon.store
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -10,11 +11,14 @@ import android.view.Menu
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.cardview.widget.CardView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.xenon.store.R.id
@@ -173,25 +177,79 @@ class MainActivity : AppCompatActivity() {
         return null
     }
 
+    @SuppressLint("SetTextI18n")
     private fun handleUpdate(button: Button, repo: String, downloadUrl: String, latestTag: String) {
         val packageName = packageNameFromRepo(repo)
         val installedVersion = getInstalledAppVersion(packageName)
         val isInstalled = isAppInstalled(packageName)
+
+        val cardId = when (repo) {
+            todoListRepo -> id.card_2
+            calculatorRepo -> id.card_3
+            fileexplorerRepo -> id.card_4
+            else -> null
+        }
+
+        val cardView = cardId?.let { findViewById<CardView>(it) }
+        val linearLayoutId = when (repo) {
+            todoListRepo -> id.version_2
+            calculatorRepo -> id.version_3
+//            fileexplorerRepo -> null
+            else -> null
+        }
+        val linearLayout = linearLayoutId?.let { cardView?.findViewById<LinearLayout>(it) }
         runOnUiThread {
+            val versionTextView1 = linearLayout?.findViewById<TextView>(
+                when (repo) {
+                    todoListRepo -> id.installed_version_2
+                    calculatorRepo -> id.installed_version_3
+//                    fileexplorerRepo -> null
+                    else -> null
+                }!!
+            )
+            val versionTextView2 = linearLayout?.findViewById<TextView>(
+                when (repo) {
+                    todoListRepo -> id.new_version_2
+                    calculatorRepo -> id.new_version_3
+//                    fileexplorerRepo -> null
+                    else -> null
+                }!!
+            )
+
             when {
-                !isInstalled -> setupButton(button, getString(R.string.install), repo, downloadUrl)
-                installedVersion != null && isNewerVersion(latestTag, installedVersion) ->
+                !isInstalled -> {
+                    setupButton(button, getString(R.string.install), repo, downloadUrl)
+                    linearLayout?.visibility = View.GONE
+                }
+                installedVersion != null && isNewerVersion(latestTag, installedVersion) -> {
                     setupButton(button, getString(R.string.update), repo, downloadUrl)
-                else -> setupLaunchButton(button, repo)
+                    linearLayout?.visibility = View.VISIBLE
+                    versionTextView1?.apply {
+                        text = "v.$installedVersion"
+                        paintFlags =  android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                        alpha = 0.5f
+                        visibility = View.VISIBLE
+                    }
+                    versionTextView2?.apply {
+                        text = "v.$latestTag"
+                        visibility = View.VISIBLE
+                    }
+                }
+                else -> {
+                    setupLaunchButton(button, repo)
+                    linearLayout?.visibility = View.GONE
+                }
             }
         }
-    }
-
-    private fun setupButton(button: Button, text: String, repo: String, downloadUrl: String) {
+    }    private fun setupButton(button: Button, text: String, repo: String, downloadUrl: String) {
         button.text = text
         button.visibility = View.VISIBLE
         fadeIn(button)
         button.setOnClickListener { downloadFile(getProgressBarId(repo), button, repo, downloadUrl) }
+        button.setOnClickListener {
+                        downloadFile(getProgressBarId(repo), button, repo, downloadUrl)
+                        button.text = ""
+                    }
     }
 
     private fun setupLaunchButton(button: Button, repo: String) {
