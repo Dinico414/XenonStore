@@ -1,6 +1,5 @@
 package com.xenon.store
 
-//import androidx.glance.visibility
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
@@ -24,6 +23,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
 import androidx.core.content.FileProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.xenon.store.R.id
 import com.xenon.store.activities.SettingsActivity
@@ -289,7 +289,7 @@ class MainActivity : AppCompatActivity() {
         fadeIn(imageButton)
         imageButton.setOnClickListener {
             downloadFile(
-                ProgressBarType.LINEAR.getProgressBarId(repo),
+                ProgressBarType.CIRCULAR.getProgressBarId(repo), // Use CIRCULAR here
                 null, // Pass null for button
                 imageButton,
                 repo,
@@ -335,10 +335,6 @@ class MainActivity : AppCompatActivity() {
             button.setOnClickListener {
             }
         }
-    }
-
-    enum class ProgressBarType {
-        LINEAR, CIRCULAR
     }
 
     private fun ProgressBarType.getProgressBarId(repo: String): Int {
@@ -413,10 +409,24 @@ class MainActivity : AppCompatActivity() {
         repo: String,
         downloadUrl: String
     ) {
-        val progressBar: LinearProgressIndicator =
-            findViewById<LinearProgressIndicator>(progressBarId).apply {
-                visibility = View.VISIBLE
-                progress = 0
+        val linearProgressBar: LinearProgressIndicator? =
+            if (progressBarId == id.progressbar_1 || progressBarId == id.progressbar_2 || progressBarId == id.progressbar_3 || progressBarId == id.progressbar_4) {
+                findViewById<LinearProgressIndicator>(progressBarId).apply {
+                    visibility = View.VISIBLE
+                    progress = 0
+                }
+            } else {
+                null
+            }
+
+        val circularProgressBar: CircularProgressIndicator? =
+            if (progressBarId == id.progressbar_1_circle) {
+                findViewById<CircularProgressIndicator>(progressBarId).apply {
+                    visibility = View.VISIBLE
+                    progress = 0
+                }
+            } else {
+                null
             }
 
         // Store the original text and drawable for later restoration
@@ -433,8 +443,7 @@ class MainActivity : AppCompatActivity() {
         OkHttpClient().newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
-                    showError(
-                        "Download failed",
+                    "Download failed".showError(
                         progressBarId,
                         button,
                         imageButton,
@@ -444,47 +453,57 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
 
+                val contentLength = response.body?.contentLength() ?: -1
+                var downloadedBytes: Long = 0
+                val buffer = ByteArray(8192) // 8KB buffer
+                val inputStream = response.body?.byteStream()
                 val tempFile = File(getExternalFilesDir(null), "$repo.apk")
-                try {
-                    response.body?.byteStream()?.use { input ->
-                        FileOutputStream(tempFile).use { output ->
-                            val buffer = ByteArray(4096)
-                            var totalBytesRead = 0L
-                            val fileSize = response.body!!.contentLength()
+                val outputStream = FileOutputStream(tempFile)
 
-                            while (true) {
-                                val bytesRead = input.read(buffer)
-                                if (bytesRead == -1) break
-                                output.write(buffer, 0, bytesRead)
-                                totalBytesRead += bytesRead
-                                updateProgress(progressBar, totalBytesRead, fileSize)
-                            }
+                try {
+                    var bytesRead: Int
+                    while (inputStream?.read(buffer).also { bytesRead = it ?: -1 } != -1) {
+                        outputStream.write(buffer, 0, bytesRead)
+                        downloadedBytes += bytesRead
+                        val progress = if (contentLength > 0) {
+                            (downloadedBytes * 100 / contentLength).toInt()
+                        } else {
+                            0
+                        }
+
+                        runOnUiThread {
+                            linearProgressBar?.progress = progress
+                            circularProgressBar?.progress = progress
                         }
                     }
-                    onDownloadComplete(
-                        tempFile,
-                        progressBar,
-                        button,
-                        imageButton,
-                        repo,
-                        originalButtonText,
-                        originalImageDrawable
-                    )
+                    runOnUiThread {
+                        linearProgressBar?.visibility = View.GONE
+                        circularProgressBar?.visibility = View.GONE
+                        onDownloadComplete(
+                            tempFile,
+                            linearProgressBar ?: circularProgressBar!!, // Use the non-null progress bar
+                            button,
+                            imageButton,
+                            repo,
+                            originalImageDrawable
+                        )
+                    }
                 } catch (e: Exception) {
-                    showError(
-                        "Download failed: ${e.message}",
+                    "Download failed".showError(
                         progressBarId,
                         button,
                         imageButton,
                         originalButtonText,
                         originalImageDrawable
                     )
+                } finally {
+                    inputStream?.close()
+                    outputStream.close()
                 }
             }
 
             override fun onFailure(call: Call, e: IOException) {
-                showError(
-                    "Download failed: ${e.message}",
+                "Download failed".showError(
                     progressBarId,
                     button,
                     imageButton,
@@ -494,9 +513,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
-
-    private fun showError(
-        message: String,
+    private fun String.showError(
         progressBarId: Int,
         button: Button?,
         imageButton: ImageButton?,
@@ -504,8 +521,9 @@ class MainActivity : AppCompatActivity() {
         originalImageDrawable: Drawable?
     ) {
         runOnUiThread {
-            Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, this, Toast.LENGTH_SHORT).show()
             findViewById<LinearProgressIndicator>(progressBarId).visibility = View.GONE
+            findViewById<CircularProgressIndicator>(progressBarId).visibility = View.GONE
             button?.apply {
                 visibility = View.VISIBLE
                 text = originalButtonText // Restore original text
@@ -519,11 +537,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun onDownloadComplete(
         tempFile: File,
-        progressBar: LinearProgressIndicator,
+        progressBar: View, // Changed type to View
         button: Button?,
         imageButton: ImageButton?,
         repo: String,
-        originalButtonText: String?,
         originalImageDrawable: Drawable?
     ) {
         runOnUiThread {
@@ -551,14 +568,6 @@ class MainActivity : AppCompatActivity() {
                 launchInstallPrompt(uri)
             }
         }
-    }
-
-    private fun updateProgress(
-        progressBar: LinearProgressIndicator,
-        bytesRead: Long,
-        fileSize: Long
-    ) {
-        runOnUiThread { progressBar.progress = ((bytesRead * 100) / fileSize).toInt() }
     }
 
     private fun setupButtons() {
@@ -603,4 +612,10 @@ class MainActivity : AppCompatActivity() {
         }
         return true
     }
+
+    enum class ProgressBarType {
+        LINEAR, CIRCULAR
+    }
+
+
 }
