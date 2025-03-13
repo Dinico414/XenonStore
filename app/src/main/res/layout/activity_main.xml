@@ -51,6 +51,7 @@
                     app:layout_collapseMode="pin"
                     app:navigationIconTint="@color/transparent" />
 
+
             </com.google.android.material.appbar.CollapsingToolbarLayout>
 
 
@@ -67,6 +68,40 @@
             app:layout_collapseMode="pin"
             app:menu="@menu/menu_main"
             app:navigationIconTint="@color/onSurface" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:layout_anchor="@+id/toolbar"
+            app:layout_anchorGravity="center"
+            tools:ignore="MissingConstraints">
+
+
+            <Button
+                android:id="@+id/download_1"
+                style="@style/buttonStyle"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/tertiary"
+                android:text="@string/update"
+                android:textColor="@color/onTertiary"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:ignore="DuplicateSpeakableTextCheck,VisualLintButtonSize" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progressbar_1"
+                style="@style/progressbarStyle"
+                android:layout_width="120dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                app:indicatorColor="@color/onTertiary"
+                tools:visibility="visible" />
+
+        </FrameLayout>
 
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -94,17 +129,9 @@
                     android:paddingHorizontal="10dp"
                     tools:context=".MainActivity">
 
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progressbar_1"
-                        style="@style/progressbarStyle"
-                        android:layout_marginBottom="0dp"
-                        android:visibility="invisible"
-                        app:indicatorColor="@color/tertiary"
-                        app:trackColor="#88888888" />
-
                     <Space
                         android:layout_width="match_parent"
-                        android:layout_height="5dp" />
+                        android:layout_height="10dp" />
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_2"
@@ -167,7 +194,6 @@
                                 app:layout_constraintStart_toEndOf="@+id/icon_2"
                                 app:layout_constraintTop_toTopOf="@+id/icon_2" />
 
-                            <!-- FrameLayout to overlay the progress indicator behind the button -->
                             <FrameLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -266,7 +292,6 @@
                                 app:layout_constraintStart_toEndOf="@+id/icon_3"
                                 app:layout_constraintTop_toTopOf="@+id/icon_3" />
 
-                            <!-- FrameLayout to overlay the progress indicator behind the button -->
                             <FrameLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -358,18 +383,6 @@
             </androidx.core.widget.NestedScrollView>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-        <Button
-            android:id="@+id/download_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="200dp"
-            android:backgroundTint="@color/tertiary"
-            android:text="@string/update"
-            android:textColor="@color/onTertiary"
-            android:visibility="gone"
-            app:layout_anchor="@+id/toolbar"
-            app:layout_anchorGravity="top|center"
-            tools:ignore="MissingConstraints,VisualLintButtonSize" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
