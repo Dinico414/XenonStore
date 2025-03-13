@@ -70,6 +70,7 @@
             app:navigationIconTint="@color/onSurface" />
 
         <FrameLayout
+            android:id="@+id/frame_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"

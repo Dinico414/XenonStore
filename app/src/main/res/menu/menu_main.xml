@@ -3,11 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.xenon.store.MainActivity">
+
+    <item
+        android:id="@+id/action_custom_button"
+        app:showAsAction="always"
+        android:title="@string/update"
+        app:actionLayout="@layout/action_update_button"
+        />
+
     <item
         android:id="@+id/action_share"
         android:icon="@drawable/share"
         android:title="@string/action_share"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction" />
     <item
         android:id="@+id/settings"
         android:title="@string/settings"
