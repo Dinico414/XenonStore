@@ -48,25 +48,27 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var bindingSmall: ActionUpdateButtonBinding? = null
-    private lateinit var frameButton: FrameLayout
-    private var frameButtonSmall: FrameLayout? = null
-
     private lateinit var sharedPreferences: SharedPreferences
-    private val owner = "Dinico414"
 
+    private val owner = "Dinico414"
     private val fileexplorerRepo = "FileExplorer"
     private val calculatorRepo = "Calculator"
     private val todoListRepo = "TodoList"
     private val xenonStoreRepo = "XenonStore"
-
     private val preReleaseKey = "pre_releases"
+
+    private lateinit var frameButton: FrameLayout
+    private var frameButtonSmall: FrameLayout? = null
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var installPermissionLauncher: ActivityResultLauncher<Intent>
+    private val isDownloadInProgress = AtomicBoolean(false)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedPreferenceManager = SharedPreferenceManager(this)
@@ -77,7 +79,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         frameButton = findViewById(id.frame_button)
-
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
         swipeRefreshLayout = findViewById(id.swipe_refresh_layout)
@@ -92,11 +93,10 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "Install permission denied", Toast.LENGTH_SHORT).show()
                 }
             }
-
         setupToolbar()
         setupButtons()
-        checkAllUpdates()
         setupCollapsingToolbar()
+        checkAllUpdates()
     }
 
     private fun setupCollapsingToolbar() {
@@ -130,12 +130,10 @@ class MainActivity : AppCompatActivity() {
                     frameButton.visibility = View.GONE
                 }
             }
-
             percentage == 0f -> {
                 frameButton.alpha = 1f
                 frameButton.visibility = View.VISIBLE
             }
-
             else -> {
                 frameButton.alpha = 1f
                 frameButton.visibility = View.VISIBLE
@@ -154,12 +152,10 @@ class MainActivity : AppCompatActivity() {
                         it.visibility = View.VISIBLE
                     }
                 }
-
                 percentage == 0f -> {
                     it.alpha = 0f
                     it.visibility = View.GONE
                 }
-
                 else -> {
                     it.alpha = 0f
                     it.visibility = View.GONE
@@ -181,17 +177,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkAllUpdates() {
+        swipeRefreshLayout.isRefreshing = true
+
         val download1 = findViewById<Button>(id.download_1)
         val download1image = findViewById<ImageButton>(id.download_1_image)
         val download2 = findViewById<Button>(id.download_2)
         val download3 = findViewById<Button>(id.download_3)
         val download4 = findViewById<Button>(id.download_4)
 
-        checkUpdates(download1, download1image, xenonStoreRepo)
-        checkUpdates(download2, null, todoListRepo)
-        checkUpdates(download3, null, calculatorRepo)
-        checkUpdates(download4, null, fileexplorerRepo)
-        swipeRefreshLayout.isRefreshing = false
+        val updateChecks = listOf(
+            { checkUpdates(download1, download1image, xenonStoreRepo) },
+            { checkUpdates(download2, null, todoListRepo) },
+            { checkUpdates(download3, null, calculatorRepo) },
+            { checkUpdates(download4, null, fileexplorerRepo) }
+        )
+        var completedChecks = 0
+
+        val onCheckComplete = {
+            completedChecks++
+            if (completedChecks == updateChecks.size) {
+                runOnUiThread {
+                    swipeRefreshLayout.isRefreshing = false
+                }
+            }
+        }
+        updateChecks.forEach { check ->
+            check().also { onCheckComplete() }
+        }
     }
 
     private fun checkUpdates(button: Button, imageButton: ImageButton?, repo: String) {
@@ -216,16 +228,18 @@ class MainActivity : AppCompatActivity() {
                     showToast(message)
                     updateButton(button, getString(R.string.open))
                 }
+                (button.context as? MainActivity)?.onUpdateCheckComplete()
             }
-
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     runOnUiThread { updateButton(button, getString(R.string.open)) }
+                    (button.context as? MainActivity)?.onUpdateCheckComplete()
                     return
                 }
                 val responseBody = response.body?.string()
                 if (responseBody == null) {
                     runOnUiThread { showToast("Empty response body for $repo") }
+                    (button.context as? MainActivity)?.onUpdateCheckComplete()
                     return
                 }
                 try {
@@ -255,8 +269,19 @@ class MainActivity : AppCompatActivity() {
                         Log.e("UpdateCheck", "Error parsing response for $repo", e)
                     }
                 }
+                (button.context as? MainActivity)?.onUpdateCheckComplete()
             }
         })
+    }
+    private var pendingUpdateChecks = 0
+
+    fun onUpdateCheckComplete() {
+        pendingUpdateChecks--
+        if (pendingUpdateChecks == 0) {
+            runOnUiThread {
+                swipeRefreshLayout.isRefreshing = false
+            }
+        }
     }
 
     private fun findLatestRelease(releases: JSONArray): JSONObject? {
@@ -292,7 +317,6 @@ class MainActivity : AppCompatActivity() {
             fileexplorerRepo -> id.card_4
             else -> null
         }
-
         val cardView = cardId?.let { findViewById<CardView>(it) }
         val linearLayoutId = when (repo) {
 //            xenonStoreRepo -> id.version_1
@@ -321,14 +345,12 @@ class MainActivity : AppCompatActivity() {
                     else -> null
                 }!!
             )
-
             when {
                 !isInstalled -> {
                     setupButton(button, getString(R.string.install), repo, downloadUrl)
                     imageButton?.let { setupImageButton(it, repo, downloadUrl) }
                     linearLayout?.visibility = View.GONE
                 }
-
                 installedVersion != null && isNewerVersion(latestTag, installedVersion) -> {
                     setupButton(button, getString(R.string.update), repo, downloadUrl)
                     imageButton?.let { setupImageButton(it, repo, downloadUrl) }
@@ -344,7 +366,6 @@ class MainActivity : AppCompatActivity() {
                         visibility = View.VISIBLE
                     }
                 }
-
                 else -> {
                     setupLaunchButton(button, repo)
                     imageButton?.let { setupLaunchImageButton(it, repo) }
@@ -359,13 +380,16 @@ class MainActivity : AppCompatActivity() {
         button.visibility = View.VISIBLE
         fadeIn(button)
         button.setOnClickListener {
-            downloadFile(
-                ProgressBarType.LINEAR.getProgressBarId(repo),
-                button,
-                null,
-                repo,
-                downloadUrl
-            )
+            if (isDownloadInProgress.compareAndSet(false, true)) {
+                downloadFile(
+                    ProgressBarType.LINEAR.getProgressBarId(repo),
+                    button,
+                    null,
+                    repo,
+                    downloadUrl
+                )
+                button.isEnabled = false
+            }
         }
     }
 
@@ -373,13 +397,16 @@ class MainActivity : AppCompatActivity() {
         imageButton.visibility = View.VISIBLE
         fadeIn(imageButton)
         imageButton.setOnClickListener {
-            downloadFile(
-                ProgressBarType.CIRCULAR.getProgressBarId(repo),
-                null,
-                imageButton,
-                repo,
-                downloadUrl
-            )
+            if (isDownloadInProgress.compareAndSet(false, true)) {
+                downloadFile(
+                    ProgressBarType.CIRCULAR.getProgressBarId(repo),
+                    null,
+                    imageButton,
+                    repo,
+                    downloadUrl
+                )
+                imageButton.isEnabled = false
+            }
         }
     }
 
@@ -428,7 +455,6 @@ class MainActivity : AppCompatActivity() {
                 ProgressBarType.LINEAR -> id.progressbar_1
                 ProgressBarType.CIRCULAR -> id.progressbar_1_circle
             }
-
             todoListRepo -> id.progressbar_2
             calculatorRepo -> id.progressbar_3
             fileexplorerRepo -> id.progressbar_4
@@ -503,7 +529,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 null
             }
-
         val circularProgressBar: CircularProgressIndicator? =
             if (progressBarId == id.progressbar_1_circle) {
                 findViewById<CircularProgressIndicator>(progressBarId).apply {
@@ -513,17 +538,13 @@ class MainActivity : AppCompatActivity() {
             } else {
                 null
             }
-
-
         val originalButtonText = button?.text?.toString()
         val originalImageDrawable = imageButton?.drawable
-
 
         runOnUiThread {
             button?.text = ""
             imageButton?.setImageDrawable(null)
         }
-
         val request = Request.Builder().url(downloadUrl).build()
         OkHttpClient().newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
@@ -537,7 +558,13 @@ class MainActivity : AppCompatActivity() {
                     )
                     return
                 }
-
+                fun onDownloadCompleteOrFailed() {
+                    runOnUiThread {
+                        isDownloadInProgress.set(false)
+                        button?.isEnabled = true
+                        imageButton?.isEnabled = true
+                    }
+                }
                 val contentLength = response.body?.contentLength() ?: -1
                 var downloadedBytes: Long = 0
                 val buffer = ByteArray(8192)
@@ -555,12 +582,12 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             0
                         }
-
                         runOnUiThread {
                             linearProgressBar?.progress = progress
                             circularProgressBar?.progress = progress
                         }
                     }
+                    onDownloadCompleteOrFailed()
                     runOnUiThread {
                         linearProgressBar?.visibility = View.GONE
                         circularProgressBar?.visibility = View.GONE
@@ -575,6 +602,7 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                 } catch (e: Exception) {
+                    onDownloadCompleteOrFailed()
                     "Download failed".showError(
                         progressBarId,
                         button,
@@ -587,7 +615,6 @@ class MainActivity : AppCompatActivity() {
                     outputStream.close()
                 }
             }
-
             override fun onFailure(call: Call, e: IOException) {
                 "Download failed".showError(
                     progressBarId,
@@ -689,7 +716,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             true
         }
-
         val shareItem = menu.findItem(id.action_share)
         shareItem.setOnMenuItemClickListener {
             val sendIntent: Intent = Intent().apply {
@@ -704,13 +730,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(shareIntent)
             true
         }
-
         return true
     }
 
     enum class ProgressBarType {
         LINEAR, CIRCULAR
     }
-
-
 }
