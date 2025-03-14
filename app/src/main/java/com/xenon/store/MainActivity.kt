@@ -123,7 +123,6 @@ class MainActivity : AppCompatActivity() {
     private fun updateFrameButtonVisibility(percentage: Float) {
         when {
             percentage >= 10f -> {
-                // Calculate alpha based on the percentage from 20% to 100%
                 val alphaPercentage = (percentage - 20f) / (100f - 60f)
                 frameButton.alpha = 1f - alphaPercentage
                 frameButton.visibility = View.VISIBLE
@@ -147,8 +146,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateFrameButtonSmallVisibility(percentage: Float) {
         frameButtonSmall?.let {
             when {
-                percentage >= 20f -> {
-                    // Calculate alpha based on the percentage from 20% to 100%
+                percentage >= 0f -> {
                     val alphaPercentage = (percentage - 80f) / (100f - 80f)
                     it.alpha = alphaPercentage
                     it.visibility = View.VISIBLE
@@ -364,9 +362,9 @@ class MainActivity : AppCompatActivity() {
             downloadFile(
                 ProgressBarType.LINEAR.getProgressBarId(repo),
                 button,
-                null, // Pass null for imageButton
+                null,
                 repo,
-                downloadUrl // Pass the downloadUrl
+                downloadUrl
             )
         }
     }
@@ -376,11 +374,11 @@ class MainActivity : AppCompatActivity() {
         fadeIn(imageButton)
         imageButton.setOnClickListener {
             downloadFile(
-                ProgressBarType.CIRCULAR.getProgressBarId(repo), // Use CIRCULAR here
-                null, // Pass null for button
+                ProgressBarType.CIRCULAR.getProgressBarId(repo),
+                null,
                 imageButton,
                 repo,
-                downloadUrl // Pass the downloadUrl
+                downloadUrl
             )
         }
     }
@@ -516,14 +514,14 @@ class MainActivity : AppCompatActivity() {
                 null
             }
 
-        // Store the original text and drawable for later restoration
+
         val originalButtonText = button?.text?.toString()
         val originalImageDrawable = imageButton?.drawable
 
-        // Update button and imageButton during download
+
         runOnUiThread {
-            button?.text = "" // Clear the text
-            imageButton?.setImageDrawable(null) // Remove the image source
+            button?.text = ""
+            imageButton?.setImageDrawable(null)
         }
 
         val request = Request.Builder().url(downloadUrl).build()
@@ -542,7 +540,7 @@ class MainActivity : AppCompatActivity() {
 
                 val contentLength = response.body?.contentLength() ?: -1
                 var downloadedBytes: Long = 0
-                val buffer = ByteArray(8192) // 8KB buffer
+                val buffer = ByteArray(8192)
                 val inputStream = response.body?.byteStream()
                 val tempFile = File(getExternalFilesDir(null), "$repo.apk")
                 val outputStream = FileOutputStream(tempFile)
@@ -569,7 +567,7 @@ class MainActivity : AppCompatActivity() {
                         onDownloadComplete(
                             tempFile,
                             linearProgressBar
-                                ?: circularProgressBar!!, // Use the non-null progress bar
+                                ?: circularProgressBar!!,
                             button,
                             imageButton,
                             repo,
@@ -615,18 +613,18 @@ class MainActivity : AppCompatActivity() {
             findViewById<CircularProgressIndicator>(progressBarId).visibility = View.GONE
             button?.apply {
                 visibility = View.VISIBLE
-                text = originalButtonText // Restore original text
+                text = originalButtonText
             }
             imageButton?.apply {
                 visibility = View.VISIBLE
-                setImageDrawable(originalImageDrawable) // Restore original image
+                setImageDrawable(originalImageDrawable)
             }
         }
     }
 
     private fun onDownloadComplete(
         tempFile: File,
-        progressBar: View, // Changed type to View
+        progressBar: View,
         button: Button?,
         imageButton: ImageButton?,
         repo: String,
@@ -680,13 +678,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
 
-        // Get the custom action view and set up binding
         val item: MenuItem = menu.findItem(id.action_custom_button)
         val actionView: View? = item.actionView
         bindingSmall = actionView?.let { ActionUpdateButtonBinding.bind(it) }
         frameButtonSmall = bindingSmall?.frameButtonSmall
 
-        // Set up the settings item click listener
         val settingsItem = menu.findItem(id.settings)
         settingsItem.setOnMenuItemClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -694,7 +690,6 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        // Set up the share item click listener
         val shareItem = menu.findItem(id.action_share)
         shareItem.setOnMenuItemClickListener {
             val sendIntent: Intent = Intent().apply {
