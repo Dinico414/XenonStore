@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.Button
@@ -31,6 +32,7 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.xenon.store.R.id
 import com.xenon.store.activities.SettingsActivity
+import com.xenon.store.databinding.ActionUpdateButtonBinding
 import com.xenon.store.databinding.ActivityMainBinding
 import okhttp3.Call
 import okhttp3.Callback
@@ -50,8 +52,9 @@ import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private var bindingSmall: ActionUpdateButtonBinding? = null
     private lateinit var frameButton: FrameLayout
-
+    private var frameButtonSmall: FrameLayout? = null
 
     private lateinit var sharedPreferences: SharedPreferences
     private val owner = "Dinico414"
@@ -69,8 +72,12 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferenceManager = SharedPreferenceManager(this)
         AppCompatDelegate.setDefaultNightMode(sharedPreferenceManager.themeFlag[sharedPreferenceManager.theme])
         super.onCreate(savedInstanceState)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        frameButton = findViewById(id.frame_button)
+
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
         swipeRefreshLayout = findViewById(id.swipe_refresh_layout)
@@ -85,8 +92,6 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "Install permission denied", Toast.LENGTH_SHORT).show()
                 }
             }
-        frameButton = findViewById(id.frame_button) // Assuming you have a FrameLayout with id frame_button
-
 
         setupToolbar()
         setupButtons()
@@ -111,27 +116,56 @@ class MainActivity : AppCompatActivity() {
             val percentage = (currentOffset.toFloat() / totalScrollRange) * 100
 
             updateFrameButtonVisibility(percentage)
+            updateFrameButtonSmallVisibility(percentage)
         }
     }
 
     private fun updateFrameButtonVisibility(percentage: Float) {
         when {
-            percentage >= 5f -> {
-                // Calculate alpha based on the percentage from 60% to 100%
+            percentage >= 10f -> {
+                // Calculate alpha based on the percentage from 20% to 100%
                 val alphaPercentage = (percentage - 20f) / (100f - 60f)
                 frameButton.alpha = 1f - alphaPercentage
                 frameButton.visibility = View.VISIBLE
-                if (percentage == 100f){
+                if (percentage == 100f) {
                     frameButton.visibility = View.GONE
                 }
             }
+
             percentage == 0f -> {
                 frameButton.alpha = 1f
                 frameButton.visibility = View.VISIBLE
             }
+
             else -> {
                 frameButton.alpha = 1f
                 frameButton.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun updateFrameButtonSmallVisibility(percentage: Float) {
+        frameButtonSmall?.let {
+            when {
+                percentage >= 20f -> {
+                    // Calculate alpha based on the percentage from 20% to 100%
+                    val alphaPercentage = (percentage - 80f) / (100f - 80f)
+                    it.alpha = alphaPercentage
+                    it.visibility = View.VISIBLE
+                    if (percentage == 100f) {
+                        it.visibility = View.VISIBLE
+                    }
+                }
+
+                percentage == 0f -> {
+                    it.alpha = 0f
+                    it.visibility = View.GONE
+                }
+
+                else -> {
+                    it.alpha = 0f
+                    it.visibility = View.GONE
+                }
             }
         }
     }
@@ -247,7 +281,7 @@ class MainActivity : AppCompatActivity() {
         imageButton: ImageButton?,
         repo: String,
         downloadUrl: String,
-        latestTag: String
+        latestTag: String,
     ) {
         val packageName = packageNameFromRepo(repo)
         val installedVersion = getInstalledAppVersion(packageName)
@@ -460,7 +494,7 @@ class MainActivity : AppCompatActivity() {
         button: Button?,
         imageButton: ImageButton?,
         repo: String,
-        downloadUrl: String
+        downloadUrl: String,
     ) {
         val linearProgressBar: LinearProgressIndicator? =
             if (progressBarId == id.progressbar_1 || progressBarId == id.progressbar_2 || progressBarId == id.progressbar_3 || progressBarId == id.progressbar_4) {
@@ -534,7 +568,8 @@ class MainActivity : AppCompatActivity() {
                         circularProgressBar?.visibility = View.GONE
                         onDownloadComplete(
                             tempFile,
-                            linearProgressBar ?: circularProgressBar!!, // Use the non-null progress bar
+                            linearProgressBar
+                                ?: circularProgressBar!!, // Use the non-null progress bar
                             button,
                             imageButton,
                             repo,
@@ -566,12 +601,13 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
     private fun String.showError(
         progressBarId: Int,
         button: Button?,
         imageButton: ImageButton?,
         originalButtonText: String?,
-        originalImageDrawable: Drawable?
+        originalImageDrawable: Drawable?,
     ) {
         runOnUiThread {
             Toast.makeText(applicationContext, this, Toast.LENGTH_SHORT).show()
@@ -594,7 +630,7 @@ class MainActivity : AppCompatActivity() {
         button: Button?,
         imageButton: ImageButton?,
         repo: String,
-        originalImageDrawable: Drawable?
+        originalImageDrawable: Drawable?,
     ) {
         runOnUiThread {
             progressBar.visibility = View.GONE
@@ -643,12 +679,22 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+
+        // Get the custom action view and set up binding
+        val item: MenuItem = menu.findItem(id.action_custom_button)
+        val actionView: View? = item.actionView
+        bindingSmall = actionView?.let { ActionUpdateButtonBinding.bind(it) }
+        frameButtonSmall = bindingSmall?.frameButtonSmall
+
+        // Set up the settings item click listener
         val settingsItem = menu.findItem(id.settings)
         settingsItem.setOnMenuItemClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
             true
         }
+
+        // Set up the share item click listener
         val shareItem = menu.findItem(id.action_share)
         shareItem.setOnMenuItemClickListener {
             val sendIntent: Intent = Intent().apply {
@@ -663,6 +709,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(shareIntent)
             true
         }
+
         return true
     }
 
