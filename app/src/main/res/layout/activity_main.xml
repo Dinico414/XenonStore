@@ -76,6 +76,8 @@
             android:layout_marginTop="10dp"
             app:layout_anchor="@+id/toolbar"
             app:layout_anchorGravity="center"
+            android:visibility="gone"
+            tools:visibility="visible"
             tools:ignore="MissingConstraints">
 
 

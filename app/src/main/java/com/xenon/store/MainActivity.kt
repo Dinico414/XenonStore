@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.view.Menu
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -21,8 +23,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.FileProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.xenon.store.R.id
@@ -42,9 +46,12 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var frameButton: FrameLayout
+
 
     private lateinit var sharedPreferences: SharedPreferences
     private val owner = "Dinico414"
@@ -78,9 +85,55 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "Install permission denied", Toast.LENGTH_SHORT).show()
                 }
             }
+        frameButton = findViewById(id.frame_button) // Assuming you have a FrameLayout with id frame_button
+
+
         setupToolbar()
         setupButtons()
         checkAllUpdates()
+        setupCollapsingToolbar()
+    }
+
+    private fun setupCollapsingToolbar() {
+        val appBarLayout = findViewById<AppBarLayout>(id.appbar)
+        val layoutParams = appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
+        val behavior = AppBarLayout.Behavior()
+        behavior.setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
+            override fun canDrag(appBarLayout: AppBarLayout): Boolean {
+                return true
+            }
+        })
+        layoutParams.behavior = behavior
+
+        appBarLayout.addOnOffsetChangedListener { appBar, verticalOffset ->
+            val totalScrollRange = appBar.totalScrollRange
+            val currentOffset = abs(verticalOffset)
+            val percentage = (currentOffset.toFloat() / totalScrollRange) * 100
+
+            updateFrameButtonVisibility(percentage)
+        }
+    }
+
+    private fun updateFrameButtonVisibility(percentage: Float) {
+        when {
+            percentage >= 5f -> {
+                // Calculate alpha based on the percentage from 60% to 100%
+                val alphaPercentage = (percentage - 20f) / (100f - 60f)
+                frameButton.alpha = 1f - alphaPercentage
+                frameButton.visibility = View.VISIBLE
+                if (percentage == 100f){
+                    frameButton.visibility = View.GONE
+                }
+            }
+            percentage == 0f -> {
+                frameButton.alpha = 1f
+                frameButton.visibility = View.VISIBLE
+            }
+            else -> {
+                frameButton.alpha = 1f
+                frameButton.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun checkInstallPermission(): Boolean {
@@ -250,7 +303,7 @@ class MainActivity : AppCompatActivity() {
                     linearLayout?.visibility = View.VISIBLE
                     versionTextView1?.apply {
                         text = "v.$installedVersion"
-                        paintFlags = android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                        paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
                         alpha = 0.5f
                         visibility = View.VISIBLE
                     }

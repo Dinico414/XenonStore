@@ -13,8 +13,8 @@ android {
         applicationId = "com.xenon.store"
         minSdk = 31
         targetSdk = 34
-        versionCode = 6
-        versionName = "1.4.2"
+        versionCode =5
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.ui.text.android)
     implementation(libs.protolite.well.known.types)
     implementation(libs.androidx.animation.android)
+    implementation(libs.androidx.core.animation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
