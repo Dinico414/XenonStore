@@ -665,49 +665,58 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateFrameButtonVisibility(percentage: Float) {
-        when {
-            percentage >= 10f -> {
-                val alphaPercentage = (percentage - 20f) / (100f - 60f)
-                frameButton.alpha = 1f - alphaPercentage
-                frameButton.visibility = View.VISIBLE
-                if (percentage == 100f) {
-                    frameButton.visibility = View.GONE
+        val collapsingToolbar = findViewById<View>(id.collapsing_toolbar)
+        if (collapsingToolbar == null) {
+            frameButton.visibility = View.GONE
+        } else {
+            when {
+                percentage >= 10f -> {
+                    val alphaPercentage = (percentage - 20f) / (100f - 60f)
+                    frameButton.alpha = 1f - alphaPercentage
+                    frameButton.visibility = View.VISIBLE
+                    if (percentage == 100f) {
+                        frameButton.visibility = View.GONE
+                    }
                 }
-            }
-            percentage == 0f -> {
-                frameButton.alpha = 1f
-                frameButton.visibility = View.VISIBLE
-            }
-            else -> {
-                frameButton.alpha = 1f
-                frameButton.visibility = View.VISIBLE
+                percentage == 0f -> {
+                    frameButton.alpha = 1f
+                    frameButton.visibility = View.VISIBLE
+                }
+                else -> {
+                    frameButton.alpha = 1f
+                    frameButton.visibility = View.VISIBLE
+                }
             }
         }
     }
 
     private fun updateFrameButtonSmallVisibility(percentage: Float) {
-        frameButtonSmall?.let {
-            when {
-                percentage >= 0f -> {
-                    val alphaPercentage = (percentage - 80f) / (100f - 80f)
-                    it.alpha = alphaPercentage
-                    it.visibility = View.VISIBLE
-                    if (percentage == 100f) {
+        val collapsingToolbar = findViewById<View>(id.collapsing_toolbar)
+        if (collapsingToolbar == null) {
+            frameButtonSmall?.visibility = View.VISIBLE
+        } else {
+            frameButtonSmall?.let {
+                when {
+                    percentage >= 0f -> {
+                        val alphaPercentage = (percentage - 80f) / (100f - 80f)
+                        it.alpha = alphaPercentage
                         it.visibility = View.VISIBLE
+                        if (percentage == 100f) {
+                            it.visibility = View.VISIBLE
+                        }
                     }
-                }
-                percentage == 0f -> {
-                    it.alpha = 0f
-                    it.visibility = View.GONE
-                }
-                else -> {
-                    it.alpha = 0f
-                    it.visibility = View.GONE
+                    percentage == 0f -> {
+                        it.alpha = 0f
+                        it.visibility = View.GONE
+                    }
+                    else -> {
+                        it.alpha = 0f
+                        it.visibility = View.GONE
+                    }
                 }
             }
         }
     }
-
     private fun ProgressBarType.getProgressBarId(repo: String): Int {
         return when (repo) {
             xenonStoreRepo -> when (this) {
