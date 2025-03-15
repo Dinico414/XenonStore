@@ -69,6 +69,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var installPermissionLauncher: ActivityResultLauncher<Intent>
     private val isDownloadInProgress = AtomicBoolean(false)
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedPreferenceManager = SharedPreferenceManager(this)
         AppCompatDelegate.setDefaultNightMode(sharedPreferenceManager.themeFlag[sharedPreferenceManager.theme])
@@ -97,35 +98,70 @@ class MainActivity : AppCompatActivity() {
         setupCollapsingToolbar()
         checkAllUpdates()
     }
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
 
-        val item: MenuItem = menu.findItem(id.action_custom_button)
-        val actionView: View? = item.actionView
-        bindingSmall = actionView?.let { ActionUpdateButtonBinding.bind(it) }
-        frameButtonSmall = bindingSmall?.frameButtonSmall
-
-        val settingsItem = menu.findItem(id.settings)
-        settingsItem.setOnMenuItemClickListener {
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
-            true
-        }
-        val shareItem = menu.findItem(id.action_share)
-        shareItem.setOnMenuItemClickListener {
-            val sendIntent: Intent = Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(
-                    Intent.EXTRA_TEXT,
-                    "xenonware.com/store"
-                )
-                type = "text/plain"
+    private fun setupCollapsingToolbar() {
+        val appBarLayout = findViewById<AppBarLayout>(id.appbar)
+        val layoutParams = appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
+        val behavior = AppBarLayout.Behavior()
+        behavior.setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
+            override fun canDrag(appBarLayout: AppBarLayout): Boolean {
+                return true
             }
-            val shareIntent = Intent.createChooser(sendIntent, null)
-            startActivity(shareIntent)
-            true
+        })
+        layoutParams.behavior = behavior
+
+        appBarLayout.addOnOffsetChangedListener { appBar, verticalOffset ->
+            val totalScrollRange = appBar.totalScrollRange
+            val currentOffset = abs(verticalOffset)
+            val percentage = (currentOffset.toFloat() / totalScrollRange) * 100
+
+            updateFrameButtonVisibility(percentage)
+            updateFrameButtonSmallVisibility(percentage)
         }
-        return true
+    }
+
+    private fun updateFrameButtonVisibility(percentage: Float) {
+        when {
+            percentage >= 10f -> {
+                val alphaPercentage = (percentage - 20f) / (100f - 60f)
+                frameButton.alpha = 1f - alphaPercentage
+                frameButton.visibility = View.VISIBLE
+                if (percentage == 100f) {
+                    frameButton.visibility = View.GONE
+                }
+            }
+            percentage == 0f -> {
+                frameButton.alpha = 1f
+                frameButton.visibility = View.VISIBLE
+            }
+            else -> {
+                frameButton.alpha = 1f
+                frameButton.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun updateFrameButtonSmallVisibility(percentage: Float) {
+        frameButtonSmall?.let {
+            when {
+                percentage >= 0f -> {
+                    val alphaPercentage = (percentage - 80f) / (100f - 80f)
+                    it.alpha = alphaPercentage
+                    it.visibility = View.VISIBLE
+                    if (percentage == 100f) {
+                        it.visibility = View.VISIBLE
+                    }
+                }
+                percentage == 0f -> {
+                    it.alpha = 0f
+                    it.visibility = View.GONE
+                }
+                else -> {
+                    it.alpha = 0f
+                    it.visibility = View.GONE
+                }
+            }
+        }
     }
 
     private fun checkInstallPermission(): Boolean {
@@ -194,7 +230,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 (button.context as? MainActivity)?.onUpdateCheckComplete()
             }
-
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     runOnUiThread { updateButton(button, getString(R.string.open)) }
@@ -238,7 +273,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
-
     private var pendingUpdateChecks = 0
 
     fun onUpdateCheckComplete() {
@@ -247,34 +281,6 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 swipeRefreshLayout.isRefreshing = false
             }
-        }
-    }
-
-    private fun packageNameFromRepo(repo: String): String {
-        return when (repo) {
-            xenonStoreRepo -> "com.xenon.store"
-            todoListRepo -> "com.xenon.todolist"
-            calculatorRepo -> "com.xenon.calculator"
-            fileexplorerRepo -> "com.xenon.fileexplorer"
-            else -> throw IllegalArgumentException("Unknown repository: $repo")
-        }
-    }
-
-    private fun isAppInstalled(packageName: String): Boolean {
-        return try {
-            packageManager.getPackageInfo(packageName, 0)
-            true
-        } catch (e: PackageManager.NameNotFoundException) {
-            false
-        }
-    }
-
-    private fun getInstalledAppVersion(packageName: String): String? {
-        return try {
-            val packageInfo = packageManager.getPackageInfo(packageName, 0)
-            packageInfo.versionName
-        } catch (e: PackageManager.NameNotFoundException) {
-            null
         }
     }
 
@@ -291,189 +297,6 @@ class MainActivity : AppCompatActivity() {
         return null
     }
 
-    private fun isNewerVersion(latestVersion: String, installedVersion: String): Boolean {
-        val latestParts = latestVersion.split(".").map { it.toIntOrNull() ?: 0 }
-        val installedParts = installedVersion.split(".").map { it.toIntOrNull() ?: 0 }
-
-        for (i in 0 until maxOf(latestParts.size, installedParts.size)) {
-            val latestPart = latestParts.getOrElse(i) { 0 }
-            val installedPart = installedParts.getOrElse(i) { 0 }
-
-            if (latestPart > installedPart) {
-                return true
-            } else if (latestPart < installedPart) {
-                return false
-            }
-        }
-        return false
-    }
-
-    private fun downloadFile(
-        progressBarId: Int,
-        button: Button?,
-        imageButton: ImageButton?,
-        repo: String,
-        downloadUrl: String,
-    ) {
-        val linearProgressBar = findViewById<LinearProgressIndicator>(progressBarId).takeIf {
-            progressBarId in listOf(
-                id.progressbar_1,
-                id.progressbar_2,
-                id.progressbar_3,
-                id.progressbar_4
-            )
-        }?.apply {
-            visibility = View.VISIBLE
-            progress = 0
-        }
-        val circularProgressBar = findViewById<CircularProgressIndicator>(progressBarId).takeIf {
-            progressBarId == id.progressbar_1_circle
-        }?.apply {
-            visibility = View.VISIBLE
-            progress = 0
-        }
-        val originalButtonText = button?.text?.toString()
-        val originalImageDrawable = imageButton?.drawable
-
-        runOnUiThread {
-            button?.text = ""
-            imageButton?.setImageDrawable(null)
-        }
-        val request = Request.Builder().url(downloadUrl).build()
-        OkHttpClient().newCall(request).enqueue(object : Callback {
-            override fun onResponse(call: Call, response: Response) {
-                if (!response.isSuccessful) {
-                    handleDownloadError(
-                        progressBarId,
-                        button,
-                        imageButton,
-                        originalButtonText,
-                        originalImageDrawable
-                    )
-                    return
-                }
-                val contentLength = response.body?.contentLength() ?: -1
-                val tempFile = File(getExternalFilesDir(null), "$repo.apk")
-
-                try {
-                    response.body?.byteStream()?.use { inputStream ->
-                        FileOutputStream(tempFile).use { outputStream ->
-                            val buffer = ByteArray(8192)
-                            var bytesRead: Int
-                            var downloadedBytes: Long = 0
-
-                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                                outputStream.write(buffer, 0, bytesRead)
-                                downloadedBytes += bytesRead
-                                val progress = if (contentLength > 0) {
-                                    (downloadedBytes * 100 / contentLength).toInt()
-                                } else {
-                                    0
-                                }
-                                runOnUiThread {
-                                    linearProgressBar?.progress = progress
-                                    circularProgressBar?.progress = progress
-                                }
-                            }
-                        }
-                    }
-                    onDownloadComplete(
-                        tempFile,
-                        linearProgressBar ?: circularProgressBar!!,
-                        button,
-                        imageButton,
-                        repo,
-                        originalImageDrawable
-                    )
-                } catch (e: Exception) {
-                    handleDownloadError(
-                        progressBarId,
-                        button,
-                        imageButton,
-                        originalButtonText,
-                        originalImageDrawable
-                    )
-                } finally {
-                    runOnUiThread {
-                        isDownloadInProgress.set(false)
-                        button?.isEnabled = true
-                        imageButton?.isEnabled = true
-                        linearProgressBar?.visibility = View.GONE
-                        circularProgressBar?.visibility = View.GONE
-                    }
-                }
-            }
-            override fun onFailure(call: Call, e: IOException) {
-                handleDownloadError(
-                    progressBarId,
-                    button,
-                    imageButton,
-                    originalButtonText,
-                    originalImageDrawable
-                )
-            }
-        })
-    }
-
-    private fun handleDownloadError(
-        progressBarId: Int,
-        button: Button?,
-        imageButton: ImageButton?,
-        originalButtonText: String?,
-        originalImageDrawable: Drawable?,
-    ) {
-        runOnUiThread {
-            Toast.makeText(applicationContext, "Download failed", Toast.LENGTH_SHORT).show()
-            findViewById<LinearProgressIndicator>(progressBarId).visibility = View.GONE
-            findViewById<CircularProgressIndicator>(progressBarId).visibility = View.GONE
-            button?.apply {
-                visibility = View.VISIBLE
-                text = originalButtonText
-            }
-            imageButton?.apply {
-                visibility = View.VISIBLE
-                setImageDrawable(originalImageDrawable)
-            }
-            isDownloadInProgress.set(false)
-            button?.isEnabled = true
-            imageButton?.isEnabled = true
-        }
-    }
-
-    private fun onDownloadComplete(
-        tempFile: File,
-        progressBar: View,
-        button: Button?,
-        imageButton: ImageButton?,
-        repo: String,
-        originalImageDrawable: Drawable?,
-    ) {
-        runOnUiThread {
-            progressBar.visibility = View.GONE
-            if (button != null) {
-                button.visibility = View.VISIBLE
-                updateButtonText(button, repo)
-            }
-            if (imageButton != null) {
-                imageButton.visibility = View.VISIBLE
-                imageButton.setImageDrawable(originalImageDrawable)
-            }
-            val uri = FileProvider.getUriForFile(
-                this@MainActivity,
-                "${packageName}.provider",
-                tempFile
-            )
-            if (checkInstallPermission()) {
-                val installIntent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "application/vnd.android.package-archive")
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                }
-                startActivity(installIntent)
-            } else {
-                launchInstallPrompt(uri)
-            }
-        }
-    }
 
     @SuppressLint("SetTextI18n")
     private fun handleUpdate(
@@ -491,7 +314,7 @@ class MainActivity : AppCompatActivity() {
 //            xenonStoreRepo -> id.card_1
             todoListRepo -> id.card_2
             calculatorRepo -> id.card_3
-//            fileexplorerRepo -> id.card_4
+            fileexplorerRepo -> id.card_4
             else -> null
         }
         val cardView = cardId?.let { findViewById<CardView>(it) }
@@ -528,7 +351,6 @@ class MainActivity : AppCompatActivity() {
                     imageButton?.let { setupImageButton(it, repo, downloadUrl) }
                     linearLayout?.visibility = View.GONE
                 }
-
                 installedVersion != null && isNewerVersion(latestTag, installedVersion) -> {
                     setupButton(button, getString(R.string.update), repo, downloadUrl)
                     imageButton?.let { setupImageButton(it, repo, downloadUrl) }
@@ -544,52 +366,12 @@ class MainActivity : AppCompatActivity() {
                         visibility = View.VISIBLE
                     }
                 }
-
                 else -> {
                     setupLaunchButton(button, repo)
                     imageButton?.let { setupLaunchImageButton(it, repo) }
                     linearLayout?.visibility = View.GONE
                 }
             }
-        }
-    }
-
-    private fun setupButtons() {
-        val binding = findViewById<View>(android.R.id.content)
-        val download1 = binding.findViewById<Button>(id.download_1)
-        val download2 = binding.findViewById<Button>(id.download_2)
-        val download3 = binding.findViewById<Button>(id.download_3)
-        val download4 = binding.findViewById<Button>(id.download_4)
-
-        updateButtonText(download1, xenonStoreRepo)
-        updateButtonText(download2, todoListRepo)
-        updateButtonText(download3, calculatorRepo)
-        updateButtonText(download4, fileexplorerRepo)
-    }
-
-    private fun setupToolbar() {
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-    }
-
-    private fun setupCollapsingToolbar() {
-        val appBarLayout = findViewById<AppBarLayout>(id.appbar)
-        val layoutParams = appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
-        val behavior = AppBarLayout.Behavior()
-        behavior.setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
-            override fun canDrag(appBarLayout: AppBarLayout): Boolean {
-                return true
-            }
-        })
-        layoutParams.behavior = behavior
-
-        appBarLayout.addOnOffsetChangedListener { appBar, verticalOffset ->
-            val totalScrollRange = appBar.totalScrollRange
-            val currentOffset = abs(verticalOffset)
-            val percentage = (currentOffset.toFloat() / totalScrollRange) * 100
-
-            updateFrameButtonVisibility(percentage)
-            updateFrameButtonSmallVisibility(percentage)
         }
     }
 
@@ -645,6 +427,10 @@ class MainActivity : AppCompatActivity() {
         button.text = text
     }
 
+    private fun showToast(message: String) {
+        Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+    }
+
     private fun updateButtonText(button: Button, repo: String) {
         val packageName = packageNameFromRepo(repo)
         val isInstalled = isAppInstalled(packageName)
@@ -663,61 +449,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateFrameButtonVisibility(percentage: Float) {
-        when {
-            percentage >= 10f -> {
-                val alphaPercentage = (percentage - 20f) / (100f - 60f)
-                frameButton.alpha = 1f - alphaPercentage
-                frameButton.visibility = View.VISIBLE
-                if (percentage == 100f) {
-                    frameButton.visibility = View.GONE
-                }
-            }
-
-            percentage == 0f -> {
-                frameButton.alpha = 1f
-                frameButton.visibility = View.VISIBLE
-            }
-
-            else -> {
-                frameButton.alpha = 1f
-                frameButton.visibility = View.VISIBLE
-            }
-        }
-    }
-
-    private fun updateFrameButtonSmallVisibility(percentage: Float) {
-        frameButtonSmall?.let {
-            when {
-                percentage >= 0f -> {
-                    val alphaPercentage = (percentage - 80f) / (100f - 80f)
-                    it.alpha = alphaPercentage
-                    it.visibility = View.VISIBLE
-                    if (percentage == 100f) {
-                        it.visibility = View.VISIBLE
-                    }
-                }
-
-                percentage == 0f -> {
-                    it.alpha = 0f
-                    it.visibility = View.GONE
-                }
-
-                else -> {
-                    it.alpha = 0f
-                    it.visibility = View.GONE
-                }
-            }
-        }
-    }
-
     private fun ProgressBarType.getProgressBarId(repo: String): Int {
         return when (repo) {
             xenonStoreRepo -> when (this) {
                 ProgressBarType.LINEAR -> id.progressbar_1
                 ProgressBarType.CIRCULAR -> id.progressbar_1_circle
             }
-
             todoListRepo -> id.progressbar_2
             calculatorRepo -> id.progressbar_3
             fileexplorerRepo -> id.progressbar_4
@@ -725,14 +462,275 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+    private fun packageNameFromRepo(repo: String): String {
+        return when (repo) {
+            xenonStoreRepo -> "com.xenon.store"
+            todoListRepo -> "com.xenon.todolist"
+            calculatorRepo -> "com.xenon.calculator"
+            fileexplorerRepo -> "com.xenon.fileexplorer"
+            else -> throw IllegalArgumentException("Unknown repository: $repo")
+        }
+    }
+
+    private fun isAppInstalled(packageName: String): Boolean {
+        return try {
+            packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    private fun getInstalledAppVersion(packageName: String): String? {
+        return try {
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            packageInfo.versionName
+        } catch (e: PackageManager.NameNotFoundException) {
+            null
+        }
+    }
+
+    private fun isNewerVersion(latestVersion: String, installedVersion: String): Boolean {
+        val latestParts = latestVersion.split(".").map { it.toIntOrNull() ?: 0 }
+        val installedParts = installedVersion.split(".").map { it.toIntOrNull() ?: 0 }
+
+        for (i in 0 until maxOf(latestParts.size, installedParts.size)) {
+            val latestPart = latestParts.getOrElse(i) { 0 }
+            val installedPart = installedParts.getOrElse(i) { 0 }
+
+            if (latestPart > installedPart) {
+                return true
+            } else if (latestPart < installedPart) {
+                return false
+            }
+        }
+        return false
     }
 
     private fun fadeIn(view: View) {
         val fadeIn = AlphaAnimation(0f, 1f)
         fadeIn.duration = 500
         view.startAnimation(fadeIn)
+    }
+
+    private fun downloadFile(
+        progressBarId: Int,
+        button: Button?,
+        imageButton: ImageButton?,
+        repo: String,
+        downloadUrl: String,
+    ) {
+        val linearProgressBar: LinearProgressIndicator? =
+            if (progressBarId == id.progressbar_1 || progressBarId == id.progressbar_2 || progressBarId == id.progressbar_3 || progressBarId == id.progressbar_4) {
+                findViewById<LinearProgressIndicator>(progressBarId).apply {
+                    visibility = View.VISIBLE
+                    progress = 0
+                }
+            } else {
+                null
+            }
+        val circularProgressBar: CircularProgressIndicator? =
+            if (progressBarId == id.progressbar_1_circle) {
+                findViewById<CircularProgressIndicator>(progressBarId).apply {
+                    visibility = View.VISIBLE
+                    progress = 0
+                }
+            } else {
+                null
+            }
+        val originalButtonText = button?.text?.toString()
+        val originalImageDrawable = imageButton?.drawable
+
+        runOnUiThread {
+            button?.text = ""
+            imageButton?.setImageDrawable(null)
+        }
+        val request = Request.Builder().url(downloadUrl).build()
+        OkHttpClient().newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                if (!response.isSuccessful) {
+                    "Download failed".showError(
+                        progressBarId,
+                        button,
+                        imageButton,
+                        originalButtonText,
+                        originalImageDrawable
+                    )
+                    return
+                }
+                fun onDownloadCompleteOrFailed() {
+                    runOnUiThread {
+                        isDownloadInProgress.set(false)
+                        button?.isEnabled = true
+                        imageButton?.isEnabled = true
+                    }
+                }
+                val contentLength = response.body?.contentLength() ?: -1
+                var downloadedBytes: Long = 0
+                val buffer = ByteArray(8192)
+                val inputStream = response.body?.byteStream()
+                val tempFile = File(getExternalFilesDir(null), "$repo.apk")
+                val outputStream = FileOutputStream(tempFile)
+
+                try {
+                    var bytesRead: Int
+                    while (inputStream?.read(buffer).also { bytesRead = it ?: -1 } != -1) {
+                        outputStream.write(buffer, 0, bytesRead)
+                        downloadedBytes += bytesRead
+                        val progress = if (contentLength > 0) {
+                            (downloadedBytes * 100 / contentLength).toInt()
+                        } else {
+                            0
+                        }
+                        runOnUiThread {
+                            linearProgressBar?.progress = progress
+                            circularProgressBar?.progress = progress
+                        }
+                    }
+                    onDownloadCompleteOrFailed()
+                    runOnUiThread {
+                        linearProgressBar?.visibility = View.GONE
+                        circularProgressBar?.visibility = View.GONE
+                        onDownloadComplete(
+                            tempFile,
+                            linearProgressBar
+                                ?: circularProgressBar!!,
+                            button,
+                            imageButton,
+                            repo,
+                            originalImageDrawable
+                        )
+                    }
+                } catch (e: Exception) {
+                    onDownloadCompleteOrFailed()
+                    "Download failed".showError(
+                        progressBarId,
+                        button,
+                        imageButton,
+                        originalButtonText,
+                        originalImageDrawable
+                    )
+                } finally {
+                    inputStream?.close()
+                    outputStream.close()
+                }
+            }
+            override fun onFailure(call: Call, e: IOException) {
+                "Download failed".showError(
+                    progressBarId,
+                    button,
+                    imageButton,
+                    originalButtonText,
+                    originalImageDrawable
+                )
+            }
+        })
+    }
+
+    private fun String.showError(
+        progressBarId: Int,
+        button: Button?,
+        imageButton: ImageButton?,
+        originalButtonText: String?,
+        originalImageDrawable: Drawable?,
+    ) {
+        runOnUiThread {
+            Toast.makeText(applicationContext, this, Toast.LENGTH_SHORT).show()
+            findViewById<LinearProgressIndicator>(progressBarId).visibility = View.GONE
+            findViewById<CircularProgressIndicator>(progressBarId).visibility = View.GONE
+            button?.apply {
+                visibility = View.VISIBLE
+                text = originalButtonText
+            }
+            imageButton?.apply {
+                visibility = View.VISIBLE
+                setImageDrawable(originalImageDrawable)
+            }
+        }
+    }
+
+    private fun onDownloadComplete(
+        tempFile: File,
+        progressBar: View,
+        button: Button?,
+        imageButton: ImageButton?,
+        repo: String,
+        originalImageDrawable: Drawable?,
+    ) {
+        runOnUiThread {
+            progressBar.visibility = View.GONE
+            if (button != null) {
+                button.visibility = View.VISIBLE
+                updateButtonText(button, repo)
+            }
+            if (imageButton != null) {
+                imageButton.visibility = View.VISIBLE
+                imageButton.setImageDrawable(originalImageDrawable)
+            }
+            val uri = FileProvider.getUriForFile(
+                this@MainActivity,
+                "${packageName}.provider",
+                tempFile
+            )
+            if (checkInstallPermission()) {
+                val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, "application/vnd.android.package-archive")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                }
+                startActivity(installIntent)
+            } else {
+                launchInstallPrompt(uri)
+            }
+        }
+    }
+
+    private fun setupButtons() {
+        val binding = findViewById<View>(android.R.id.content)
+        val download1 = binding.findViewById<Button>(id.download_1)
+        val download2 = binding.findViewById<Button>(id.download_2)
+        val download3 = binding.findViewById<Button>(id.download_3)
+        val download4 = binding.findViewById<Button>(id.download_4)
+
+        updateButtonText(download1, xenonStoreRepo)
+        updateButtonText(download2, todoListRepo)
+        updateButtonText(download3, calculatorRepo)
+        updateButtonText(download4, fileexplorerRepo)
+    }
+
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+
+        val item: MenuItem = menu.findItem(id.action_custom_button)
+        val actionView: View? = item.actionView
+        bindingSmall = actionView?.let { ActionUpdateButtonBinding.bind(it) }
+        frameButtonSmall = bindingSmall?.frameButtonSmall
+
+        val settingsItem = menu.findItem(id.settings)
+        settingsItem.setOnMenuItemClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+            true
+        }
+        val shareItem = menu.findItem(id.action_share)
+        shareItem.setOnMenuItemClickListener {
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    "xenonware.com/store"
+                )
+                type = "text/plain"
+            }
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            startActivity(shareIntent)
+            true
+        }
+        return true
     }
 
     enum class ProgressBarType {
