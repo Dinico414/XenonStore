@@ -22,4 +22,5 @@
     <string name="cancel">Abbruch</string>
     <string name="clear_data_dialog">Willst du wirklich alle App Daten löschen?</string>
     <string name="prerelease">Vorabversionen suchen</string>
+    <string name="amoled">Amoled</string>
 </resources>

@@ -12,6 +12,7 @@ class SharedPreferenceManager(context: Context) {
     private val editor = preference.edit()
 
     private val keyTheme = "theme"
+private val keyAmoledDark = "amoled_dark"
 
     var theme
         get() = preference.getInt(keyTheme,2)
@@ -19,6 +20,14 @@ class SharedPreferenceManager(context: Context) {
             editor.putInt(keyTheme,value)
             editor.commit()
         }
+
+var amoledDark 
+get() =
+preference.getBoolean(keyAmoledDark, false)
+set(value) {
+editor.putBoolean(keyAmoledDark, value)
+editor.apply()
+}
 
     val themeFlag = arrayOf(
         AppCompatDelegate.MODE_NIGHT_NO,
