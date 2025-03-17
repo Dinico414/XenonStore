@@ -96,12 +96,11 @@ class MainActivity : AppCompatActivity() {
         setupToolbar()
         setupButtons()
         setupCollapsingToolbar()
-        checkAllUpdates()
     }
 
     override fun onResume() {
         super.onResume()
-        checkAllUpdates()
+//        checkAllUpdates()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
