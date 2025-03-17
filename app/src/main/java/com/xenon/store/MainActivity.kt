@@ -84,6 +84,11 @@ class MainActivity : AppCompatActivity() {
         swipeRefreshLayout.setOnRefreshListener {
             checkAllUpdates()
         }
+
+
+val sharedPreferenceManager = SharedPreferenceManager(this)
+
+
         installPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
                 if (checkInstallPermission()) {
@@ -127,6 +132,17 @@ class MainActivity : AppCompatActivity() {
         }
         return true
     }
+
+private fun applyAmoledDark(enable: Boolean) {
+    if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+        if (enable) {
+            window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
+        } else {
+            window.decorView.setBackgroundColor(resources.getColor(R.color.dark_background)) // Replace dark_background with your dark theme color
+        }
+    }
+}
+
 
     private fun checkInstallPermission(): Boolean {
         return packageManager.canRequestPackageInstalls()
