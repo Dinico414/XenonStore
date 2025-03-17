@@ -85,10 +85,6 @@ class MainActivity : AppCompatActivity() {
             checkAllUpdates()
         }
 
-
-val sharedPreferenceManager = SharedPreferenceManager(this)
-
-
         installPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
                 if (checkInstallPermission()) {
@@ -102,6 +98,7 @@ val sharedPreferenceManager = SharedPreferenceManager(this)
         setupCollapsingToolbar()
         checkAllUpdates()
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
 
@@ -133,16 +130,15 @@ val sharedPreferenceManager = SharedPreferenceManager(this)
         return true
     }
 
-private fun applyAmoledDark(enable: Boolean) {
-    if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
-        if (enable) {
-            window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
-        } else {
-            window.decorView.setBackgroundColor(resources.getColor(R.color.dark_background)) // Replace dark_background with your dark theme color
+    private fun applyAmoledDark(enable: Boolean) {
+        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+            if (enable) {
+                window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
+            } else {
+                window.decorView.setBackgroundColor(resources.getColor(R.color.dark_background)) // Replace dark_background with your dark theme color
+            }
         }
     }
-}
-
 
     private fun checkInstallPermission(): Boolean {
         return packageManager.canRequestPackageInstalls()

@@ -23,7 +23,7 @@ class SettingsActivity : BaseActivity() {
     private val themeTitleList = arrayOf("Light", "Dark", "System")
     private lateinit var sharedPreferences: SharedPreferences
     private val preReleaseKey = "pre_releases"
-private val amoledDarkKey = "amoled_dark"
+    private val amoledDarkKey = "amoled_dark"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,16 +81,13 @@ private val amoledDarkKey = "amoled_dark"
             sharedPreferences.edit().putBoolean(preReleaseKey, isChecked).apply()
         }
 
-    }
-
-val amoledDarkSwitch = findViewById<SwitchMaterial>(R.id.amoled_dark_switch)
+        val amoledDarkSwitch = findViewById<SwitchMaterial>(R.id.amoled_dark_switch)
         amoledDarkSwitch.isChecked = sharedPreferences.getBoolean(amoledDarkKey, false)
         amoledDarkSwitch.setOnCheckedChangeListener { _, isChecked ->
             sharedPreferences.edit().putBoolean(amoledDarkKey, isChecked).apply()
             applyAmoledDark(isChecked)
         }
         applyAmoledDark(sharedPreferences.getBoolean(amoledDarkKey, false))
-
     }
 
     private fun applyAmoledDark(enable: Boolean) {
