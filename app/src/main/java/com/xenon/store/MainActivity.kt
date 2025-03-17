@@ -99,6 +99,11 @@ class MainActivity : AppCompatActivity() {
         checkAllUpdates()
     }
 
+    override fun onResume() {
+        super.onResume()
+        checkAllUpdates()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
 
