@@ -50,14 +50,12 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.abs
 
 class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private lateinit var binding: FragmentAppListBinding
     private lateinit var appListModel: AppListViewModel
     private lateinit var sharedPreferences: SharedPreferences
 
-    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var installPermissionLauncher: ActivityResultLauncher<Intent>
     private val isDownloadInProgress = AtomicBoolean(false)
 
@@ -127,7 +125,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     }
 
     private fun checkAllUpdates() {
-        swipeRefreshLayout.isRefreshing = true
+        binding.swipeRefreshLayout.isRefreshing = true
 
 //        val download1 = binding.download_1
 //        val download1image = binding.download_1_image
@@ -144,7 +142,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             completedChecks++
             if (completedChecks == updateChecks.size) {
                 activity?.runOnUiThread {
-                    swipeRefreshLayout.isRefreshing = false
+                    binding.swipeRefreshLayout.isRefreshing = false
                 }
             }
         }
@@ -227,7 +225,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         pendingUpdateChecks--
         if (pendingUpdateChecks == 0) {
             activity?.runOnUiThread {
-                swipeRefreshLayout.isRefreshing = false
+                binding.swipeRefreshLayout.isRefreshing = false
             }
         }
     }
