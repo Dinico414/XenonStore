@@ -109,7 +109,7 @@
         </FrameLayout>
 
         <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/app_list_container"
+            android:id="@+id/app_list_fragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:name="com.xenon.store.fragments.AppListFragment"
