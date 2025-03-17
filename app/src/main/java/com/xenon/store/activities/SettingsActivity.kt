@@ -23,6 +23,7 @@ class SettingsActivity : BaseActivity() {
     private val themeTitleList = arrayOf("Light", "Dark", "System")
     private lateinit var sharedPreferences: SharedPreferences
     private val preReleaseKey = "pre_releases"
+private val amoledDarkKey = "amoled_dark"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,6 +81,26 @@ class SettingsActivity : BaseActivity() {
             sharedPreferences.edit().putBoolean(preReleaseKey, isChecked).apply()
         }
 
+    }
+
+val amoledDarkSwitch = findViewById<SwitchMaterial>(R.id.amoled_dark_switch)
+        amoledDarkSwitch.isChecked = sharedPreferences.getBoolean(amoledDarkKey, false)
+        amoledDarkSwitch.setOnCheckedChangeListener { _, isChecked ->
+            sharedPreferences.edit().putBoolean(amoledDarkKey, isChecked).apply()
+            applyAmoledDark(isChecked)
+        }
+        applyAmoledDark(sharedPreferences.getBoolean(amoledDarkKey, false))
+
+    }
+
+    private fun applyAmoledDark(enable: Boolean) {
+        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+            if (enable) {
+                window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
+            } else {
+                window.decorView.setBackgroundColor(resources.getColor(R.color.dark_background)) // replace dark_background with your dark theme color
+            }
+        }
     }
 
 
