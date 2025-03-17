@@ -118,7 +118,7 @@
 
                 </LinearLayout>
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/amoled_dark_switch"
                     style="@style/SettingsTile"
                     android:layout_width="match_parent"
@@ -129,7 +129,7 @@
                     android:textStyle="bold" />
 
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/release_switch"
                     style="@style/SettingsTile"
                     android:layout_width="match_parent"

@@ -207,7 +207,7 @@ class MainActivity : AppCompatActivity() {
             if (enable) {
                 window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
             } else {
-                window.decorView.setBackgroundColor(resources.getColor(R.color.dark_background)) // Replace dark_background with your dark theme color
+                window.decorView.setBackgroundColor(resources.getColor(com.xenon.commons.accesspoint.R.color.surfaceContainerLowest)) // Replace dark_background with your dark theme color
             }
         }
     }
