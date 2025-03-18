@@ -79,6 +79,10 @@ class AppListAdapter(
                 listener.buttonClicked(appItem, position)
             }
 
+            if (appItem.getDrawableId() != 0) {
+                binding.icon.setImageDrawable(context.getDrawable(appItem.getDrawableId()))
+            }
+
             handleState(appItem)
         }
 
