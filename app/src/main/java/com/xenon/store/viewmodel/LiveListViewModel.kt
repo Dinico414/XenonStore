@@ -21,6 +21,9 @@ open class LiveListViewModel<T: LiveListItem> : ViewModel() {
     }
     open fun setList(list: ArrayList<T>) {
         items = list
+        for (i in 0 until list.size) {
+            list[i].id = i
+        }
         if (list.size > 0) {
             maxTaskId = list.maxBy { v -> v.id }.id
             sortItems()
