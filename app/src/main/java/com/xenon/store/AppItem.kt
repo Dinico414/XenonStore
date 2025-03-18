@@ -10,15 +10,29 @@ enum class AppEntryState {
 }
 
 data class AppItem(
-    override var id: Int,
-    var name: String,
-    var icon: String = "",
-    var currentVersion: String = "",
-    var githubUrl: String = "",
-    var packageName: String = "",
-    var state: AppEntryState = AppEntryState.NOT_INSTALLED,
+    val name: String,
+    val icon: String,
+    val githubUrl: String,
+    val packageName: String,
 ) : LiveListItem {
+
+    override var id: Int = -1;
+    var state: AppEntryState = AppEntryState.NOT_INSTALLED
+    var installedVersion: String = ""
+    var newVersion: String = ""
+    var downloadUrl: String = ""
     // Download progressbar variables
-    var bytesDownloaded: Int = 0
-    var fileSize: Int = 0
+    var bytesDownloaded: Long = 0
+    var fileSize: Long = 0
+
+    private val ownerRepoRegex = "^https://[^/]*github\\.com/([^/]+)/([^/]+)".toRegex()
+
+//    fun getOwnerRepo(): Set<String> {
+//        val m = ownerRepoRegex.find(githubUrl)
+//        return setOf(m?.groups?.get(1)?.value ?: "", m?.groups?.get(2)?.value ?: "")
+//    }
+
+    // Github url is also checked for validity
+    val owner = ownerRepoRegex.matchAt(githubUrl, 0)?.value ?: ""
+    val repo = ownerRepoRegex.matchAt(githubUrl, 1)?.value ?: ""
 }
