@@ -82,7 +82,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         setupRecyclerView()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            checkAllUpdates()
+            refreshAppList()
         }
 
         installPermissionLauncher =
@@ -97,7 +97,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
     override fun onResume() {
         super.onResume()
-        checkAllUpdates()
+        refreshAppList()
     }
 
     private fun loadAppListFromJson() {
@@ -133,13 +133,17 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     AppEntryState.INSTALLED_AND_OUTDATED -> {
                         // Try downloading
                         appItem.state = AppEntryState.DOWNLOADING
-                        downloadFile("", appItem.packageName, object : DownloadListener {
+                        appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+
+                        downloadFile(appItem.downloadUrl, appItem.packageName, object : DownloadListener {
                             override fun onProgress(downloaded: Long, size: Long) {
                                 appItem.bytesDownloaded = downloaded
                                 appItem.fileSize = size
+                                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
                             }
                             override fun onCompleted(tempFile: File) {
                                 installApk(tempFile)
+
                             }
                             override fun onFailure() {
                                 appItem.state = AppEntryState.NOT_INSTALLED
@@ -213,13 +217,17 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
     }
 
-    private fun checkAllUpdates() {
+    private fun refreshAppList() {
         binding.swipeRefreshLayout.isRefreshing = true
 
         for (appItem in appListModel.getList()) {
             appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
             if (appItem.installedVersion != "") {
                 appItem.state = AppEntryState.INSTALLED
+                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+            }
+            else {
+                appItem.state = AppEntryState.NOT_INSTALLED
                 appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
             }
 
@@ -270,6 +278,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         val request = Request.Builder()
             .url("https://api.github.com/repos/$owner/$repo/releases")
             .build()
+        Log.d("fetching releases", "https://api.github.com/repos/$owner/$repo/releases")
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 callback.onFailure("Failure")
@@ -321,6 +330,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     }
 
     private fun isNewerVersion(latestVersion: String, installedVersion: String): Boolean {
+        if (installedVersion == "") return true
+
         val latestParts = latestVersion.split(".").map { it.toIntOrNull() ?: 0 }
         val installedParts = installedVersion.split(".").map { it.toIntOrNull() ?: 0 }
 
