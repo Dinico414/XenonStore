@@ -16,6 +16,8 @@ import com.xenon.store.R
 import com.xenon.store.SharedPreferenceManager
 import com.xenon.store.databinding.ActivitySettingsBinding
 import java.util.Locale
+import com.xenon.commons.accesspoint.R
+
 
 class SettingsActivity : BaseActivity() {
 
@@ -95,7 +97,7 @@ class SettingsActivity : BaseActivity() {
             if (enable) {
                 window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
             } else {
-                window.decorView.setBackgroundColor(resources.getColor(R.color.dark_background)) // replace dark_background with your dark theme color
+                window.decorView.setBackgroundColor(resources.getColor(com.xenon.commons.accesspoint.R.color.surfaceContainerLowest)) // replace dark_background with your dark theme color
             }
         }
     }
