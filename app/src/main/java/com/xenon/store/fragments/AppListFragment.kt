@@ -82,7 +82,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         setupRecyclerView()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            refreshAppList()
+            refreshAppList(true)
         }
 
         installPermissionLauncher =
@@ -217,7 +217,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
     }
 
-    private fun refreshAppList() {
+    private fun refreshAppList(invalidateCaches: Boolean = false) {
         binding.swipeRefreshLayout.isRefreshing = true
 
         for (appItem in appListModel.getList()) {
@@ -231,7 +231,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
             }
 
-            if (appItem.downloadUrl == "") {
+            if (appItem.downloadUrl == "" || invalidateCaches) {
                 getNewReleaseVersionGithub(appItem.owner, appItem.repo, object : APIRequestCallback{
                     override fun onCompleted(result: String) {
                         Log.d("body", result)
