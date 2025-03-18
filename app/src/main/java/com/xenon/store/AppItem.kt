@@ -39,4 +39,12 @@ data class AppItem(
     val repo = ownerRepoRegex.find(githubUrl)!!.groups[2]!!.value
 
     var downloadUrl: String = ""
+
+    fun getDrawableId(): Int {
+        return when (name) {
+            "Todo-List" -> com.xenon.commons.accesspoint.R.mipmap.todo_list
+            "Calculator" -> com.xenon.commons.accesspoint.R.mipmap.calculator
+            else -> 0
+        }
+    }
 }
