@@ -2,6 +2,7 @@ package com.xenon.store
 
 import android.content.Context
 import android.graphics.Paint
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -48,12 +49,16 @@ class AppListAdapter(
     ) {
         // Selective update by using payloads parameter of this onBindViewHolder overload
         for (payload in payloads) {
-            val changeType = payload as AppListChangeType
+            val changeType = payload as? AppListChangeType
             when (changeType) {
                 AppListChangeType.ALL -> onBindViewHolder(holder, position)
                 AppListChangeType.STATE_CHANGE -> holder.handleState(appItems[position])
+                null -> {}
             }
+            return
         }
+
+        onBindViewHolder(holder, position)
     }
 
     override fun getItemCount(): Int = appItems.size
@@ -68,6 +73,7 @@ class AppListAdapter(
         private val listener: AppItemListener
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bindItem(appItem: AppItem, position: Int) {
+            Log.d("bindItem", appItem.name)
             binding.name.text = appItem.name
 
             binding.actionButton.setOnClickListener {

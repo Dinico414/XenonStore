@@ -126,6 +126,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
     private fun setupRecyclerView() {
         val context = requireContext()
+        binding.appListRecyclerView.layoutManager = LinearLayoutManager(context)
         adapter = AppListAdapter(context, appListModel.getList(), object : AppListAdapter.AppItemListener {
             override fun buttonClicked(appItem: AppItem, position: Int) {
                 when (appItem.state) {
@@ -156,8 +157,6 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 appListModel.update(appItem)
             }
         })
-
-        binding.appListRecyclerView.layoutManager = LinearLayoutManager(context)
         binding.appListRecyclerView.adapter = adapter
         binding.appListRecyclerView.addItemDecoration(object : RecyclerView.ItemDecoration() {
             override fun getItemOffsets(
