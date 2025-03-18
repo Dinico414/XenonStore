@@ -16,7 +16,6 @@ import com.xenon.store.R
 import com.xenon.store.SharedPreferenceManager
 import com.xenon.store.databinding.ActivitySettingsBinding
 import java.util.Locale
-import com.xenon.commons.accesspoint.R
 
 
 class SettingsActivity : BaseActivity() {

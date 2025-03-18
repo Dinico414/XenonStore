@@ -6,16 +6,17 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -23,18 +24,20 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.cardview.widget.CardView
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.appbar.AppBarLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
-import com.xenon.store.MainActivity
+import com.xenon.store.AppEntryState
+import com.xenon.store.AppItem
+import com.xenon.store.AppListAdapter
 import com.xenon.store.R
 import com.xenon.store.databinding.FragmentAppListBinding
 import com.xenon.store.viewmodel.AppListViewModel
+import com.xenon.store.viewmodel.LiveListViewModel
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -91,7 +94,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         val ctx = requireContext()
         sharedPreferences = ctx.getSharedPreferences(ctx.packageName, Context.MODE_PRIVATE)
 
-        setRecyclerView()
+        setupRecyclerView()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             checkAllUpdates()
@@ -108,7 +111,84 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         setupButtons()
     }
 
-    fun setRecyclerView() {
+    private fun setupRecyclerView() {
+        val context = requireContext()
+        val adapter = AppListAdapter(context, appListModel.getList(), object : AppListAdapter.AppItemListener {
+            override fun buttonClicked(appItem: AppItem, position: Int) {
+                when (appItem.state) {
+                    AppEntryState.NOT_INSTALLED -> {
+                        // Try downloading
+
+                    }
+                    AppEntryState.INSTALLED_AND_OUTDATED -> {
+                        //
+                    }
+                    AppEntryState.DOWNLOADING -> {}
+                    AppEntryState.INSTALLED -> {
+                        startActivity(
+                            activity?.packageManager?.getLaunchIntentForPackage(appItem.packageName))
+                    }
+                }
+                appListModel.update(appItem)
+            }
+        })
+
+        binding.appListRecyclerView.layoutManager = LinearLayoutManager(context)
+        binding.appListRecyclerView.adapter = adapter
+        binding.appListRecyclerView.addItemDecoration(object : RecyclerView.ItemDecoration() {
+            override fun getItemOffsets(
+                outRect: Rect,
+                view: View,
+                parent: RecyclerView,
+                state: RecyclerView.State
+            ) {
+                super.getItemOffsets(outRect, view, parent, state)
+                val marginInPx = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    10.toFloat(),
+                    view.context.resources.displayMetrics
+                ).toInt()
+
+                val position = parent.getChildAdapterPosition(view)
+                if (position == RecyclerView.NO_POSITION) {
+                    val oldPosition = parent.getChildViewHolder(view)?.oldPosition
+                    if (oldPosition == 0) {
+                        outRect.top = marginInPx
+                    }
+                }
+                else if (position == 0) {
+                    outRect.top = marginInPx
+                }
+            }
+        })
+
+        appListModel.listStatus.observe(viewLifecycleOwner) { change ->
+            when (change.type) {
+                LiveListViewModel.ListChangedType.ADD -> {
+                    adapter.notifyItemInserted(change.idx)
+                }
+                LiveListViewModel.ListChangedType.REMOVE -> {
+                    adapter.notifyItemRemoved(change.idx)
+                }
+                LiveListViewModel.ListChangedType.MOVED -> {
+                    adapter.notifyItemMoved(change.idx, change.idx2)
+                }
+                LiveListViewModel.ListChangedType.UPDATE -> {
+                    adapter.notifyItemChanged(change.idx)
+                }
+                LiveListViewModel.ListChangedType.MOVED_AND_UPDATED -> {
+                    adapter.notifyItemChanged(change.idx)
+                    adapter.notifyItemMoved(change.idx, change.idx2)
+                    if (change.idx == 0) {
+                        binding.appListRecyclerView.scrollToPosition(0)
+                    }
+                }
+                LiveListViewModel.ListChangedType.OVERWRITTEN -> {
+                    adapter.appItems = appListModel.getList()
+                    adapter.notifyDataSetChanged()
+                }
+            }
+        }
     }
 
 

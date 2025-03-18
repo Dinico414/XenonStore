@@ -14,6 +14,7 @@
         android:clipToOutline="true"
         tools:ignore="PrivateResource">
 
+
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
@@ -22,6 +23,12 @@
             android:orientation="vertical"
             android:paddingHorizontal="10dp"
             tools:context=".MainActivity">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/app_list_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="10dp"/>
 
             <Space
                 android:layout_width="match_parent"

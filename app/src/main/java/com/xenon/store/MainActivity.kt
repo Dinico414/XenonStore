@@ -74,13 +74,8 @@ class MainActivity : AppCompatActivity() {
         setupCollapsingToolbar()
     }
 
-    override fun onResume() {
-        super.onResume()
-//        checkAllUpdates()
-    }
-
     fun setupAppList() {
-        var fragment = binding.appListFragment.getFragment<AppListFragment>()
+        val fragment = binding.appListFragment.getFragment<AppListFragment>()
         appListModel = fragment.getViewModel()
     }
 

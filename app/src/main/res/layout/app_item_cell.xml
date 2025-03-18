@@ -2,8 +2,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card"
-    style="@style/cardStyle"
+    android:paddingVertical="5dp"
     android:backgroundTint="@color/secondaryContainer"
+    style="@style/cardStyle"
     tools:ignore="ContentDescription">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -71,7 +72,7 @@
 
 
             <Button
-                android:id="@+id/download"
+                android:id="@+id/action_button"
                 style="@style/buttonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
