@@ -231,33 +231,38 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
             }
 
-            getNewReleaseVersionGithub(appItem.owner, appItem.repo, object : APIRequestCallback{
-                override fun onCompleted(result: String) {
-                    val releases = JSONArray(result)
-                    val latestRelease = findLatestRelease(releases)
+            if (appItem.downloadUrl == "") {
+                getNewReleaseVersionGithub(appItem.owner, appItem.repo, object : APIRequestCallback{
+                    override fun onCompleted(result: String) {
+                        Log.d("body", result)
+                        val releases = JSONArray(result)
+                        val latestRelease = findLatestRelease(releases)
 
-                    if (latestRelease != null) {
-                        val assets = latestRelease.getJSONArray("assets")
-                        val newVersion = latestRelease.getString("tag_name")
-                        if (assets.length() > 0) {
-                            if (isNewerVersion(newVersion, appItem.installedVersion)) {
-                                val asset = assets.getJSONObject(0)
-                                appItem.newVersion = newVersion
-                                appItem.downloadUrl = asset.getString("browser_download_url")
-                                appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
-                                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+                        if (latestRelease != null) {
+                            val assets = latestRelease.getJSONArray("assets")
+                            val newVersion = latestRelease.getString("tag_name")
+                            if (assets.length() > 0) {
+                                if (isNewerVersion(newVersion, appItem.installedVersion)) {
+                                    val asset = assets.getJSONObject(0)
+                                    appItem.newVersion = newVersion
+                                    appItem.downloadUrl = asset.getString("browser_download_url")
+                                    if (appItem.state == AppEntryState.INSTALLED) {
+                                        appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
+                                        appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+                                    }
+                                }
+                            } else {
+                                showToast("No assets found for ${appItem.repo}")
                             }
                         } else {
-                            showToast("No assets found for ${appItem.repo}")
+                            showToast("No suitable release found for ${appItem.repo}")
                         }
-                    } else {
-                        showToast("No suitable release found for ${appItem.repo}")
                     }
-                }
-                override fun onFailure(error: String) {
-                    showToast("$error for ${appItem.repo}")
-                }
-            })
+                    override fun onFailure(error: String) {
+                        showToast("$error for ${appItem.repo}")
+                    }
+                })
+            }
         }
 
         binding.swipeRefreshLayout.isRefreshing = false

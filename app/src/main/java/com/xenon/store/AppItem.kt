@@ -21,7 +21,6 @@ data class AppItem(
     var state: AppEntryState = AppEntryState.NOT_INSTALLED
     var installedVersion: String = ""
     var newVersion: String = ""
-    var downloadUrl: String = ""
     // Download progressbar variables
     var bytesDownloaded: Long = 0
     var fileSize: Long = 0
@@ -38,4 +37,6 @@ data class AppItem(
     // Github url is also checked for validity
     val owner = ownerRepoRegex.find(githubUrl)!!.groups[1]!!.value
     val repo = ownerRepoRegex.find(githubUrl)!!.groups[2]!!.value
+
+    var downloadUrl: String = ""
 }
