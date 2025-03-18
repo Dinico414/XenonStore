@@ -218,6 +218,11 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
         for (appItem in appListModel.getList()) {
             appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
+            if (appItem.installedVersion != "") {
+                appItem.state = AppEntryState.INSTALLED
+                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+            }
+
             getNewReleaseVersionGithub(appItem.owner, appItem.repo, object : APIRequestCallback{
                 override fun onCompleted(result: String) {
                     val releases = JSONArray(result)
