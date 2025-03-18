@@ -44,7 +44,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private lateinit var binding: FragmentAppListBinding
-    private lateinit var adapter: AppListAdapter
     private lateinit var appListModel: AppListViewModel
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -127,7 +126,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private fun setupRecyclerView() {
         val context = requireContext()
         binding.appListRecyclerView.layoutManager = LinearLayoutManager(context)
-        adapter = AppListAdapter(context, appListModel.getList(), object : AppListAdapter.AppItemListener {
+        val adapter = AppListAdapter(context, appListModel.getList(), object : AppListAdapter.AppItemListener {
             override fun buttonClicked(appItem: AppItem, position: Int) {
                 when (appItem.state) {
                     AppEntryState.NOT_INSTALLED,
@@ -197,10 +196,10 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     adapter.notifyItemMoved(change.idx, change.idx2)
                 }
                 LiveListViewModel.ListChangedType.UPDATE -> {
-                    adapter.notifyItemChanged(change.idx)
+                    adapter.notifyItemChanged(change.idx, change.payload)
                 }
                 LiveListViewModel.ListChangedType.MOVED_AND_UPDATED -> {
-                    adapter.notifyItemChanged(change.idx)
+                    adapter.notifyItemChanged(change.idx, change.payload)
                     adapter.notifyItemMoved(change.idx, change.idx2)
                     if (change.idx == 0) {
                         binding.appListRecyclerView.scrollToPosition(0)
@@ -226,12 +225,15 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
                     if (latestRelease != null) {
                         val assets = latestRelease.getJSONArray("assets")
+                        val newVersion = latestRelease.getString("tag_name")
                         if (assets.length() > 0) {
-                            val asset = assets.getJSONObject(0)
-                            appItem.downloadUrl = asset.getString("browser_download_url")
-                            appItem.newVersion = latestRelease.getString("tag_name")
-                            appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
-                            adapter.notifyItemChanged(appItem.id, AppListChangeType.STATE_CHANGE)
+                            if (isNewerVersion(newVersion, appItem.installedVersion)) {
+                                val asset = assets.getJSONObject(0)
+                                appItem.newVersion = newVersion
+                                appItem.downloadUrl = asset.getString("browser_download_url")
+                                appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
+                                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+                            }
                         } else {
                             showToast("No assets found for ${appItem.repo}")
                         }

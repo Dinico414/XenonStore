@@ -73,7 +73,6 @@ class AppListAdapter(
         private val listener: AppItemListener
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bindItem(appItem: AppItem, position: Int) {
-            Log.d("bindItem", appItem.name)
             binding.name.text = appItem.name
 
             binding.actionButton.setOnClickListener {
@@ -84,6 +83,8 @@ class AppListAdapter(
         }
 
         fun handleState(appItem: AppItem) {
+            Log.d("bindItem", appItem.name)
+            Log.d("bindItem", appItem.state.toString())
             var progressBarVisibility = View.GONE
 
             when (appItem.state) {
@@ -109,7 +110,7 @@ class AppListAdapter(
         }
 
         private fun handleNewVersion(appItem: AppItem) {
-            if (appItem.newVersion != "" && appItem.newVersion != appItem.installedVersion) {
+            if (appItem.newVersion != "") {
                 binding.version.visibility = View.VISIBLE
                 binding.installedVersion.apply {
                     text = "v.${appItem.installedVersion}"

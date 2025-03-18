@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 
 open class LiveListViewModel<T: LiveListItem> : ViewModel() {
     val listStatus = MutableLiveData<ListStatusChange<T>>()
-    class ListStatusChange<T>(val type: ListChangedType, val item: T? = null, val idx: Int = -1, val idx2: Int = -1)
+    class ListStatusChange<T>(val type: ListChangedType, val item: T? = null, val idx: Int = -1, val idx2: Int = -1, val payload: Any? = null)
     enum class ListChangedType {
         ADD, REMOVE, MOVED, UPDATE, MOVED_AND_UPDATED, OVERWRITTEN
     }
@@ -56,22 +56,24 @@ open class LiveListViewModel<T: LiveListItem> : ViewModel() {
 
     /**
      * Updates item and sets to correct position as per calculateItemPosition
+     * payload parameter may be used to pass message to
+     * Recyclerview.Adapater.onBindViewHolder
      */
-    open fun update(item: T) {
+    open fun update(item: T, payload: Any? = null) {
         val from = items.indexOfFirst { v -> item.id == v.id }
-        update(from)
+        update(from, payload)
     }
 
-    fun update(idx: Int) {
+    fun update(idx: Int, payload: Any? = null) {
         if (idx < 0) return
         val item = items[idx]
         val newIdx = calculateItemPosition(item, idx)
         if (idx == newIdx) {
-            listStatus.postValue(ListStatusChange(ListChangedType.UPDATE, items[idx], idx))
+            listStatus.postValue(ListStatusChange(ListChangedType.UPDATE, items[idx], idx, payload=payload))
             return
         }
         items.add(newIdx, items.removeAt(idx))
-        listStatus.postValue(ListStatusChange(ListChangedType.MOVED_AND_UPDATED, item, idx, newIdx))
+        listStatus.postValue(ListStatusChange(ListChangedType.MOVED_AND_UPDATED, item, idx, newIdx, payload=payload))
     }
 
     open fun move(from: Int, to: Int): Boolean {

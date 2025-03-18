@@ -1,5 +1,6 @@
 package com.xenon.store
 
+import android.util.Log
 import com.xenon.store.viewmodel.LiveListItem
 
 enum class AppEntryState {
@@ -27,12 +28,14 @@ data class AppItem(
 
     private val ownerRepoRegex = "^https://[^/]*github\\.com/([^/]+)/([^/]+)".toRegex()
 
-//    fun getOwnerRepo(): Set<String> {
+//    fun getOwnerRepo(): String {
 //        val m = ownerRepoRegex.find(githubUrl)
-//        return setOf(m?.groups?.get(1)?.value ?: "", m?.groups?.get(2)?.value ?: "")
+//        Log.d("aaa 1", m?.groups?.get(1)?.value ?: "")
+//        Log.d("aaa 2", m?.groups?.get(2)?.value ?: "")
+//        return m?.groups?.get(1)?.value ?: ""
 //    }
 
     // Github url is also checked for validity
-    val owner = ownerRepoRegex.matchAt(githubUrl, 0)?.value ?: ""
-    val repo = ownerRepoRegex.matchAt(githubUrl, 1)?.value ?: ""
+    val owner = ownerRepoRegex.find(githubUrl)!!.groups[1]!!.value
+    val repo = ownerRepoRegex.find(githubUrl)!!.groups[2]!!.value
 }
