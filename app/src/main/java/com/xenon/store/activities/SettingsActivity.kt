@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.xenon.store.R
 import com.xenon.store.SharedPreferenceManager
 import com.xenon.store.databinding.ActivitySettingsBinding
@@ -74,7 +74,7 @@ class SettingsActivity : BaseActivity() {
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
 
 
-        val preReleasesSwitch = findViewById<SwitchMaterial>(R.id.release_switch)
+        val preReleasesSwitch = findViewById<MaterialSwitch>(R.id.release_switch)
 
         preReleasesSwitch.isChecked = sharedPreferences.getBoolean(preReleaseKey, false)
 
@@ -82,7 +82,7 @@ class SettingsActivity : BaseActivity() {
             sharedPreferences.edit().putBoolean(preReleaseKey, isChecked).apply()
         }
 
-        val amoledDarkSwitch = findViewById<SwitchMaterial>(R.id.amoled_dark_switch)
+        val amoledDarkSwitch = findViewById<MaterialSwitch>(R.id.amoled_dark_switch)
         amoledDarkSwitch.isChecked = sharedPreferences.getBoolean(amoledDarkKey, false)
         amoledDarkSwitch.setOnCheckedChangeListener { _, isChecked ->
             sharedPreferences.edit().putBoolean(amoledDarkKey, isChecked).apply()
@@ -96,26 +96,26 @@ class SettingsActivity : BaseActivity() {
             if (enable) {
                 window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
             } else {
-                window.decorView.setBackgroundColor(resources.getColor(com.xenon.commons.accesspoint.R.color.surfaceContainerLowest)) // replace dark_background with your dark theme color
+                window.decorView.setBackgroundColor(resources.getColor(com.xenon.commons.accesspoint.R.color.surfaceContainerLowest))
             }
         }
     }
 
 
-private fun setupViews() {
-    binding.languageSelectionValue.text = Locale.getDefault().displayLanguage
-    binding.languageSelectionHolder.setOnClickListener {
-        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
-        } else {
-            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+    private fun setupViews() {
+        binding.languageSelectionValue.text = Locale.getDefault().displayLanguage
+        binding.languageSelectionHolder.setOnClickListener {
+            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
+            } else {
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            }
+            intent.data = Uri.fromParts("package", packageName, null)
+            startActivity(intent)
         }
-        intent.data = Uri.fromParts("package", packageName, null)
-        startActivity(intent)
+
+
     }
-
-
-}
 }
 
 fun Context.restartApplication() {
