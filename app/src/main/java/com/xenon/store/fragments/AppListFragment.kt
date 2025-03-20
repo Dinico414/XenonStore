@@ -233,7 +233,10 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
         for (appItem in appListModel.getList()) {
             appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
-            if (appItem.installedVersion != "") {
+            if (isNewerVersion(appItem.newVersion, appItem.installedVersion)) {
+                appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
+            }
+            else if (appItem.installedVersion != "") {
                 appItem.state = AppEntryState.INSTALLED
             }
             else {
