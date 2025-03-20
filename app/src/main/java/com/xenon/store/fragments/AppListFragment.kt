@@ -82,7 +82,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         setupRecyclerView()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            refreshAppList(true)
+            refreshAppList()
         }
 
         installPermissionLauncher =
@@ -143,7 +143,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                             }
                             override fun onCompleted(tempFile: File) {
                                 installApk(tempFile)
-
+                                appItem.state = AppEntryState.NOT_INSTALLED
+                                Log.d("onCOMPLETED", appItem.name + " " + appItem.state)
+                                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
                             }
                             override fun onFailure() {
                                 appItem.state = AppEntryState.NOT_INSTALLED
@@ -188,30 +190,33 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             }
         })
 
-        appListModel.listStatus.observe(viewLifecycleOwner) { change ->
-            when (change.type) {
-                LiveListViewModel.ListChangedType.ADD -> {
-                    adapter.notifyItemInserted(change.idx)
-                }
-                LiveListViewModel.ListChangedType.REMOVE -> {
-                    adapter.notifyItemRemoved(change.idx)
-                }
-                LiveListViewModel.ListChangedType.MOVED -> {
-                    adapter.notifyItemMoved(change.idx, change.idx2)
-                }
-                LiveListViewModel.ListChangedType.UPDATE -> {
-                    adapter.notifyItemChanged(change.idx, change.payload)
-                }
-                LiveListViewModel.ListChangedType.MOVED_AND_UPDATED -> {
-                    adapter.notifyItemChanged(change.idx, change.payload)
-                    adapter.notifyItemMoved(change.idx, change.idx2)
-                    if (change.idx == 0) {
-                        binding.appListRecyclerView.scrollToPosition(0)
+        appListModel.liveListEvent.observe(viewLifecycleOwner) { _ ->
+            while (true) {
+                val change = appListModel.listEventQueue.poll() ?: break
+                when (change.type) {
+                    LiveListViewModel.ListChangedType.ADD -> {
+                        adapter.notifyItemInserted(change.idx)
                     }
-                }
-                LiveListViewModel.ListChangedType.OVERWRITTEN -> {
-                    adapter.appItems = appListModel.getList()
-                    adapter.notifyDataSetChanged()
+                    LiveListViewModel.ListChangedType.REMOVE -> {
+                        adapter.notifyItemRemoved(change.idx)
+                    }
+                    LiveListViewModel.ListChangedType.MOVED -> {
+                        adapter.notifyItemMoved(change.idx, change.idx2)
+                    }
+                    LiveListViewModel.ListChangedType.UPDATE -> {
+                        adapter.notifyItemChanged(change.idx, change.payload)
+                    }
+                    LiveListViewModel.ListChangedType.MOVED_AND_UPDATED -> {
+                        adapter.notifyItemChanged(change.idx, change.payload)
+                        adapter.notifyItemMoved(change.idx, change.idx2)
+                        if (change.idx == 0) {
+                            binding.appListRecyclerView.scrollToPosition(0)
+                        }
+                    }
+                    LiveListViewModel.ListChangedType.OVERWRITTEN -> {
+                        adapter.appItems = appListModel.getList()
+                        adapter.notifyDataSetChanged()
+                    }
                 }
             }
         }
@@ -224,12 +229,12 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
             if (appItem.installedVersion != "") {
                 appItem.state = AppEntryState.INSTALLED
-                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
             }
             else {
                 appItem.state = AppEntryState.NOT_INSTALLED
-                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
             }
+            Log.d("refresh", appItem.id.toString() + " " + appItem.name + " " + appItem.state.toString())
+            appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
 
             if (appItem.downloadUrl == "" || invalidateCaches) {
                 getNewReleaseVersionGithub(appItem.owner, appItem.repo, object : APIRequestCallback{

@@ -87,7 +87,7 @@ class AppListAdapter(
         }
 
         fun handleState(appItem: AppItem) {
-            Log.d("bindItem", appItem.name)
+            Log.d("bindItem", appItem.id.toString() + " " + appItem.name)
             Log.d("bindItem", appItem.state.toString())
             var progressBarVisibility = View.GONE
 
