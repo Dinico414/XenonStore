@@ -131,6 +131,11 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 when (appItem.state) {
                     AppEntryState.NOT_INSTALLED,
                     AppEntryState.INSTALLED_AND_OUTDATED -> {
+                        if (appItem.downloadUrl == "") {
+                            showToast("Failed to fetch download url of ${appItem.name}")
+                            return
+                        }
+
                         // Try downloading
                         appItem.state = AppEntryState.DOWNLOADING
                         appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
@@ -144,7 +149,6 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                             override fun onCompleted(tempFile: File) {
                                 installApk(tempFile)
                                 appItem.state = AppEntryState.NOT_INSTALLED
-                                Log.d("onCOMPLETED", appItem.name + " " + appItem.state)
                                 appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
                             }
                             override fun onFailure() {
@@ -233,13 +237,11 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             else {
                 appItem.state = AppEntryState.NOT_INSTALLED
             }
-            Log.d("refresh", appItem.id.toString() + " " + appItem.name + " " + appItem.state.toString())
             appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
 
             if (appItem.downloadUrl == "" || invalidateCaches) {
                 getNewReleaseVersionGithub(appItem.owner, appItem.repo, object : APIRequestCallback{
                     override fun onCompleted(result: String) {
-                        Log.d("body", result)
                         val releases = JSONArray(result)
                         val latestRelease = findLatestRelease(releases)
 
