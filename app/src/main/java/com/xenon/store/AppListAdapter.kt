@@ -108,9 +108,9 @@ class AppListAdapter(
                 AppEntryState.DOWNLOADING -> {
                     binding.actionButton.text = ""
 
-                    progressBarVisibility = View.VISIBLE
-                    binding.progressbar.max = appItem.fileSize.toInt()
                     binding.progressbar.progress = appItem.bytesDownloaded.toInt()
+                    binding.progressbar.max = appItem.fileSize.toInt()
+                    progressBarVisibility = View.VISIBLE
                 }
                 AppEntryState.INSTALLED -> {
                     binding.actionButton.text = context.getString(R.string.open)
@@ -120,7 +120,10 @@ class AppListAdapter(
                     showVersion = true
                 }
             }
+
+            if (progressBarVisibility == View.GONE) binding.progressbar.progress = 0
             binding.progressbar.visibility = progressBarVisibility
+
             if (showVersion) handleNewVersion(appItem)
             else binding.version.visibility = View.GONE
         }

@@ -1,12 +1,6 @@
 {
   "appList": [
     {
-      "name": "Xenon Store",
-      "icon": "@mipmap/ic_launcher",
-      "githubUrl": "https://github.com/Dinico414/XenonStore",
-      "packageName": "com.xenon.store"
-    },
-    {
       "name": "Todo-List",
       "icon": "@mipmap/todo_list",
       "githubUrl": "https://github.com/Dinico414/TodoList",

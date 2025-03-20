@@ -1,5 +1,6 @@
 package com.xenon.store.fragments
 
+import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -41,6 +42,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import androidx.core.net.toUri
 
 class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private lateinit var binding: FragmentAppListBinding
@@ -57,13 +59,14 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         super.onCreate(savedInstanceState)
         appListModel = ViewModelProvider(this)[AppListViewModel::class.java]
 
-        loadAppListFromJson()
+        if (appListModel.getList().size == 0)
+            loadAppListFromJson()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = FragmentAppListBinding.inflate(inflater, container, false)
         return binding.root
@@ -130,7 +133,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             override fun buttonClicked(appItem: AppItem, position: Int) {
                 when (appItem.state) {
                     AppEntryState.NOT_INSTALLED,
-                    AppEntryState.INSTALLED_AND_OUTDATED -> {
+                    AppEntryState.INSTALLED_AND_OUTDATED,
+                        -> {
                         if (appItem.downloadUrl == "") {
                             showToast("Failed to fetch download url of ${appItem.name}")
                             return
@@ -140,22 +144,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                         appItem.state = AppEntryState.DOWNLOADING
                         appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
 
-                        downloadFile(appItem.downloadUrl, appItem.packageName, object : DownloadListener {
-                            override fun onProgress(downloaded: Long, size: Long) {
-                                appItem.bytesDownloaded = downloaded
-                                appItem.fileSize = size
-                                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
-                            }
-                            override fun onCompleted(tempFile: File) {
-                                installApk(tempFile)
-                                appItem.state = AppEntryState.NOT_INSTALLED
-                                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
-                            }
-                            override fun onFailure() {
-                                appItem.state = AppEntryState.NOT_INSTALLED
-                                showToast("Download failed")
-                            }
-                        })
+                        downloadAppItem(appItem)
                     }
                     AppEntryState.DOWNLOADING -> {}
                     AppEntryState.INSTALLED -> {
@@ -172,7 +161,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 outRect: Rect,
                 view: View,
                 parent: RecyclerView,
-                state: RecyclerView.State
+                state: RecyclerView.State,
             ) {
                 super.getItemOffsets(outRect, view, parent, state)
                 val marginInPx = TypedValue.applyDimension(
@@ -224,46 +213,61 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 }
             }
         }
+
+        appListModel.downloadedApkFile.observe(viewLifecycleOwner) { _ ->
+            appListModel.downloadedApkFile.postValue(null)
+            while (true) {
+                val apkFile = appListModel.downloadedApkQueue.poll() ?: break
+                installApk(apkFile)
+            }
+        }
     }
 
     private fun refreshAppList(invalidateCaches: Boolean = false) {
         binding.swipeRefreshLayout.isRefreshing = true
-        val preReleases = sharedPreferences.getBoolean("pre_releases", false)
-        Log.d("preReleases", preReleases.toString())
 
         for (appItem in appListModel.getList()) {
-            appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
-            if (appItem.installedVersion != "" && isNewerVersion(appItem.newVersion, appItem.installedVersion)) {
-                appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
-            }
-            else if (appItem.installedVersion != "") {
-                appItem.state = AppEntryState.INSTALLED
-            }
-            else {
-                appItem.state = AppEntryState.NOT_INSTALLED
-            }
-            appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
-
-            if (appItem.downloadUrl == "" || invalidateCaches) {
-                getNewReleaseVersionGithub(appItem.owner, appItem.repo, preReleases, object : GithubReleaseAPICallback{
-                    override fun onCompleted(version: String, downloadUrl: String) {
-                        appItem.downloadUrl = downloadUrl
-                        if (isNewerVersion(version, appItem.installedVersion)) {
-                            appItem.newVersion = version
-                            if (appItem.state == AppEntryState.INSTALLED) {
-                                appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
-                                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
-                            }
-                        }
-                    }
-                    override fun onFailure(error: String) {
-                        showToast("$error for ${appItem.repo}")
-                    }
-                })
-            }
+            refreshAppItem(appItem, invalidateCaches)
         }
 
         binding.swipeRefreshLayout.isRefreshing = false
+    }
+
+    private fun refreshAppItem(appItem: AppItem, invalidateCaches: Boolean = false) {
+        val preReleases = sharedPreferences.getBoolean("pre_releases", false)
+
+        appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
+        if (appItem.state == AppEntryState.DOWNLOADING) {
+//                downloadAppItem(appItem)
+        }
+        else if (appItem.installedVersion != "" && isNewerVersion(appItem.newVersion, appItem.installedVersion)) {
+            appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
+        }
+        else if (appItem.installedVersion != "") {
+            appItem.state = AppEntryState.INSTALLED
+        }
+        else {
+            appItem.state = AppEntryState.NOT_INSTALLED
+        }
+        appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+
+        if (appItem.downloadUrl == "" || invalidateCaches) {
+            getNewReleaseVersionGithub(appItem.owner, appItem.repo, preReleases, object : GithubReleaseAPICallback{
+                override fun onCompleted(version: String, downloadUrl: String) {
+                    appItem.downloadUrl = downloadUrl
+                    if (isNewerVersion(version, appItem.installedVersion)) {
+                        appItem.newVersion = version
+                        if (appItem.state == AppEntryState.INSTALLED) {
+                            appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
+                            appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+                        }
+                    }
+                }
+                override fun onFailure(error: String) {
+                    showToast("$error for ${appItem.repo}")
+                }
+            })
+        }
     }
 
     interface GithubReleaseAPICallback {
@@ -336,7 +340,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private fun getInstalledAppVersion(packageName: String): String? {
         return try {
             val packageInfo = activity?.packageManager?.getPackageInfo(packageName, 0)
-            packageInfo!!.versionName
+            packageInfo?.versionName
         } catch (e: PackageManager.NameNotFoundException) {
             null
         }
@@ -367,10 +371,41 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         fun onFailure()
     }
 
+    private fun downloadAppItem(appItem: AppItem) {
+        val currentlyDownloading = isDownloadInProgress.getAndSet(true)
+        if (currentlyDownloading) return
+
+        downloadFile(
+            appItem.downloadUrl,
+            appItem.packageName,
+            object : DownloadListener {
+                override fun onProgress(downloaded: Long, size: Long) {
+                    appItem.bytesDownloaded = downloaded
+                    appItem.fileSize = size
+                    appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+                }
+
+                override fun onCompleted(tempFile: File) {
+                    appListModel.downloadedApkQueue.add(tempFile)
+                    appListModel.downloadedApkFile.postValue(tempFile)
+                    appItem.state = AppEntryState.NOT_INSTALLED
+                    refreshAppItem(appItem)
+                    appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+                    isDownloadInProgress.set(false)
+                }
+
+                override fun onFailure() {
+                    appItem.state = AppEntryState.NOT_INSTALLED
+                    refreshAppItem(appItem)
+                    showToast("Download failed")
+                }
+            })
+    }
+
     private fun downloadFile(
         downloadUrl: String,
         name: String,
-        progressListener: DownloadListener
+        progressListener: DownloadListener,
     ) {
         val request = Request.Builder().url(downloadUrl).build()
         OkHttpClient().newCall(request).enqueue(object : Callback {
@@ -384,7 +419,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 var downloadedBytes: Long = 0
                 val buffer = ByteArray(8192)
                 val inputStream = response.body?.byteStream()
-                val tempFile = File(activity!!.getExternalFilesDir(null), "$name.apk")
+                val tempFile = File(activity?.getExternalFilesDir(null), "$name.apk")
                 val outputStream = FileOutputStream(tempFile)
 
                 try {
