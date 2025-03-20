@@ -99,6 +99,7 @@ class AppListAdapter(
             Log.d("bindItem", appItem.id.toString() + " " + appItem.name)
             Log.d("bindItem", appItem.state.toString())
             var progressBarVisibility = View.GONE
+            var showVersion = false
 
             when (appItem.state) {
                 AppEntryState.NOT_INSTALLED -> {
@@ -116,10 +117,12 @@ class AppListAdapter(
                 }
                 AppEntryState.INSTALLED_AND_OUTDATED -> {
                     binding.actionButton.text = context.getString(R.string.update)
-                    handleNewVersion(appItem)
+                    showVersion = true
                 }
             }
             binding.progressbar.visibility = progressBarVisibility
+            if (showVersion) handleNewVersion(appItem)
+            else binding.version.visibility = View.GONE
         }
 
         private fun handleNewVersion(appItem: AppItem) {
