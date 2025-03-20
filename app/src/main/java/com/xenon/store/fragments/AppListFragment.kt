@@ -269,7 +269,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     }
 
     private fun getNewReleaseVersionGithub(owner: String, repo: String, preRelease: Boolean, callback: GithubReleaseAPICallback) {
-        val url = if (preRelease) "https://api.github.com/repos/$owner/$repo/releases?per_page=3"
+        val url = if (preRelease) "https://api.github.com/repos/$owner/$repo/releases?per_page=1"
             else "https://api.github.com/repos/$owner/$repo/releases/latest"
         Log.d("fetching releases", url)
 
