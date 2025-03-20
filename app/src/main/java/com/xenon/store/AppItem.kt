@@ -1,6 +1,7 @@
 package com.xenon.store
 
-import android.util.Log
+import android.content.Context
+import android.content.res.Resources
 import com.xenon.store.viewmodel.LiveListItem
 
 enum class AppEntryState {
@@ -12,7 +13,7 @@ enum class AppEntryState {
 
 data class AppItem(
     val name: String,
-    val icon: String,
+    val iconPath: String,
     val githubUrl: String,
     val packageName: String,
 ) : LiveListItem {
@@ -24,27 +25,19 @@ data class AppItem(
     // Download progressbar variables
     var bytesDownloaded: Long = 0
     var fileSize: Long = 0
+    var downloadUrl: String = ""
 
     private val ownerRepoRegex = "^https://[^/]*github\\.com/([^/]+)/([^/]+)".toRegex()
-
-//    fun getOwnerRepo(): String {
-//        val m = ownerRepoRegex.find(githubUrl)
-//        Log.d("aaa 1", m?.groups?.get(1)?.value ?: "")
-//        Log.d("aaa 2", m?.groups?.get(2)?.value ?: "")
-//        return m?.groups?.get(1)?.value ?: ""
-//    }
-
     // Github url is also checked for validity
     val owner = ownerRepoRegex.find(githubUrl)!!.groups[1]!!.value
     val repo = ownerRepoRegex.find(githubUrl)!!.groups[2]!!.value
 
-    var downloadUrl: String = ""
+    private val iconRegex = "^@([^/]+)/([^/]+)".toRegex()
+    private val iconDirectory = iconRegex.find(iconPath)?.groups?.get(1)?.value
+    private val iconName = iconRegex.find(iconPath)?.groups?.get(2)?.value
 
-    fun getDrawableId(): Int {
-        return when (name) {
-            "Todo-List" -> com.xenon.commons.accesspoint.R.mipmap.todo_list
-            "Calculator" -> com.xenon.commons.accesspoint.R.mipmap.calculator
-            else -> 0
-        }
+    fun getDrawableId(context: Context): Int {
+        if (iconDirectory == null || iconName == null) return 0
+        return context.resources.getIdentifier(iconName, iconDirectory, context.packageName)
     }
 }

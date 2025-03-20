@@ -79,8 +79,17 @@ class AppListAdapter(
                 listener.buttonClicked(appItem, position)
             }
 
-            if (appItem.getDrawableId() != 0) {
-                binding.icon.setImageDrawable(context.getDrawable(appItem.getDrawableId()))
+//            Log.d("aa", context.packageName)
+//            Log.d("aa", context.resources.getIdentifier("todo_list", "mipmap", "com.xenon.store").toString())
+//            Log.d("aa", context.resources.getResourceName(com.xenon.commons.accesspoint.R.mipmap.todo_list))
+
+            val drawableId = appItem.getDrawableId(context)
+            if (drawableId != 0) {
+                Log.d("icon", "${appItem.name}: Found drawable for ${appItem.iconPath}")
+                binding.icon.setImageDrawable(context.resources.getDrawable(drawableId))
+            }
+            else {
+                Log.d("icon", "${appItem.name}: No drawable found for ${appItem.iconPath}")
             }
 
             handleState(appItem)

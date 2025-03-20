@@ -8,7 +8,7 @@
     },
     {
       "name": "Calculator",
-      "icon": "com.xenon.commons.accesspoint.R.mipmap.calculator",
+      "icon": "@mipmap/calculator",
       "githubUrl": "https://github.com/Dinico414/Calculator",
       "packageName": "com.xenon.calculator"
     }
