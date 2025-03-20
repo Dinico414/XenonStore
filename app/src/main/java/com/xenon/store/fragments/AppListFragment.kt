@@ -77,7 +77,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         super.onViewCreated(view, savedInstanceState)
 
         val context = requireContext()
-        sharedPreferences = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
+        sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
 
         setupRecyclerView()
 
@@ -228,6 +228,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
     private fun refreshAppList(invalidateCaches: Boolean = false) {
         binding.swipeRefreshLayout.isRefreshing = true
+        val preReleases = sharedPreferences.getBoolean("pre_releases", false)
+        Log.d("preReleases", preReleases.toString())
 
         for (appItem in appListModel.getList()) {
             appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
@@ -240,23 +242,15 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
 
             if (appItem.downloadUrl == "" || invalidateCaches) {
-                getNewReleaseVersionGithub(appItem.owner, appItem.repo, object : GETRequestCallback{
-                    override fun onCompleted(responseBody: String) {
-                        val latestRelease = JSONObject(responseBody)
-                        val assets = latestRelease.getJSONArray("assets")
-                        val newVersion = latestRelease.getString("tag_name")
-                        if (assets.length() > 0) {
-                            if (isNewerVersion(newVersion, appItem.installedVersion)) {
-                                val asset = assets.getJSONObject(0)
-                                appItem.newVersion = newVersion
-                                appItem.downloadUrl = asset.getString("browser_download_url")
-                                if (appItem.state == AppEntryState.INSTALLED) {
-                                    appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
-                                    appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
-                                }
+                getNewReleaseVersionGithub(appItem.owner, appItem.repo, preReleases, object : GithubReleaseAPICallback{
+                    override fun onCompleted(version: String, downloadUrl: String) {
+                        appItem.downloadUrl = downloadUrl
+                        if (isNewerVersion(version, appItem.installedVersion)) {
+                            appItem.newVersion = version
+                            if (appItem.state == AppEntryState.INSTALLED) {
+                                appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
+                                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
                             }
-                        } else {
-                            showToast("No assets found for ${appItem.repo}")
                         }
                     }
                     override fun onFailure(error: String) {
@@ -269,12 +263,16 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         binding.swipeRefreshLayout.isRefreshing = false
     }
 
-    interface GETRequestCallback {
-        fun onCompleted(responseBody: String)
+    interface GithubReleaseAPICallback {
+        fun onCompleted(version: String, downloadUrl: String)
         fun onFailure(error: String)
     }
 
-    private fun getNewReleaseVersionGithub(owner: String, repo: String, callback: GETRequestCallback) {
+    private fun getNewReleaseVersionGithub(owner: String, repo: String, preRelease: Boolean, callback: GithubReleaseAPICallback) {
+        val url = if (preRelease) "https://api.github.com/repos/$owner/$repo/releases?per_page=3"
+            else "https://api.github.com/repos/$owner/$repo/releases/latest"
+        Log.d("fetching releases", url)
+
         val client = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -282,9 +280,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
             .build()
         val request = Request.Builder()
-            .url("https://api.github.com/repos/$owner/$repo/releases/latest")
+            .url(url)
             .build()
-        Log.d("fetching releases", "https://api.github.com/repos/$owner/$repo/releases")
+
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 callback.onFailure("Failure")
@@ -299,7 +297,26 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     callback.onFailure("Empty response body")
                     return
                 }
-                callback.onCompleted(responseBody)
+
+                Log.d("response body $repo", responseBody)
+
+                val latestRelease: JSONObject
+                if (preRelease) {
+                    val releases = JSONArray(responseBody)
+                    latestRelease = releases.getJSONObject(0)
+                }
+                else {
+                    latestRelease = JSONObject(responseBody)
+                }
+
+                val assets = latestRelease.getJSONArray("assets")
+                val newVersion = latestRelease.getString("tag_name")
+                if (assets.length() > 0) {
+                    val asset = assets.getJSONObject(0)
+                    callback.onCompleted(newVersion, asset.getString("browser_download_url"))
+                } else {
+                    showToast("No assets found for $repo")
+                }
             }
         })
     }

@@ -22,6 +22,8 @@ data class AppItem(
     var state: AppEntryState = AppEntryState.NOT_INSTALLED
     var installedVersion: String = ""
     var newVersion: String = ""
+    var installedIsPreRelease = false
+    var newIsPreRelease = false
     // Download progressbar variables
     var bytesDownloaded: Long = 0
     var fileSize: Long = 0
