@@ -221,9 +221,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private fun refreshAppList(invalidateCaches: Boolean = false) {
         binding.swipeRefreshLayout.isRefreshing = true
 
-        val item = appListModel.storeAppItem.value
-        if (item != null)
-            refreshAppItem(item)
+        refreshAppItem(appListModel.storeAppItem)
 
         for (appItem in appListModel.getList()) {
             refreshAppItem(appItem, invalidateCaches)

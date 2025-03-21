@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.protolite.well.known.types)
     implementation(libs.androidx.animation.android)
     implementation(libs.androidx.core.animation)
+    implementation(libs.androidx.media3.common.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

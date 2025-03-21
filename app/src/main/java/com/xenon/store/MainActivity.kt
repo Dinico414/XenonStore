@@ -1,5 +1,6 @@
 package com.xenon.store
 
+import android.util.Log
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -45,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupAppListFragment() {
         appListFragment = binding.appListFragment.getFragment()
-        appListModel = ViewModelProvider(this)[AppListViewModel::class.java]
+        appListModel = ViewModelProvider(appListFragment)[AppListViewModel::class.java]
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -82,16 +83,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-
-        val appItem = AppItem(
-            "Xenon Store",
-            "@mipmap/ic_launcher",
-            "https://github.com/Dinico414/XenonStore",
-            "com.xenon.store"
-        )
-        appItem.id = -1
-        appListModel.storeAppItem.postValue(appItem)
-
+        val appItem = appListModel.storeAppItem
         if (appItem.state == AppEntryState.DOWNLOADING) {
             binding.downloadBtnStore.visibility = View.VISIBLE
             binding.progressbarStore.visibility = View.VISIBLE
@@ -100,7 +92,8 @@ class MainActivity : AppCompatActivity() {
             binding.downloadBtnStore.visibility = View.VISIBLE
         }
 
-        appListModel.storeAppItem.observe(this) { _ ->
+        appListModel.storeAppItemLive.observe(this) { _ ->
+            Log.d("ayy", appItem.state.toString())
             when (appItem.state) {
                 AppEntryState.NOT_INSTALLED,
                 AppEntryState.INSTALLED -> {
@@ -114,6 +107,7 @@ class MainActivity : AppCompatActivity() {
                     binding.progressbarStore.visibility = View.VISIBLE
                 }
                 AppEntryState.INSTALLED_AND_OUTDATED -> {
+                    binding.downloadBtnStore.text = getString(R.string.update)
                     binding.downloadBtnStore.visibility = View.VISIBLE
                     binding.progressbarStore.visibility = View.GONE
                 }
