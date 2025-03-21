@@ -46,6 +46,7 @@ class AppListAdapter(
         position: Int,
         payloads: MutableList<Any>
     ) {
+        // Selective update by using payloads parameter of this onBindViewHolder overload
         for (payload in payloads) {
             val changeType = payload as? AppListChangeType
             when (changeType) {
