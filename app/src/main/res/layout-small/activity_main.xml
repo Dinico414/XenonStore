@@ -53,7 +53,7 @@
             android:visibility="gone">
 
             <Button
-                android:id="@+id/download_1"
+                android:id="@+id/download_btn_store"
                 style="@style/buttonStyle"
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
@@ -68,7 +68,7 @@
                 tools:visibility="visible" />
 
             <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progressbar_1"
+                android:id="@+id/progressbar_store"
                 style="@style/progressbarStyle"
                 android:layout_width="140dp"
                 android:layout_height="match_parent"

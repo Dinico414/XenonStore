@@ -6,9 +6,11 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
 import com.xenon.store.R.id
 import com.xenon.store.activities.SettingsActivity
@@ -22,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var bindingSmall: ActionUpdateButtonBinding? = null
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var appListFragment: AppListFragment
     private lateinit var appListModel: AppListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,18 +38,14 @@ class MainActivity : AppCompatActivity() {
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
 
-        setupAppList()
+        setupAppListFragment()
         setupToolbar()
         setupCollapsingToolbar()
     }
 
-    fun setupAppList() {
-        val fragment = binding.appListFragment.getFragment<AppListFragment>()
-        appListModel = fragment.getViewModel()
-    }
-
-    fun loadAppList() {
-
+    private fun setupAppListFragment() {
+        appListFragment = binding.appListFragment.getFragment()
+        appListModel = ViewModelProvider(this)[AppListViewModel::class.java]
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -82,6 +81,60 @@ class MainActivity : AppCompatActivity() {
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
+
+
+        val appItem = AppItem(
+            "Xenon Store",
+            "@mipmap/ic_launcher",
+            "https://github.com/Dinico414/XenonStore",
+            "com.xenon.store"
+        )
+        appItem.id = -1
+        appListModel.storeAppItem.postValue(appItem)
+
+        if (appItem.state == AppEntryState.DOWNLOADING) {
+            binding.downloadBtnStore.visibility = View.VISIBLE
+            binding.progressbarStore.visibility = View.VISIBLE
+        }
+        else if (appItem.state == AppEntryState.INSTALLED_AND_OUTDATED) {
+            binding.downloadBtnStore.visibility = View.VISIBLE
+        }
+
+        appListModel.storeAppItem.observe(this) { _ ->
+            when (appItem.state) {
+                AppEntryState.NOT_INSTALLED,
+                AppEntryState.INSTALLED -> {
+                    binding.downloadBtnStore.visibility = View.GONE
+                    binding.progressbarStore.visibility = View.GONE
+                }
+                AppEntryState.DOWNLOADING -> {
+                    binding.downloadBtnStore.visibility = View.VISIBLE
+                    binding.progressbarStore.progress = appItem.bytesDownloaded.toInt()
+                    binding.progressbarStore.max = appItem.fileSize.toInt()
+                    binding.progressbarStore.visibility = View.VISIBLE
+                }
+                AppEntryState.INSTALLED_AND_OUTDATED -> {
+                    binding.downloadBtnStore.visibility = View.VISIBLE
+                    binding.progressbarStore.visibility = View.GONE
+                }
+            }
+        }
+        binding.downloadBtnStore.setOnClickListener {
+            if (appItem.state == AppEntryState.INSTALLED_AND_OUTDATED) {
+                binding.downloadBtnStore.text = ""
+
+                if (appItem.downloadUrl == "") {
+                    showToast("Failed to fetch download url of ${appItem.name}")
+                    return@setOnClickListener
+                }
+
+                // Try downloading
+                appItem.state = AppEntryState.DOWNLOADING
+                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+
+                appListFragment.downloadAppItem(appItem)
+            }
+        }
     }
 
     private fun setupCollapsingToolbar() {
@@ -170,6 +223,12 @@ class MainActivity : AppCompatActivity() {
             } else {
                 window.decorView.setBackgroundColor(resources.getColor(com.xenon.commons.accesspoint.R.color.surfaceContainerLowest)) // Replace dark_background with your dark theme color
             }
+        }
+    }
+
+    private fun showToast(message: String) {
+        runOnUiThread {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
     }
 }
