@@ -233,7 +233,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private fun refreshAppItem(appItem: AppItem, invalidateCaches: Boolean = false) {
         val preReleases = sharedPreferences.getBoolean("pre_releases", false)
 
-        if (appItem.newIsPreRelease && !preReleases) {
+        if (appItem.newIsPreRelease != preReleases) {
             appItem.newVersion = ""
             appItem.downloadUrl = ""
             appItem.newIsPreRelease = false
@@ -257,7 +257,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         if (appItem.downloadUrl == "" || invalidateCaches) {
             getNewReleaseVersionGithub(appItem.owner, appItem.repo, preReleases, object : GithubReleaseAPICallback{
                 override fun onCompleted(version: String, downloadUrl: String) {
-                    appItem.newIsPreRelease = true
+                    appItem.newIsPreRelease = preReleases
                     appItem.downloadUrl = downloadUrl
                     if (isNewerVersion(version, appItem.installedVersion)) {
                         appItem.newVersion = version
