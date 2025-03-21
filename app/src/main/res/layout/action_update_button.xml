@@ -32,9 +32,9 @@
         android:layout_gravity="center"
         android:visibility="visible"
         app:indicatorColor="@color/onTertiary"
-        app:indicatorSize="28dp"
+        app:indicatorSize="26dp"
         app:trackColor="@color/transparent"
-        app:trackThickness="5dp"
+        app:trackThickness="4dp"
         tools:visibility="visible" />
 
 </FrameLayout>

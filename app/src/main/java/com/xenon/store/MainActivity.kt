@@ -1,9 +1,9 @@
 package com.xenon.store
 
-import android.util.Log
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -93,12 +93,13 @@ class MainActivity : AppCompatActivity() {
             binding.progressbar1.visibility = View.VISIBLE
             bindingSmall?.download1Image?.visibility = View.VISIBLE
             bindingSmall?.progressbar1Circle?.visibility = View.VISIBLE
-        }
-        else if (appItem.state == AppEntryState.INSTALLED_AND_OUTDATED) {
+        } else if (appItem.state == AppEntryState.INSTALLED_AND_OUTDATED) {
             binding.download1.visibility = View.VISIBLE
             binding.progressbar1.visibility = View.GONE
             bindingSmall?.download1Image?.visibility = View.VISIBLE
             bindingSmall?.progressbar1Circle?.visibility = View.GONE
+            // Set the drawable for the update state
+            bindingSmall?.download1Image?.setImageResource(R.drawable.download_24) // Assuming you have an update icon
         }
 
         appListModel.storeAppItemLive.observe(this) { _ ->
@@ -110,6 +111,8 @@ class MainActivity : AppCompatActivity() {
                     binding.progressbar1.visibility = View.GONE
                     bindingSmall?.download1Image?.visibility = View.GONE
                     bindingSmall?.progressbar1Circle?.visibility = View.GONE
+                    // Clear the drawable when not in update or downloading state
+                    bindingSmall?.download1Image?.setImageResource(0)
                 }
                 AppEntryState.DOWNLOADING -> {
                     binding.download1.visibility = View.VISIBLE
@@ -121,6 +124,8 @@ class MainActivity : AppCompatActivity() {
                     bindingSmall?.progressbar1Circle?.progress = appItem.bytesDownloaded.toInt()
                     bindingSmall?.progressbar1Circle?.max = appItem.fileSize.toInt()
                     bindingSmall?.progressbar1Circle?.visibility = View.VISIBLE
+                    // Set the drawable for the downloading state
+                    bindingSmall?.download1Image?.setImageResource(0) // Assuming you have a downloading icon
                 }
                 AppEntryState.INSTALLED_AND_OUTDATED -> {
                     binding.download1.text = getString(R.string.update)
@@ -129,14 +134,17 @@ class MainActivity : AppCompatActivity() {
 
                     bindingSmall?.download1Image?.visibility = View.VISIBLE
                     bindingSmall?.progressbar1Circle?.visibility = View.GONE
+                    // Set the drawable for the update state
+                    bindingSmall?.download1Image?.setImageResource(R.drawable.download_24) // Assuming you have an update icon
                 }
             }
         }
 
-        val onClickListener = object : View.OnClickListener{
+        val onClickListener = object : View.OnClickListener {
             override fun onClick(p0: View?) {
                 if (appItem.state == AppEntryState.INSTALLED_AND_OUTDATED) {
                     binding.download1.text = ""
+                    //bindingSmall?.download1Image?.setImageResource(0) // Removed this line
 
                     if (appItem.downloadUrl == "") {
                         showToast("Failed to fetch download url of ${appItem.name}")
