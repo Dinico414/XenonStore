@@ -474,8 +474,4 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
-
-    enum class ProgressBarType {
-        LINEAR, CIRCULAR
-    }
 }

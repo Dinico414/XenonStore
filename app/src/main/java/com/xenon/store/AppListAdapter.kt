@@ -7,7 +7,6 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AlphaAnimation
 import androidx.recyclerview.widget.RecyclerView
 import com.xenon.store.databinding.AppItemCellBinding
 
@@ -47,7 +46,6 @@ class AppListAdapter(
         position: Int,
         payloads: MutableList<Any>
     ) {
-        // Selective update by using payloads parameter of this onBindViewHolder overload
         for (payload in payloads) {
             val changeType = payload as? AppListChangeType
             when (changeType) {
@@ -78,10 +76,6 @@ class AppListAdapter(
             binding.actionButton.setOnClickListener {
                 listener.buttonClicked(appItem, position)
             }
-
-//            Log.d("aa", context.packageName)
-//            Log.d("aa", context.resources.getIdentifier("todo_list", "mipmap", "com.xenon.store").toString())
-//            Log.d("aa", context.resources.getResourceName(com.xenon.commons.accesspoint.R.mipmap.todo_list))
 
             val drawableId = appItem.getDrawableId(context)
             if (drawableId != 0) {
@@ -143,12 +137,6 @@ class AppListAdapter(
                 }
             }
             else binding.version.visibility = View.GONE
-        }
-
-        private fun fadeIn(view: View) {
-            val fadeIn = AlphaAnimation(0f, 1f)
-            fadeIn.duration = 500
-            view.startAnimation(fadeIn)
         }
     }
 }
