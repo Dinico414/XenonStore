@@ -8,7 +8,6 @@
     android:layout_marginTop="10dp"
     android:layout_gravity="center"
     android:padding="4dp"
-    android:visibility="gone"
     tools:visibility="visible"
     tools:ignore="MissingConstraints">
 
@@ -22,7 +21,6 @@
         android:background="@drawable/tile_background_100"
         android:backgroundTint="@color/tertiary"
         android:src="@drawable/download_24"
-        android:visibility="gone"
         app:tint="@color/onTertiary"
         tools:ignore="DuplicateSpeakableTextCheck,VisualLintButtonSize,TouchTargetSizeCheck"
         tools:visibility="visible" />

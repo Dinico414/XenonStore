@@ -56,6 +56,8 @@ class MainActivity : AppCompatActivity() {
         val actionView: View? = item.actionView
         bindingSmall = actionView?.let { ActionUpdateButtonBinding.bind(it) }
 
+        setupSelfUpdate()
+
         val settingsItem = menu.findItem(id.settings)
         settingsItem.setOnMenuItemClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
@@ -82,14 +84,21 @@ class MainActivity : AppCompatActivity() {
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
+    }
 
+    private fun setupSelfUpdate() {
         val appItem = appListModel.storeAppItem
         if (appItem.state == AppEntryState.DOWNLOADING) {
-            binding.downloadBtnStore.visibility = View.VISIBLE
-            binding.progressbarStore.visibility = View.VISIBLE
+            binding.download1.visibility = View.VISIBLE
+            binding.progressbar1.visibility = View.VISIBLE
+            bindingSmall?.download1Image?.visibility = View.VISIBLE
+            bindingSmall?.progressbar1Circle?.visibility = View.VISIBLE
         }
         else if (appItem.state == AppEntryState.INSTALLED_AND_OUTDATED) {
-            binding.downloadBtnStore.visibility = View.VISIBLE
+            binding.download1.visibility = View.VISIBLE
+            binding.progressbar1.visibility = View.GONE
+            bindingSmall?.download1Image?.visibility = View.VISIBLE
+            bindingSmall?.progressbar1Circle?.visibility = View.GONE
         }
 
         appListModel.storeAppItemLive.observe(this) { _ ->
@@ -97,38 +106,54 @@ class MainActivity : AppCompatActivity() {
             when (appItem.state) {
                 AppEntryState.NOT_INSTALLED,
                 AppEntryState.INSTALLED -> {
-                    binding.downloadBtnStore.visibility = View.GONE
-                    binding.progressbarStore.visibility = View.GONE
+                    binding.download1.visibility = View.GONE
+                    binding.progressbar1.visibility = View.GONE
+                    bindingSmall?.download1Image?.visibility = View.GONE
+                    bindingSmall?.progressbar1Circle?.visibility = View.GONE
                 }
                 AppEntryState.DOWNLOADING -> {
-                    binding.downloadBtnStore.visibility = View.VISIBLE
-                    binding.progressbarStore.progress = appItem.bytesDownloaded.toInt()
-                    binding.progressbarStore.max = appItem.fileSize.toInt()
-                    binding.progressbarStore.visibility = View.VISIBLE
+                    binding.download1.visibility = View.VISIBLE
+                    binding.progressbar1.progress = appItem.bytesDownloaded.toInt()
+                    binding.progressbar1.max = appItem.fileSize.toInt()
+                    binding.progressbar1.visibility = View.VISIBLE
+
+                    bindingSmall?.download1Image?.visibility = View.VISIBLE
+                    bindingSmall?.progressbar1Circle?.progress = appItem.bytesDownloaded.toInt()
+                    bindingSmall?.progressbar1Circle?.max = appItem.fileSize.toInt()
+                    bindingSmall?.progressbar1Circle?.visibility = View.VISIBLE
                 }
                 AppEntryState.INSTALLED_AND_OUTDATED -> {
-                    binding.downloadBtnStore.text = getString(R.string.update)
-                    binding.downloadBtnStore.visibility = View.VISIBLE
-                    binding.progressbarStore.visibility = View.GONE
+                    binding.download1.text = getString(R.string.update)
+                    binding.download1.visibility = View.VISIBLE
+                    binding.progressbar1.visibility = View.GONE
+
+                    bindingSmall?.download1Image?.visibility = View.VISIBLE
+                    bindingSmall?.progressbar1Circle?.visibility = View.GONE
                 }
             }
         }
-        binding.downloadBtnStore.setOnClickListener {
-            if (appItem.state == AppEntryState.INSTALLED_AND_OUTDATED) {
-                binding.downloadBtnStore.text = ""
 
-                if (appItem.downloadUrl == "") {
-                    showToast("Failed to fetch download url of ${appItem.name}")
-                    return@setOnClickListener
+        val onClickListener = object : View.OnClickListener{
+            override fun onClick(p0: View?) {
+                if (appItem.state == AppEntryState.INSTALLED_AND_OUTDATED) {
+                    binding.download1.text = ""
+
+                    if (appItem.downloadUrl == "") {
+                        showToast("Failed to fetch download url of ${appItem.name}")
+                        return
+                    }
+
+                    // Try downloading
+                    appItem.state = AppEntryState.DOWNLOADING
+                    appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+
+                    appListFragment.downloadAppItem(appItem)
                 }
-
-                // Try downloading
-                appItem.state = AppEntryState.DOWNLOADING
-                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
-
-                appListFragment.downloadAppItem(appItem)
             }
         }
+
+        binding.download1.setOnClickListener(onClickListener)
+        bindingSmall?.download1Image?.setOnClickListener(onClickListener)
     }
 
     private fun setupCollapsingToolbar() {
