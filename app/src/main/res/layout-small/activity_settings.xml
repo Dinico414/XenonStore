@@ -135,6 +135,29 @@
 
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/about_holder"
+                    style="@style/SettingsTile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/SettingsSelectionTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/about" />
+
+                    <TextView
+                        android:id="@+id/about_text"
+                        style="@style/SettingsSelectionValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Version" />
+
+                </LinearLayout>
+
+
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

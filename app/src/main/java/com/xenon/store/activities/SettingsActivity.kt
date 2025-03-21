@@ -3,6 +3,8 @@ package com.xenon.store.activities
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -59,7 +61,7 @@ class SettingsActivity : BaseActivity() {
         binding.clearButtonHolder.setOnClickListener {
             val builder = AlertDialog.Builder(this)
             builder.setPositiveButton(R.string.yes) { _, _ ->
-                val sharedPref = getSharedPreferences(packageName, Context.MODE_PRIVATE)
+                val sharedPref = getSharedPreferences(packageName, MODE_PRIVATE)
                 sharedPref.edit().clear().apply()
                 this.restartApplication()
             }
@@ -89,12 +91,25 @@ class SettingsActivity : BaseActivity() {
             applyAmoledDark(isChecked)
         }
         applyAmoledDark(sharedPreferences.getBoolean(amoledDarkKey, false))
+        try {
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            val versionName = packageInfo.versionName
+            binding.aboutText!!.text = getString(R.string.about_text, versionName)
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+            binding.aboutText!!.text = getString(R.string.about_text, "Unknown")
+        }
+        // Add this block to handle the click on the "about" LinearLayout
+        binding.aboutHolder.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://xenonware.com/impressum"))
+            startActivity(intent)
+        }
     }
 
     private fun applyAmoledDark(enable: Boolean) {
         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
             if (enable) {
-                window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
+                window.decorView.setBackgroundColor(Color.BLACK)
             } else {
                 window.decorView.setBackgroundColor(resources.getColor(com.xenon.commons.accesspoint.R.color.surfaceContainerLowest))
             }

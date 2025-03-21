@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.konan.properties.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-//    kotlin("plugin.serialization") version "2.1.10"
 }
 
 android {
@@ -13,9 +12,9 @@ android {
     defaultConfig {
         applicationId = "com.xenon.store"
         minSdk = 31
-        targetSdk = 34
-        versionCode =8
-        versionName = "1.5.0"
+        targetSdk = 35
+        versionCode =9
+        versionName = "1.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -49,8 +48,6 @@ android {
 }
 
 dependencies {
-//    implementation(libs.kotlinx.serialization.core)
-//    implementation(libs.kotlinx.serialization.json)
     implementation(libs.github.xenon.commons)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

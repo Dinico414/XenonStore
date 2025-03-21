@@ -23,4 +23,6 @@
     <string name="clear_data_dialog">Willst du wirklich alle App Daten löschen?</string>
     <string name="prerelease">Vorabversionen suchen</string>
     <string name="amoled">Amoled-Darkmode</string>
+    <string name="about">About</string>
+    <string name="about_text">Version: %1$s</string>
 </resources>
