@@ -255,6 +255,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                         }
                     }
                     LiveListViewModel.ListChangedType.OVERWRITTEN -> {
+                        refreshAppList()
                         adapter.appItems = appListModel.getList()
                         adapter.notifyDataSetChanged()
                     }
