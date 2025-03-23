@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xenon.store.AppEntryState
@@ -28,6 +29,9 @@ import com.xenon.store.R
 import com.xenon.store.databinding.FragmentAppListBinding
 import com.xenon.store.viewmodel.AppListViewModel
 import com.xenon.store.viewmodel.LiveListViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -36,9 +40,13 @@ import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -55,7 +63,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         appListModel = ViewModelProvider(this)[AppListViewModel::class.java]
 
         if (appListModel.getList().size == 0)
-            loadAppListFromJson()
+            loadAppListFromUrl()
     }
 
     override fun onCreateView(
@@ -98,13 +106,59 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         refreshAppList()
     }
 
-    private fun loadAppListFromJson() {
+    private fun loadAppListFromUrl() {
         val activity = requireActivity()
+        val urlString = "https://raw.githubusercontent.com/Dinico414/Xenon-Commons/master/accesspoint/src/main/java/com/xenon/commons/accesspoint/app_list.json"
 
-        // Load app list from json
-        val appListInput = activity.assets.open("app_list.json")
-        val jsonString = appListInput.bufferedReader().use { it.readText() }
-//        val list = Json.decodeFromString<ArrayList<AppItem>>(jsonString)
+        activity.lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val jsonString = fetchJsonFromUrl(urlString)
+                if (jsonString != null) {
+                    val appList = parseJson(jsonString)
+                    withContext(Dispatchers.Main) {
+                        appListModel.setList(appList)
+                    }
+                } else {
+                    // Handle the case where jsonString is null
+                    Log.e("AppListFragment", "Failed to fetch or read JSON data.")
+                    withContext(Dispatchers.Main) {
+                        // Optionally, update UI to show an error message
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppListFragment", "Error loading app list: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    // Optionally, update UI to show an error message
+                }
+            }
+        }
+    }
+
+    private fun fetchJsonFromUrl(urlString: String): String? {
+        var urlConnection: HttpURLConnection? = null
+        return try {
+            val url = URL(urlString)
+            urlConnection = url.openConnection() as HttpURLConnection
+            urlConnection.requestMethod = "GET"
+            urlConnection.connect()
+
+            val inputStream = urlConnection.inputStream
+            val reader = BufferedReader(InputStreamReader(inputStream))
+            val stringBuilder = StringBuilder()
+            var line: String?
+            while (reader.readLine().also { line = it } != null) {
+                stringBuilder.append(line)
+            }
+            stringBuilder.toString()
+        } catch (e: IOException) {
+            Log.e("AppListFragment", "Error fetching JSON: ${e.message}")
+            null
+        } finally {
+            urlConnection?.disconnect()
+        }
+    }
+
+    private fun parseJson(jsonString: String): ArrayList<AppItem> {
         val json = JSONObject(jsonString)
         val list = json.getJSONArray("appList")
         val appList = ArrayList<AppItem>()
@@ -118,9 +172,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             )
             appList.add(appItem)
         }
-        appListModel.setList(appList)
+        return appList
     }
-
     private fun setupRecyclerView() {
         val context = requireContext()
         binding.appListRecyclerView.layoutManager = LinearLayoutManager(context)
