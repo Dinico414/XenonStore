@@ -89,6 +89,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupSelfUpdate() {
         val appItem = appListModel.storeAppItem
         if (appItem.state == AppEntryState.DOWNLOADING) {
+            binding.download1.text = ""
             binding.download1.visibility = View.VISIBLE
             binding.progressbar1.visibility = View.VISIBLE
             bindingSmall?.download1Image?.visibility = View.VISIBLE
