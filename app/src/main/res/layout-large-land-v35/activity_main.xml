@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surfaceContainerLowest"
+    tools:context=".MainActivity"
+    android:fitsSystemWindows="true"
+    tools:ignore="HardcodedText">
+
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/coordinatorLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="@dimen/border_margin"
+        android:background="@drawable/tile_cutout"
+        android:clipToOutline="true">
+
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="280dp"
+            android:layout_marginBottom="4dp"
+            android:backgroundTint="@android:color/transparent"
+            >
+
+            <com.google.android.material.appbar.CollapsingToolbarLayout
+                android:id="@+id/collapsing_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:collapsedTitleGravity="left"
+                app:collapsedTitleTextAppearance="@style/ActionBar.XenonCollapsedTitleStyle"
+                app:collapsedTitleTextColor="@color/textOnPrimary"
+                app:expandedTitleGravity="center|center_vertical"
+                app:expandedTitleTextAppearance="@style/ActionBar.XenonExpanedTitleStyle"
+                app:expandedTitleTextColor="@color/primary"
+                app:layout_constraintVertical_weight="100"
+                app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
+                app:title="@string/app_name"
+                app:titleCollapseMode="scale"
+                app:titleEnabled="true">
+
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/dummy_toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:layout_marginTop="4dp"
+                    app:layout_collapseMode="pin"
+                    app:navigationIconTint="@color/transparent" />
+
+
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_gravity="top"
+            app:layout_anchor="@+id/appbar"
+            app:layout_anchorGravity="bottom|center"
+            app:layout_collapseMode="pin"
+            app:menu="@menu/menu_main"
+            app:navigationIconTint="@color/onSurface" />
+
+        <FrameLayout
+            android:id="@+id/frame_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:layout_anchor="@+id/toolbar"
+            app:layout_anchorGravity="center"
+            tools:visibility="visible"
+            tools:ignore="MissingConstraints">
+
+
+            <Button
+                android:id="@+id/download_1"
+                style="@style/buttonStyle"
+                android:layout_width="140dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/tertiary"
+                android:ellipsize="none"
+                android:maxLines="1"
+                android:text="@string/update"
+                android:textColor="@color/onTertiary"
+                android:visibility="gone"
+                tools:ignore="DuplicateSpeakableTextCheck,VisualLintButtonSize"
+                tools:visibility="visible" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progressbar_1"
+                style="@style/progressbarStyle"
+                android:layout_width="140dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                app:indicatorColor="@color/onTertiary"
+                tools:visibility="visible" />
+
+        </FrameLayout>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/app_list_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:name="com.xenon.store.fragments.AppListFragment"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
