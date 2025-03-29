@@ -51,13 +51,13 @@
         <ImageView
             android:id="@+id/icon"
             style="@style/icons"
-            android:src="@mipmap/ic_launcher"
+            android:src="@mipmap/xenon_store"
             tools:ignore="MissingConstraints" />
 
         <TextView
             android:id="@+id/name"
             style="@style/textView"
-            android:text="@string/app_name"
+            android:text="@string/xenon_store"
             app:layout_constraintBottom_toBottomOf="@+id/icon"
             app:layout_constraintStart_toEndOf="@+id/icon"
             app:layout_constraintTop_toTopOf="@+id/icon" />
