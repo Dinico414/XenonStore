@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surfaceContainerLowest"
+    tools:context=".MainActivity"
+    tools:ignore="HardcodedText">
+
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/coordinatorLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="@dimen/border_margin"
+        android:background="@drawable/tile_cutout"
+        android:clipToOutline="true">
+
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:backgroundTint="@android:color/transparent"
+            android:fitsSystemWindows="true">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/dummy_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:textAlignment="center"
+                app:layout_collapseMode="pin"
+                app:title="@string/app_name" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_gravity="top"
+            app:layout_anchor="@id/swipe_refresh_layout"
+            app:layout_anchorGravity="top"
+            app:layout_collapseMode="pin"
+            app:menu="@menu/menu_main" />
+
+
+        <FrameLayout
+            android:id="@+id/frame_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/download_1"
+                style="@style/buttonStyle"
+                android:layout_width="140dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/tertiary"
+                android:ellipsize="none"
+                android:maxLines="1"
+                android:text="@string/update"
+                android:textColor="@color/onTertiary"
+                android:visibility="gone"
+                tools:ignore="DuplicateSpeakableTextCheck,VisualLintButtonSize"
+                tools:visibility="visible" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progressbar_1"
+                style="@style/progressbarStyle"
+                android:layout_width="140dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                app:indicatorColor="@color/onTertiary"
+                tools:visibility="visible" />
+        </FrameLayout>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/app_list_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:name="com.xenon.store.fragments.AppListFragment"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
+<!--        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
+<!--            android:id="@+id/swipe_refresh_layout"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">-->
+
+
+<!--            <androidx.core.widget.NestedScrollView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:background="@drawable/tile_background_100"-->
+<!--                android:backgroundTint="@color/surfaceContainer"-->
+<!--                android:clipToOutline="true"-->
+<!--                tools:ignore="PrivateResource">-->
+
+<!--                <LinearLayout-->
+<!--                    android:id="@+id/linearLayout"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:gravity="top"-->
+<!--                    android:orientation="vertical"-->
+<!--                    android:paddingHorizontal="10dp"-->
+<!--                    tools:context=".MainActivity">-->
+
+
+<!--                    <Space-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="10dp" />-->
+
+
+<!--                    <androidx.cardview.widget.CardView-->
+<!--                        android:id="@+id/card_2"-->
+<!--                        style="@style/cardStyle"-->
+<!--                        android:backgroundTint="@color/secondaryContainer"-->
+<!--                        tools:ignore="ContentDescription">-->
+
+<!--                        <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                            android:id="@+id/card_con_2"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="match_parent"-->
+<!--                            android:padding="10dp">-->
+
+<!--                            <LinearLayout-->
+<!--                                android:id="@+id/version_2"-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:background="@drawable/tile_background_100"-->
+<!--                                android:backgroundTint="@color/tertiary"-->
+<!--                                android:padding="5dp"-->
+<!--                                android:visibility="gone"-->
+<!--                                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                                app:layout_constraintTop_toTopOf="parent"-->
+<!--                                tools:visibility="visible">-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/installed_version_2"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:alpha="0.5"-->
+<!--                                    android:text="v.1.0.1"-->
+<!--                                    android:textColor="@color/onTertiary"-->
+<!--                                    android:textSize="12sp" />-->
+
+<!--                                <TextView-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text=" >> "-->
+<!--                                    android:textColor="@color/onTertiary"-->
+<!--                                    android:textSize="12sp" />-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/new_version_2"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="v.1.1.0"-->
+<!--                                    android:textColor="@color/onTertiary"-->
+<!--                                    android:textSize="12sp" />-->
+
+<!--                            </LinearLayout>-->
+
+<!--                            <ImageView-->
+<!--                                android:id="@+id/icon_2"-->
+<!--                                style="@style/icons"-->
+<!--                                android:src="@mipmap/todo_list"-->
+<!--                                tools:ignore="MissingConstraints" />-->
+
+<!--                            <TextView-->
+<!--                                android:id="@+id/name_2"-->
+<!--                                style="@style/textView"-->
+<!--                                android:text="@string/todo_list"-->
+<!--                                android:textAlignment="textStart"-->
+<!--                                app:layout_constraintBottom_toBottomOf="@+id/icon_2"-->
+<!--                                app:layout_constraintStart_toEndOf="@+id/icon_2"-->
+<!--                                app:layout_constraintTop_toTopOf="@+id/icon_2" />-->
+
+<!--                            &lt;!&ndash; FrameLayout to overlay the progress indicator behind the button &ndash;&gt;-->
+<!--                            <FrameLayout-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:layout_marginTop="10dp"-->
+<!--                                app:layout_constraintTop_toBottomOf="@id/icon_2"-->
+<!--                                tools:ignore="MissingConstraints">-->
+
+
+<!--                                <Button-->
+<!--                                    android:id="@+id/download_2"-->
+<!--                                    style="@style/buttonStyle"-->
+<!--                                    android:layout_width="match_parent"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:layout_gravity="center"-->
+<!--                                    android:text="Download"-->
+<!--                                    tools:ignore="DuplicateSpeakableTextCheck,VisualLintButtonSize" />-->
+
+<!--                                <com.google.android.material.progressindicator.LinearProgressIndicator-->
+<!--                                    android:id="@+id/progressbar_2"-->
+<!--                                    style="@style/progressbarStyle"-->
+<!--                                    android:layout_width="match_parent"-->
+<!--                                    android:layout_height="match_parent"-->
+<!--                                    android:layout_gravity="center"-->
+<!--                                    android:visibility="gone"-->
+<!--                                    tools:visibility="visible" />-->
+
+<!--                            </FrameLayout>-->
+
+<!--                        </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+<!--                    </androidx.cardview.widget.CardView>-->
+
+
+<!--                    <Space-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="10dp" />-->
+
+<!--                    <androidx.cardview.widget.CardView-->
+<!--                        android:id="@+id/card_3"-->
+<!--                        style="@style/cardStyle"-->
+<!--                        android:backgroundTint="@color/secondaryContainer"-->
+<!--                        tools:ignore="ContentDescription">-->
+
+<!--                        <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                            android:id="@+id/card_con_3"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="match_parent"-->
+<!--                            android:padding="10dp">-->
+
+<!--                            <LinearLayout-->
+<!--                                android:id="@+id/version_3"-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:background="@drawable/tile_background_100"-->
+<!--                                android:backgroundTint="@color/tertiary"-->
+<!--                                android:padding="5dp"-->
+<!--                                android:visibility="gone"-->
+<!--                                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                                app:layout_constraintTop_toTopOf="parent"-->
+<!--                                tools:visibility="visible">-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/installed_version_3"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:alpha="0.5"-->
+<!--                                    android:text="v.1.0.1"-->
+<!--                                    android:textColor="@color/onTertiary"-->
+<!--                                    android:textSize="12sp" />-->
+
+<!--                                <TextView-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text=" >> "-->
+<!--                                    android:textColor="@color/onTertiary"-->
+<!--                                    android:textSize="12sp" />-->
+
+<!--                                <TextView-->
+<!--                                    android:id="@+id/new_version_3"-->
+<!--                                    android:layout_width="wrap_content"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:text="v.1.1.0"-->
+<!--                                    android:textColor="@color/onTertiary"-->
+<!--                                    android:textSize="12sp" />-->
+
+<!--                            </LinearLayout>-->
+
+<!--                            <ImageView-->
+<!--                                android:id="@+id/icon_3"-->
+<!--                                style="@style/icons"-->
+<!--                                android:src="@mipmap/calculator"-->
+<!--                                tools:ignore="MissingConstraints" />-->
+
+<!--                            <TextView-->
+<!--                                android:id="@+id/name_3"-->
+<!--                                style="@style/textView"-->
+<!--                                android:text="@string/calculator"-->
+<!--                                app:layout_constraintBottom_toBottomOf="@+id/icon_3"-->
+<!--                                app:layout_constraintStart_toEndOf="@+id/icon_3"-->
+<!--                                app:layout_constraintTop_toTopOf="@+id/icon_3" />-->
+
+<!--                            &lt;!&ndash; FrameLayout to overlay the progress indicator behind the button &ndash;&gt;-->
+<!--                            <FrameLayout-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:layout_marginTop="10dp"-->
+<!--                                app:layout_constraintTop_toBottomOf="@id/icon_3"-->
+<!--                                tools:ignore="MissingConstraints">-->
+
+
+<!--                                <Button-->
+<!--                                    android:id="@+id/download_3"-->
+<!--                                    style="@style/buttonStyle"-->
+<!--                                    android:layout_width="match_parent"-->
+<!--                                    android:layout_height="wrap_content"-->
+<!--                                    android:layout_gravity="center"-->
+<!--                                    android:text="Download"-->
+<!--                                    tools:ignore="DuplicateSpeakableTextCheck,VisualLintButtonSize" />-->
+
+<!--                                <com.google.android.material.progressindicator.LinearProgressIndicator-->
+<!--                                    android:id="@+id/progressbar_3"-->
+<!--                                    style="@style/progressbarStyle"-->
+<!--                                    android:layout_width="match_parent"-->
+<!--                                    android:layout_height="match_parent"-->
+<!--                                    android:layout_gravity="center"-->
+<!--                                    android:visibility="gone"-->
+<!--                                    tools:visibility="visible" />-->
+
+<!--                            </FrameLayout>-->
+
+<!--                        </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+<!--                    </androidx.cardview.widget.CardView>-->
+
+<!--                    <Space-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="10dp" />-->
+
+<!--                    <androidx.cardview.widget.CardView-->
+<!--                        android:id="@+id/card_4"-->
+<!--                        style="@style/cardStyle"-->
+<!--                        android:backgroundTint="@color/secondaryContainer"-->
+<!--                        android:visibility="gone"-->
+<!--                        tools:ignore="ContentDescription">-->
+
+<!--                        <com.google.android.material.progressindicator.LinearProgressIndicator-->
+<!--                            android:id="@+id/progressbar_4"-->
+<!--                            style="@style/progressbarStyle" />-->
+
+
+<!--                        <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                            android:id="@+id/card_con_4"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="match_parent"-->
+<!--                            android:padding="10dp">-->
+
+<!--                            <ImageView-->
+<!--                                android:id="@+id/icon_4"-->
+<!--                                style="@style/icons"-->
+<!--                                android:src="@mipmap/files"-->
+<!--                                tools:ignore="MissingConstraints,ImageContrastCheck"-->
+<!--                                tools:layout_editor_absoluteX="10dp"-->
+<!--                                tools:layout_editor_absoluteY="9dp" />-->
+
+<!--                            <TextView-->
+<!--                                android:id="@+id/name_4"-->
+<!--                                style="@style/textView"-->
+<!--                                android:text="@string/fileexplorer"-->
+<!--                                app:layout_constraintBottom_toBottomOf="@+id/icon_4"-->
+<!--                                app:layout_constraintStart_toEndOf="@+id/icon_4"-->
+<!--                                app:layout_constraintTop_toTopOf="@+id/icon_4" />-->
+
+<!--                            <Button-->
+<!--                                android:id="@+id/download_4"-->
+<!--                                style="@style/buttonStyle"-->
+<!--                                android:text="Download"-->
+<!--                                app:layout_constraintTop_toBottomOf="@id/icon_4"-->
+<!--                                tools:ignore="MissingConstraints,VisualLintButtonSize" />-->
+
+<!--                        </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+<!--                    </androidx.cardview.widget.CardView>-->
+
+
+<!--                    <Space-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="10dp"-->
+<!--                        android:visibility="visible" />-->
+
+<!--                </LinearLayout>-->
+<!--            </androidx.core.widget.NestedScrollView>-->
+<!--        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
