@@ -5,6 +5,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Rect
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -54,6 +58,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private lateinit var binding: FragmentAppListBinding
     private lateinit var appListModel: AppListViewModel
     private lateinit var sharedPreferences: SharedPreferences
+    private var snackbar: Snackbar? = null
+    private lateinit var networkChangeListener: NetworkChangeListener
 
     private lateinit var installPermissionLauncher: ActivityResultLauncher<Intent>
     private val isDownloadInProgress = AtomicBoolean(false)
@@ -64,15 +70,18 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
         if (appListModel.getList().size == 0)
             loadAppListFromUrl()
+
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
+
     ): View {
         binding = FragmentAppListBinding.inflate(inflater, container, false)
         return binding.root
+
     }
 
     fun getViewModel(): AppListViewModel {
@@ -92,18 +101,43 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
 
         installPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+            { _ ->
                 if (checkInstallPermission()) {
                     showSnackbar("Install permission granted")
                 } else {
                     showSnackbar("Install permission denied")
                 }
             }
+        networkChangeListener = NetworkChangeListener(
+            requireContext(),
+            onNetworkAvailable = {
+                // Re-fetch your JSON data here
+                loadAppListFromUrl()
+            },
+            onNetworkUnavailable = {
+                showNoInternetSnackbar(view)
+            }
+        )
     }
 
     override fun onResume() {
         super.onResume()
+        networkChangeListener.register()
         refreshAppList()
+    }
+    override fun onPause() {
+        super.onPause()
+        networkChangeListener.unregister()
+    }
+    private fun showNoInternetSnackbar(view: View) {
+        snackbar = Snackbar.make(
+            view,
+            "No internet connection",
+            Snackbar.LENGTH_INDEFINITE
+        ).apply {
+            show()
+        }
     }
 
     private fun loadAppListFromUrl() {
@@ -586,6 +620,39 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 )
             )
             snackbar.show()
+        }
+    }
+    inner class NetworkChangeListener(
+        private val context: Context,
+        private val onNetworkAvailable: () -> Unit,
+        private val onNetworkUnavailable: () -> Unit
+    ) : ConnectivityManager.NetworkCallback() {
+
+        override fun onAvailable(network: Network) {
+            super.onAvailable(network)
+            onNetworkAvailable()
+            snackbar?.dismiss()
+            snackbar = null
+        }
+
+        override fun onLost(network: Network) {
+            super.onLost(network)
+            onNetworkUnavailable()
+        }
+
+        fun register() {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val networkRequest = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            connectivityManager.registerNetworkCallback(networkRequest, this)
+        }
+
+        fun unregister() {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            connectivityManager.unregisterNetworkCallback(this)
+            snackbar?.dismiss()
+            snackbar = null
         }
     }
 }
