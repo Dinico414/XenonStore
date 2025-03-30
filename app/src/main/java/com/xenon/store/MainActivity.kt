@@ -7,12 +7,13 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.snackbar.Snackbar
 import com.xenon.store.R.id
 import com.xenon.store.activities.SettingsActivity
 import com.xenon.store.databinding.ActionUpdateButtonBinding
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var appListFragment: AppListFragment
     private lateinit var appListModel: AppListViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedPreferenceManager = SharedPreferenceManager(this)
@@ -113,6 +115,7 @@ class MainActivity : AppCompatActivity() {
                     bindingSmall?.progressbar1Circle?.visibility = View.GONE
                     bindingSmall?.download1Image?.setImageResource(0)
                 }
+
                 AppEntryState.DOWNLOADING -> {
                     binding.download1.visibility = View.VISIBLE
                     binding.progressbar1.progress = appItem.bytesDownloaded.toInt()
@@ -125,6 +128,7 @@ class MainActivity : AppCompatActivity() {
                     bindingSmall?.progressbar1Circle?.visibility = View.VISIBLE
                     bindingSmall?.download1Image?.setImageResource(0)
                 }
+
                 AppEntryState.INSTALLED_AND_OUTDATED -> {
                     binding.download1.text = getString(R.string.update)
                     binding.download1.visibility = View.VISIBLE
@@ -143,7 +147,7 @@ class MainActivity : AppCompatActivity() {
                     binding.download1.text = ""
 
                     if (appItem.downloadUrl == "") {
-                        showToast("Failed to fetch download url of ${appItem.name}")
+                        showSnackbar("Failed to fetch download url of ${appItem.name}")
                         return
                     }
                     appItem.state = AppEntryState.DOWNLOADING
@@ -195,10 +199,12 @@ class MainActivity : AppCompatActivity() {
                         frameButton.visibility = View.GONE
                     }
                 }
+
                 percentage == 0f -> {
                     frameButton.alpha = 1f
                     frameButton.visibility = View.VISIBLE
                 }
+
                 else -> {
                     frameButton.alpha = 1f
                     frameButton.visibility = View.VISIBLE
@@ -224,10 +230,12 @@ class MainActivity : AppCompatActivity() {
                             it.visibility = View.VISIBLE
                         }
                     }
+
                     percentage == 0f -> {
                         it.alpha = 0f
                         it.visibility = View.GONE
                     }
+
                     else -> {
                         it.alpha = 0f
                         it.visibility = View.GONE
@@ -247,9 +255,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showToast(message: String) {
+
+
+    private fun showSnackbar(message: String) {
         runOnUiThread {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            val snackbar = Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT)
+            val backgroundDrawable = resources.getDrawable(com.xenon.commons.accesspoint.R.drawable.tile_popup, null)
+            val snackbarView = snackbar.view
+
+            val params = snackbarView.layoutParams as ViewGroup.MarginLayoutParams
+            params.setMargins(
+                params.leftMargin,
+                params.topMargin,
+                params.rightMargin ,
+                params.bottomMargin + resources.getDimensionPixelSize(R.dimen.snackBar_margin)
+            )
+            snackbarView.layoutParams = params
+
+            // Set the background
+            snackbar.view.background = backgroundDrawable
+            // Customize text color
+            snackbar.setTextColor(
+                resources.getColor(
+                    com.xenon.commons.accesspoint.R.color.onError,
+                    null
+                )
+            )
+
+            snackbar.setBackgroundTint(
+                resources.getColor(
+                    com.xenon.commons.accesspoint.R.color.error,
+                    null
+                )
+            )
+            snackbar.show()
         }
     }
 }

@@ -12,7 +12,6 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
@@ -21,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.xenon.store.AppEntryState
 import com.xenon.store.AppItem
 import com.xenon.store.AppListAdapter
@@ -94,9 +94,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         installPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
                 if (checkInstallPermission()) {
-                    showToast("Install permission granted")
+                    showSnackbar("Install permission granted")
                 } else {
-                    showToast("Install permission denied")
+                    showSnackbar("Install permission denied")
                 }
             }
     }
@@ -108,7 +108,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
     private fun loadAppListFromUrl() {
         val activity = requireActivity()
-        val urlString = "https://raw.githubusercontent.com/Dinico414/Xenon-Commons/master/accesspoint/src/main/java/com/xenon/commons/accesspoint/app_list.json"
+        val urlString =
+            "https://raw.githubusercontent.com/Dinico414/Xenon-Commons/master/accesspoint/src/main/java/com/xenon/commons/accesspoint/app_list.json"
 
         activity.lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -174,35 +175,41 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
         return appList
     }
+
     private fun setupRecyclerView() {
         val context = requireContext()
         binding.appListRecyclerView.layoutManager = LinearLayoutManager(context)
-        val adapter = AppListAdapter(context, appListModel.getList(), object : AppListAdapter.AppItemListener {
-            override fun buttonClicked(appItem: AppItem, position: Int) {
-                when (appItem.state) {
-                    AppEntryState.NOT_INSTALLED,
-                    AppEntryState.INSTALLED_AND_OUTDATED,
-                        -> {
-                        if (appItem.downloadUrl == "") {
-                            showToast("Failed to fetch download url of ${appItem.name}")
-                            return
+        val adapter = AppListAdapter(
+            context,
+            appListModel.getList(),
+            object : AppListAdapter.AppItemListener {
+                override fun buttonClicked(appItem: AppItem, position: Int) {
+                    when (appItem.state) {
+                        AppEntryState.NOT_INSTALLED,
+                        AppEntryState.INSTALLED_AND_OUTDATED,
+                            -> {
+                            if (appItem.downloadUrl == "") {
+                                showSnackbar("Failed to fetch download url of ${appItem.name}")
+                                return
+                            }
+
+                            // Try downloading
+                            appItem.state = AppEntryState.DOWNLOADING
+                            appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+
+                            downloadAppItem(appItem)
                         }
 
-                        // Try downloading
-                        appItem.state = AppEntryState.DOWNLOADING
-                        appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
-
-                        downloadAppItem(appItem)
+                        AppEntryState.DOWNLOADING -> {}
+                        AppEntryState.INSTALLED -> {
+                            startActivity(
+                                activity?.packageManager?.getLaunchIntentForPackage(appItem.packageName)
+                            )
+                        }
                     }
-                    AppEntryState.DOWNLOADING -> {}
-                    AppEntryState.INSTALLED -> {
-                        startActivity(
-                            activity?.packageManager?.getLaunchIntentForPackage(appItem.packageName))
-                    }
+                    appListModel.update(appItem)
                 }
-                appListModel.update(appItem)
-            }
-        })
+            })
         binding.appListRecyclerView.adapter = adapter
         binding.appListRecyclerView.addItemDecoration(object : RecyclerView.ItemDecoration() {
             override fun getItemOffsets(
@@ -224,8 +231,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     if (oldPosition == 0) {
                         outRect.top = marginInPx
                     }
-                }
-                else if (position == 0) {
+                } else if (position == 0) {
                     outRect.top = marginInPx
                 }
             }
@@ -238,15 +244,19 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     LiveListViewModel.ListChangedType.ADD -> {
                         adapter.notifyItemInserted(change.idx)
                     }
+
                     LiveListViewModel.ListChangedType.REMOVE -> {
                         adapter.notifyItemRemoved(change.idx)
                     }
+
                     LiveListViewModel.ListChangedType.MOVED -> {
                         adapter.notifyItemMoved(change.idx, change.idx2)
                     }
+
                     LiveListViewModel.ListChangedType.UPDATE -> {
                         adapter.notifyItemChanged(change.idx, change.payload)
                     }
+
                     LiveListViewModel.ListChangedType.MOVED_AND_UPDATED -> {
                         adapter.notifyItemChanged(change.idx, change.payload)
                         adapter.notifyItemMoved(change.idx, change.idx2)
@@ -254,6 +264,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                             binding.appListRecyclerView.scrollToPosition(0)
                         }
                     }
+
                     LiveListViewModel.ListChangedType.OVERWRITTEN -> {
                         refreshAppList()
                         adapter.appItems = appListModel.getList()
@@ -296,35 +307,41 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
         if (appItem.state == AppEntryState.DOWNLOADING) {
 //                downloadAppItem(appItem)
-        }
-        else if (appItem.installedVersion != "" && isNewerVersion(appItem.newVersion, appItem.installedVersion)) {
+        } else if (appItem.installedVersion != "" && isNewerVersion(
+                appItem.newVersion,
+                appItem.installedVersion
+            )
+        ) {
             appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
-        }
-        else if (appItem.installedVersion != "") {
+        } else if (appItem.installedVersion != "") {
             appItem.state = AppEntryState.INSTALLED
-        }
-        else {
+        } else {
             appItem.state = AppEntryState.NOT_INSTALLED
         }
         appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
 
         if (appItem.downloadUrl == "" || invalidateCaches) {
-            getNewReleaseVersionGithub(appItem.owner, appItem.repo, preReleases, object : GithubReleaseAPICallback{
-                override fun onCompleted(version: String, downloadUrl: String) {
-                    appItem.newIsPreRelease = preReleases
-                    appItem.downloadUrl = downloadUrl
-                    if (isNewerVersion(version, appItem.installedVersion)) {
-                        appItem.newVersion = version
-                        if (appItem.state == AppEntryState.INSTALLED) {
-                            appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
-                            appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+            getNewReleaseVersionGithub(
+                appItem.owner,
+                appItem.repo,
+                preReleases,
+                object : GithubReleaseAPICallback {
+                    override fun onCompleted(version: String, downloadUrl: String) {
+                        appItem.newIsPreRelease = preReleases
+                        appItem.downloadUrl = downloadUrl
+                        if (isNewerVersion(version, appItem.installedVersion)) {
+                            appItem.newVersion = version
+                            if (appItem.state == AppEntryState.INSTALLED) {
+                                appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
+                                appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
+                            }
                         }
                     }
-                }
-                override fun onFailure(error: String) {
-                    showToast("$error for ${appItem.repo}")
-                }
-            })
+
+                    override fun onFailure(error: String) {
+                        showSnackbar("$error for ${appItem.repo}")
+                    }
+                })
         }
     }
 
@@ -333,9 +350,14 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         fun onFailure(error: String)
     }
 
-    private fun getNewReleaseVersionGithub(owner: String, repo: String, preRelease: Boolean, callback: GithubReleaseAPICallback) {
+    private fun getNewReleaseVersionGithub(
+        owner: String,
+        repo: String,
+        preRelease: Boolean,
+        callback: GithubReleaseAPICallback
+    ) {
         val url = if (preRelease) "https://api.github.com/repos/$owner/$repo/releases?per_page=1"
-            else "https://api.github.com/repos/$owner/$repo/releases/latest"
+        else "https://api.github.com/repos/$owner/$repo/releases/latest"
         Log.d("fetching releases", url)
 
         val client = OkHttpClient.Builder()
@@ -352,6 +374,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             override fun onFailure(call: Call, e: IOException) {
                 callback.onFailure("Failure")
             }
+
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     callback.onFailure("Response ${response.code}")
@@ -369,8 +392,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 if (preRelease) {
                     val releases = JSONArray(responseBody)
                     latestRelease = releases.getJSONObject(0)
-                }
-                else {
+                } else {
                     latestRelease = JSONObject(responseBody)
                 }
 
@@ -380,7 +402,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     val asset = assets.getJSONObject(0)
                     callback.onCompleted(newVersion, asset.getString("browser_download_url"))
                 } else {
-                    showToast("No assets found for $repo")
+                    showSnackbar("No assets found for $repo")
                 }
             }
         })
@@ -455,7 +477,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 override fun onFailure() {
                     appItem.state = AppEntryState.NOT_INSTALLED
                     refreshAppItem(appItem)
-                    showToast("Download failed")
+                    showSnackbar("Download failed")
                 }
             })
     }
@@ -495,6 +517,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     outputStream.close()
                 }
             }
+
             override fun onFailure(call: Call, e: IOException) {
                 progressListener.onFailure()
             }
@@ -530,9 +553,39 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         installPermissionLauncher.launch(installIntent)
     }
 
-    private fun showToast(message: String) {
+
+    private fun showSnackbar(message: String) {
         activity?.runOnUiThread {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            val snackbar = Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT)
+            val backgroundDrawable = resources.getDrawable(com.xenon.commons.accesspoint.R.drawable.tile_popup, null)
+            val snackbarView = snackbar.view
+
+            val params = snackbarView.layoutParams as ViewGroup.MarginLayoutParams
+            params.setMargins(
+                params.leftMargin,
+                params.topMargin,
+                params.rightMargin,
+                params.bottomMargin + resources.getDimensionPixelSize(R.dimen.snackBar_margin)
+            )
+            snackbarView.layoutParams = params
+
+            // Set the background
+            snackbar.view.background = backgroundDrawable
+            // Customize text color
+            snackbar.setTextColor(
+                resources.getColor(
+                    com.xenon.commons.accesspoint.R.color.onError,
+                    null
+                )
+            )
+
+            snackbar.setBackgroundTint(
+                resources.getColor(
+                    com.xenon.commons.accesspoint.R.color.error,
+                    null
+                )
+            )
+            snackbar.show()
         }
     }
 }
