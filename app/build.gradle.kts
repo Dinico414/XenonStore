@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.xenon.store"
-        minSdk = 31
+        minSdk = 30
         targetSdk = 35
         versionCode =10
         versionName = "1.7.5"

@@ -1,7 +1,7 @@
 [versions]
 agp = "8.8.2"
 converterGson = "2.11.0"
-githubXenonCommons = "1.1.1"
+githubXenonCommons = "1.2.0"
 kotlin = "2.0.21"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -16,7 +16,7 @@ uiTextAndroid = "1.7.8"
 protoliteWellKnownTypes = "18.0.1"
 animationAndroid = "1.7.8"
 coreAnimation = "1.0.0"
-media3CommonKtx = "1.5.1"
+media3CommonKtx = "1.6.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
