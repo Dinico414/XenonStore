@@ -23,4 +23,14 @@
     <string name="about">About</string>
     <string name="about_text">Version: %1$s</string>
     <string name="version_with_prefix">v.%1$s</string>
+    <string name="offline_message">Sie sind aktuell Offline</string>
+    <string name="open_settings">Öffne Einstellungen</string>
+    <string name="failed_to_find">Fehler beim finden von</string>
+    <string name="for_string">für</string>
+    <string name="response_string">Fehler</string>
+    <string name="permission_denied">Berechtigung verweigert</string>
+    <string name="permission_granted">Berechtigung erteilt</string>
+    <string name="no_assets">Keine Assets gefunden für</string>
+    <string name="empty_body">Leerer Antwortinhalt für</string>
+    <string name="no_data">Keine Daten für</string>
 </resources>

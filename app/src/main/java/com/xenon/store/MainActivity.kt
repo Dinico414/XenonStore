@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.xenon.store
 
 import android.content.Intent
@@ -145,7 +147,8 @@ class MainActivity : AppCompatActivity() {
                     binding.download1.text = ""
 
                     if (appItem.downloadUrl == "") {
-                        showSnackbar("Failed to find ${appItem.name}")
+                        val find = getString(R.string.failed_to_find)
+                        showSnackbar("$find ${appItem.name}")
                         return
                     }
                     appItem.state = AppEntryState.DOWNLOADING

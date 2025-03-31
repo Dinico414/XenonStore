@@ -112,9 +112,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult())
             { _ ->
                 if (checkInstallPermission()) {
-                    showToast("Install permission granted")
+                    showToast(getString(R.string.permission_granted))
                 } else {
-                    showToast("Install permission denied")
+                    showToast(getString(R.string.permission_denied))
                 }
             }
         networkChangeListener = NetworkChangeListener(
@@ -278,7 +278,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                         AppEntryState.INSTALLED_AND_OUTDATED,
                             -> {
                             if (appItem.downloadUrl == "") {
-                                showErrorSnackbar("No Data for ${appItem.name}")
+                                val noData = getString(R.string.no_data)
+                                showErrorSnackbar("$noData ${appItem.name}")
                                 return
                             }
 
@@ -461,17 +462,20 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                callback.onFailure("Failed to find")
+                callback.onFailure(getString(R.string.failed_to_find))
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
-                    callback.onFailure("Response ${response.code} for")
+                    val responseString = getString(R.string.response_string)
+                    val forString = getString(R.string.for_string)
+                    val errorMessage = "$responseString ${response.code} $forString"
+                    callback.onFailure(errorMessage)
                     return
                 }
                 val responseBody = response.body?.string()
                 if (responseBody == null) {
-                    callback.onFailure("Empty response body for")
+                    callback.onFailure(getString(R.string.empty_body))
                     return
                 }
 
@@ -491,7 +495,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     val asset = assets.getJSONObject(0)
                     callback.onCompleted(newVersion, asset.getString("browser_download_url"))
                 } else {
-                    showErrorSnackbar("No assets found for $repo")
+                    val noAssets = getString(R.string.no_assets)
+                    showErrorSnackbar("$noAssets $repo")
                 }
             }
         })
@@ -566,7 +571,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 override fun onFailure() {
                     appItem.state = AppEntryState.NOT_INSTALLED
                     refreshAppItem(appItem)
-                    showErrorSnackbar("Download failed")
+                    showErrorSnackbar(getString(R.string.download_failed))
                 }
             })
     }
@@ -652,15 +657,18 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
     private fun showNoInternetSnackbar() {
         activity?.runOnUiThread {
-            val snackbar =
-                Snackbar.make(binding.root, "You are at the moment offline", Snackbar.LENGTH_INDEFINITE)
+            val snackbar = Snackbar.make(
+                binding.root,
+                getString(R.string.offline_message),
+                Snackbar.LENGTH_INDEFINITE
+            )
             val backgroundDrawable =
                 ResourcesCompat.getDrawable(resources, drawable.tile_popup, null)
 
             snackbar.view.background = backgroundDrawable
             snackbar.setTextColor(resources.getColor(color.inverseOnSurface, null))
             snackbar.setBackgroundTint(resources.getColor(color.inverseSurface, null))
-            snackbar.setAction("Open Settings") {
+            snackbar.setAction(getString(R.string.open_settings)) {
                 val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
                 startActivity(intent)
             }
