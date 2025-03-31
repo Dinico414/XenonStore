@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -28,6 +27,13 @@ class SettingsActivity : BaseActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private val preReleaseKey = "pre_releases"
     private val amoledDarkKey = "amoled_dark"
+
+    // Add the supported locales here
+    private val supportedLocales = listOf(
+        Locale("en"), // English
+        Locale("de")  // German
+        // Add more locales as needed, e.g., Locale("fr") for French
+    )
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,17 +66,16 @@ class SettingsActivity : BaseActivity() {
         }
 
         binding.clearButtonHolder.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setPositiveButton(R.string.yes) { _, _ ->
-                val sharedPref = getSharedPreferences(packageName, MODE_PRIVATE)
-                sharedPref.edit().clear().apply()
-                this.restartApplication()
-            }
-            builder.setNegativeButton(R.string.cancel, null)
-            builder.setMessage(R.string.clear_data_dialog)
-            builder.show()
+            MaterialAlertDialogBuilder(this)
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    val sharedPref = getSharedPreferences(packageName, MODE_PRIVATE)
+                    sharedPref.edit().clear().apply()
+                    this.restartApplication()
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .setMessage(R.string.clear_data_dialog)
+                .show()
         }
-
         binding.toolbar.setNavigationOnClickListener {
             finish()
         }
@@ -121,16 +126,46 @@ class SettingsActivity : BaseActivity() {
     private fun setupViews() {
         binding.languageSelectionValue.text = Locale.getDefault().displayLanguage
         binding.languageSelectionHolder.setOnClickListener {
-            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                showLanguageDialog()
             } else {
-                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.data = Uri.fromParts("package", packageName, null)
+                startActivity(intent)
             }
-            intent.data = Uri.fromParts("package", packageName, null)
-            startActivity(intent)
         }
+    }
 
+    private fun showLanguageDialog() {
+        val languageList = supportedLocales.map { it.getDisplayName(it) }.toTypedArray()
+        val currentLocale = Locale.getDefault()
+        val currentLanguageIndex = supportedLocales.indexOfFirst { it == currentLocale }
 
+        var selectedLanguageIndex = currentLanguageIndex
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Select Language")
+            .setSingleChoiceItems(languageList, currentLanguageIndex) { _, which ->
+                selectedLanguageIndex = which
+            }
+            .setPositiveButton("OK") { _, _ ->
+                if (selectedLanguageIndex != -1) {
+                    val selectedLocale = supportedLocales[selectedLanguageIndex]
+                    updateLocale(selectedLocale)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun updateLocale(locale: Locale) {
+        Locale.setDefault(locale)
+        val resources = this.resources
+        val config = resources.configuration
+        config.setLocale(locale)
+        resources.updateConfiguration(config, resources.displayMetrics)
+
+        // Restart the activity to apply the new locale
+        recreate()
     }
 }
 

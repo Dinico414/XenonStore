@@ -33,4 +33,5 @@
     <string name="no_assets">Keine Assets gefunden für</string>
     <string name="empty_body">Leerer Antwortinhalt für</string>
     <string name="no_data">Keine Daten für</string>
+    <string name="delete">Deinstallieren</string>
 </resources>
