@@ -126,7 +126,7 @@ class AppListAdapter(
                     binding.progressbar.progress = appItem.bytesDownloaded.toInt()
                     binding.progressbar.max = appItem.fileSize.toInt()
                     progressBarVisibility = View.VISIBLE
-                    showVersion = true
+                    showVersion = appItem.isOutdated()
                     binding.frameAction.visibility = View.VISIBLE
                     binding.buttonLayout.visibility = View.VISIBLE
                 }
@@ -136,6 +136,7 @@ class AppListAdapter(
                     binding.buttonLayout.visibility = View.VISIBLE
                 }
 
+                // TODO: Remove INSTALLED_AND_OUTDATED in favor of appItem.isOutdated()
                 AppEntryState.INSTALLED_AND_OUTDATED -> {
                     binding.actionButton.text = context.getString(R.string.update)
                     showVersion = true
