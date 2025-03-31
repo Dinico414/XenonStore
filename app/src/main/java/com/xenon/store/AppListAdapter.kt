@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import com.xenon.store.databinding.AppItemCellBinding
 
@@ -119,6 +120,7 @@ class AppListAdapter(
                     binding.actionButton.text = context.getString(R.string.install)
                     binding.frameAction.visibility = View.VISIBLE
                     binding.buttonLayout.visibility = View.GONE
+                    setButtonLayoutMarginStart(0)
                 }
 
                 AppEntryState.DOWNLOADING -> {
@@ -129,11 +131,13 @@ class AppListAdapter(
                     showVersion = appItem.isOutdated()
                     binding.frameAction.visibility = View.VISIBLE
                     binding.buttonLayout.visibility = View.VISIBLE
+                    setButtonLayoutMarginStart(5)
                 }
 
                 AppEntryState.INSTALLED -> {
                     binding.frameAction.visibility = View.GONE
                     binding.buttonLayout.visibility = View.VISIBLE
+                    setButtonLayoutMarginStart(0)
                 }
 
                 // TODO: Remove INSTALLED_AND_OUTDATED in favor of appItem.isOutdated()
@@ -142,6 +146,7 @@ class AppListAdapter(
                     showVersion = true
                     binding.frameAction.visibility = View.VISIBLE
                     binding.buttonLayout.visibility = View.VISIBLE
+                    setButtonLayoutMarginStart(5)
                 }
             }
 
@@ -150,6 +155,11 @@ class AppListAdapter(
 
             if (showVersion) handleNewVersion(appItem)
             else binding.version.visibility = View.GONE
+        }
+        private fun AppListViewHolder.setButtonLayoutMarginStart(marginStartDp: Int) {
+            binding.buttonLayout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                marginStart = (marginStartDp * context.resources.displayMetrics.density).toInt()
+            }
         }
 
         private fun handleNewVersion(appItem: AppItem) {
