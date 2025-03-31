@@ -147,8 +147,7 @@ class MainActivity : AppCompatActivity() {
                     binding.download1.text = ""
 
                     if (appItem.downloadUrl == "") {
-                        val find = getString(R.string.failed_to_find)
-                        showSnackbar("$find ${appItem.name}")
+                        showSnackbar(getString(R.string.failed_to_find, appItem.name))
                         return
                     }
                     appItem.state = AppEntryState.DOWNLOADING

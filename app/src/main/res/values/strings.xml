@@ -24,7 +24,7 @@
     <string name="version_with_prefix">v.%1$s</string>
     <string name="offline_message">You are offline at the moment</string>
     <string name="open_settings">Open Settings</string>
-    <string name="failed_to_find">Failed to find</string>
+    <string name="failed_to_find">Failed to find %1$s</string>
     <string name="for_string">for</string>
     <string name="response_string">Response</string>
     <string name="permission_denied">Install permission denied</string>

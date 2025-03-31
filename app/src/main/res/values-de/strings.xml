@@ -25,7 +25,7 @@
     <string name="version_with_prefix">v.%1$s</string>
     <string name="offline_message">Sie sind aktuell Offline</string>
     <string name="open_settings">Öffne Einstellungen</string>
-    <string name="failed_to_find">Fehler beim finden von</string>
+    <string name="failed_to_find">Fehler beim finden von %1$s</string>
     <string name="for_string">für</string>
     <string name="response_string">Fehler</string>
     <string name="permission_denied">Berechtigung verweigert</string>
