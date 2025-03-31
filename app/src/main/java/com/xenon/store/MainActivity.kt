@@ -3,7 +3,6 @@ package com.xenon.store
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -105,7 +104,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         appListModel.storeAppItemLive.observe(this) { _ ->
-            Log.d("ayy", appItem.state.toString())
             when (appItem.state) {
                 AppEntryState.NOT_INSTALLED,
                 AppEntryState.INSTALLED -> {
@@ -147,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                     binding.download1.text = ""
 
                     if (appItem.downloadUrl == "") {
-                        showSnackbar("Failed to fetch download url of ${appItem.name}")
+                        showSnackbar("Failed to find ${appItem.name}")
                         return
                     }
                     appItem.state = AppEntryState.DOWNLOADING

@@ -12,6 +12,7 @@ import android.provider.Settings
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.xenon.store.R
@@ -94,10 +95,10 @@ class SettingsActivity : BaseActivity() {
         try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
             val versionName = packageInfo.versionName
-            binding.aboutText!!.text = getString(R.string.about_text, versionName)
+            binding.aboutText.text = getString(R.string.about_text, versionName)
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
-            binding.aboutText!!.text = getString(R.string.about_text, "Unknown")
+            binding.aboutText.text = getString(R.string.about_text, "Unknown")
         }
         // Add this block to handle the click on the "about" LinearLayout
         binding.aboutHolder.setOnClickListener {
@@ -111,7 +112,7 @@ class SettingsActivity : BaseActivity() {
             if (enable) {
                 window.decorView.setBackgroundColor(Color.BLACK)
             } else {
-                window.decorView.setBackgroundColor(resources.getColor(com.xenon.commons.accesspoint.R.color.surfaceContainerLowest))
+                window.decorView.setBackgroundColor(ContextCompat.getColor(this, com.xenon.commons.accesspoint.R.color.surfaceContainerLowest))
             }
         }
     }

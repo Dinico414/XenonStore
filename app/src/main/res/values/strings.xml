@@ -21,4 +21,5 @@
     <string name="amoled">Amoled-Darkmode</string>
     <string name="about">About</string>
     <string name="about_text">Version: %1$s</string>
+    <string name="version_with_prefix">v.%1$s</string>
 </resources>

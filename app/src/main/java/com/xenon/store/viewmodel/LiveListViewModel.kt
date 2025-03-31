@@ -1,9 +1,12 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package com.xenon.store.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import java.util.concurrent.ConcurrentLinkedQueue
 
+@Suppress("unused")
 open class LiveListViewModel<T: LiveListItem> : ViewModel() {
     val liveListEvent = MutableLiveData<ListEvent<T>>()
     val listEventQueue = ConcurrentLinkedQueue<ListEvent<T>>()
@@ -67,7 +70,7 @@ open class LiveListViewModel<T: LiveListItem> : ViewModel() {
     /**
      * Updates item and sets to correct position as per calculateItemPosition
      * payload parameter may be used to pass message to
-     * Recyclerview.Adapater.onBindViewHolder
+     * Recyclerview.Adapter.onBindViewHolder
      */
     open fun update(item: T, payload: Any? = null) {
         val from = items.indexOfFirst { v -> item.id == v.id }

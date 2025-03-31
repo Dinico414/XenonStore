@@ -1,7 +1,9 @@
+@file:Suppress("unused")
+
 package com.xenon.store
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Resources
 import com.xenon.store.viewmodel.LiveListItem
 
 enum class AppEntryState {
@@ -18,7 +20,7 @@ data class AppItem(
     val packageName: String,
 ) : LiveListItem {
 
-    override var id: Int = -1;
+    override var id: Int = -1
     var state: AppEntryState = AppEntryState.NOT_INSTALLED
     var installedVersion: String = ""
     var newVersion: String = ""
@@ -38,6 +40,7 @@ data class AppItem(
     private val iconDirectory = iconRegex.find(iconPath)?.groups?.get(1)?.value
     private val iconName = iconRegex.find(iconPath)?.groups?.get(2)?.value
 
+    @SuppressLint("DiscouragedApi")
     fun getDrawableId(context: Context): Int {
         if (iconDirectory == null || iconName == null) return 0
         return context.resources.getIdentifier(iconName, iconDirectory, context.packageName)

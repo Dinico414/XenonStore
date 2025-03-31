@@ -7,6 +7,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.xenon.store.databinding.AppItemCellBinding
 
@@ -81,7 +82,7 @@ class AppListAdapter(
             val drawableId = appItem.getDrawableId(context)
             if (drawableId != 0) {
                 Log.d("icon", "${appItem.name}: Found drawable for ${appItem.iconPath}")
-                binding.icon.setImageDrawable(context.resources.getDrawable(drawableId))
+                binding.icon.setImageDrawable(ResourcesCompat.getDrawable(context.resources, drawableId, null))
             }
             else {
                 Log.d("icon", "${appItem.name}: No drawable found for ${appItem.iconPath}")
@@ -124,20 +125,21 @@ class AppListAdapter(
         }
 
         private fun handleNewVersion(appItem: AppItem) {
-            if (appItem.newVersion != "") {
+            if (appItem.newVersion.isNotEmpty()) {
                 binding.version.visibility = View.VISIBLE
                 binding.installedVersion.apply {
-                    text = "v.${appItem.installedVersion}"
+                    text = context.getString(R.string.version_with_prefix, appItem.installedVersion)
                     paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
                     alpha = 0.5f
                     visibility = View.VISIBLE
                 }
                 binding.newVersion.apply {
-                    text = "v.${appItem.newVersion}"
+                    text = context.getString(R.string.version_with_prefix, appItem.newVersion)
                     visibility = View.VISIBLE
                 }
+            } else {
+                binding.version.visibility = View.GONE
             }
-            else binding.version.visibility = View.GONE
         }
     }
 }
