@@ -332,6 +332,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 val change = appListModel.listEventQueue.poll() ?: break
                 when (change.type) {
                     LiveListViewModel.ListChangedType.ADD -> {
+                        refreshAppItem(change.item!!)
                         adapter.notifyItemInserted(change.idx)
                     }
 
