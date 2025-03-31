@@ -376,6 +376,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
     }
 
+
     private fun refreshAppList(invalidateCaches: Boolean = false) {
         binding.swipeRefreshLayout.isRefreshing = true
 

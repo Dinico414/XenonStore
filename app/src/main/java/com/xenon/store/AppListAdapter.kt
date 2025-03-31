@@ -2,6 +2,7 @@ package com.xenon.store
 
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.ACTION_UNINSTALL_PACKAGE
 import android.graphics.Paint
 import android.net.Uri
 import android.util.Log
@@ -69,6 +70,7 @@ class AppListAdapter(
         fun buttonClicked(appItem: AppItem, position: Int)
     }
 
+    @Suppress("DEPRECATION")
     class AppListViewHolder(
         private val context: Context,
         private val binding: AppItemCellBinding,
@@ -80,6 +82,7 @@ class AppListAdapter(
             binding.actionButton.setOnClickListener {
                 listener.buttonClicked(appItem, position)
             }
+
             binding.delete.setOnClickListener {
                 openUninstallDialog(appItem.packageName)
             }
@@ -156,11 +159,10 @@ class AppListAdapter(
         }
 
         private fun openUninstallDialog(packageName: String) {
-            val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE).apply {
+            val intent = Intent(ACTION_UNINSTALL_PACKAGE).apply {
                 data = Uri.parse("package:$packageName")
             }
             context.startActivity(intent)
         }
     }
 }
-
