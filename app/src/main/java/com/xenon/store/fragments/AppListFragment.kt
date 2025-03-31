@@ -16,15 +16,19 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.xenon.commons.accesspoint.R.color
+import com.xenon.commons.accesspoint.R.drawable
 import com.xenon.store.AppEntryState
 import com.xenon.store.AppItem
 import com.xenon.store.AppListAdapter
@@ -54,12 +58,14 @@ import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
+@Suppress("unused")
 class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private lateinit var binding: FragmentAppListBinding
     private lateinit var appListModel: AppListViewModel
     private lateinit var sharedPreferences: SharedPreferences
     private var snackbar: Snackbar? = null
     private lateinit var networkChangeListener: NetworkChangeListener
+    private lateinit var cachedJsonFile: File
 
     private lateinit var installPermissionLauncher: ActivityResultLauncher<Intent>
     private val isDownloadInProgress = AtomicBoolean(false)
@@ -68,9 +74,11 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         super.onCreate(savedInstanceState)
         appListModel = ViewModelProvider(this)[AppListViewModel::class.java]
 
+        val context = requireContext()
+        cachedJsonFile = File(context.filesDir, "app_list_cache.json")
+
         if (appListModel.getList().size == 0)
             loadAppListFromUrl()
-
     }
 
     override fun onCreateView(
@@ -78,10 +86,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
 
-    ): View {
+        ): View {
         binding = FragmentAppListBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     fun getViewModel(): AppListViewModel {
@@ -104,9 +111,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult())
             { _ ->
                 if (checkInstallPermission()) {
-                    showSnackbar("Install permission granted")
+                    showToast("Install permission granted")
                 } else {
-                    showSnackbar("Install permission denied")
+                    showToast("Install permission denied")
                 }
             }
         networkChangeListener = NetworkChangeListener(
@@ -116,27 +123,49 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 loadAppListFromUrl()
             },
             onNetworkUnavailable = {
-                showNoInternetSnackbar(view)
+                showNoInternetSnackbar()
             }
         )
+        checkNetworkAndShowSnackbarIfNeeded()
     }
 
     override fun onResume() {
         super.onResume()
         networkChangeListener.register()
+        // Check for network availability on resume
+        checkNetworkAndShowSnackbarIfNeeded()
         refreshAppList()
     }
+
     override fun onPause() {
         super.onPause()
         networkChangeListener.unregister()
     }
-    private fun showNoInternetSnackbar(view: View) {
-        snackbar = Snackbar.make(
-            view,
-            "No internet connection",
-            Snackbar.LENGTH_INDEFINITE
-        ).apply {
-            show()
+
+    private fun checkNetworkAndShowSnackbarIfNeeded() {
+        if (!isNetworkAvailable()) {
+            showNoInternetSnackbar()
+            loadAppListFromCache()
+        } else {
+            snackbar?.dismiss() // Dismiss any existing Snackbar
+            loadAppListFromUrl() // Load data if network is available
+        }
+    }
+
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager =
+            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork
+        val capabilities = connectivityManager.getNetworkCapabilities(network)
+        return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    }
+
+    private fun loadAppList() {
+        if (isNetworkAvailable()) {
+            loadAppListFromUrl()
+        } else {
+            loadAppListFromCache()
         }
     }
 
@@ -147,32 +176,57 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
         activity.lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val jsonString = fetchJsonFromUrl(urlString)
+                val jsonString = urlString.fetchJsonFromUrl()
                 if (jsonString != null) {
+                    cacheJson(jsonString)
                     val appList = parseJson(jsonString)
                     withContext(Dispatchers.Main) {
                         appListModel.setList(appList)
                     }
                 } else {
-                    // Handle the case where jsonString is null
                     Log.e("AppListFragment", "Failed to fetch or read JSON data.")
-                    withContext(Dispatchers.Main) {
-                        // Optionally, update UI to show an error message
-                    }
+                    loadAppListFromCache()
                 }
             } catch (e: Exception) {
                 Log.e("AppListFragment", "Error loading app list: ${e.message}")
+                loadAppListFromCache()
+            }
+        }
+    }
+
+    private fun loadAppListFromCache() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                if (cachedJsonFile.exists()) {
+                    val jsonString = cachedJsonFile.readText()
+                    val appList = parseJson(jsonString)
+                    withContext(Dispatchers.Main) {
+                        appListModel.setList(appList)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AppListFragment", "Error loading from cache: ${e.message}")
                 withContext(Dispatchers.Main) {
-                    // Optionally, update UI to show an error message
                 }
             }
         }
     }
 
-    private fun fetchJsonFromUrl(urlString: String): String? {
+    private fun cacheJson(jsonString: String) {
+        try {
+            cachedJsonFile.writeText(jsonString)
+        } catch (e: IOException) {
+            Log.e("AppListFragment", "Error caching JSON: ${e.message}")
+        }
+    }
+
+    private fun String.fetchJsonFromUrl(): String? {
         var urlConnection: HttpURLConnection? = null
         return try {
-            val url = URL(urlString)
+            val url = URL(this)
             urlConnection = url.openConnection() as HttpURLConnection
             urlConnection.requestMethod = "GET"
             urlConnection.connect()
@@ -223,7 +277,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                         AppEntryState.INSTALLED_AND_OUTDATED,
                             -> {
                             if (appItem.downloadUrl == "") {
-                                showSnackbar("Failed to fetch download url of ${appItem.name}")
+                                showErrorSnackbar("No Data for ${appItem.name}")
                                 return
                             }
 
@@ -373,7 +427,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     }
 
                     override fun onFailure(error: String) {
-                        showSnackbar("$error for ${appItem.repo}")
+                        showErrorSnackbar("$error ${appItem.repo}")
                     }
                 })
         }
@@ -406,17 +460,17 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                callback.onFailure("Failure")
+                callback.onFailure("Failed to find")
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
-                    callback.onFailure("Response ${response.code}")
+                    callback.onFailure("Response ${response.code} for")
                     return
                 }
                 val responseBody = response.body?.string()
                 if (responseBody == null) {
-                    callback.onFailure("Empty response body")
+                    callback.onFailure("Empty response body for")
                     return
                 }
 
@@ -436,7 +490,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     val asset = assets.getJSONObject(0)
                     callback.onCompleted(newVersion, asset.getString("browser_download_url"))
                 } else {
-                    showSnackbar("No assets found for $repo")
+                    showErrorSnackbar("No assets found for $repo")
                 }
             }
         })
@@ -511,7 +565,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 override fun onFailure() {
                     appItem.state = AppEntryState.NOT_INSTALLED
                     refreshAppItem(appItem)
-                    showSnackbar("Download failed")
+                    showErrorSnackbar("Download failed")
                 }
             })
     }
@@ -588,10 +642,53 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     }
 
 
-    private fun showSnackbar(message: String) {
+    private fun showToast(message: String) {
+
+        activity?.runOnUiThread {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showNoInternetSnackbar() {
+        activity?.runOnUiThread {
+            val snackbar =
+                Snackbar.make(binding.root, "You are now offline", Snackbar.LENGTH_INDEFINITE)
+            val backgroundDrawable =
+                ResourcesCompat.getDrawable(resources, drawable.tile_popup, null)
+            val snackbarView = snackbar.view
+
+            val params = snackbarView.layoutParams as ViewGroup.MarginLayoutParams
+            params.setMargins(
+                params.leftMargin,
+                params.topMargin,
+                params.rightMargin,
+                params.bottomMargin + resources.getDimensionPixelSize(R.dimen.snackBar_margin)
+            )
+            snackbarView.layoutParams = params
+
+            snackbar.view.background = backgroundDrawable
+            snackbar.setTextColor(
+                resources.getColor(
+                    color.inverseOnSurface,
+                    null
+                )
+            )
+            snackbar.setBackgroundTint(
+                resources.getColor(
+                    color.inverseSurface,
+                    null
+                )
+            )
+            snackbar.show()
+        }
+    }
+
+
+    private fun showErrorSnackbar(message: String) {
         activity?.runOnUiThread {
             val snackbar = Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT)
-            val backgroundDrawable = resources.getDrawable(com.xenon.commons.accesspoint.R.drawable.tile_popup, null)
+            val backgroundDrawable =
+                ResourcesCompat.getDrawable(resources, drawable.tile_popup, null)
             val snackbarView = snackbar.view
 
             val params = snackbarView.layoutParams as ViewGroup.MarginLayoutParams
@@ -608,20 +705,21 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             // Customize text color
             snackbar.setTextColor(
                 resources.getColor(
-                    com.xenon.commons.accesspoint.R.color.onError,
+                    color.onError,
                     null
                 )
             )
 
             snackbar.setBackgroundTint(
                 resources.getColor(
-                    com.xenon.commons.accesspoint.R.color.error,
+                    color.error,
                     null
                 )
             )
             snackbar.show()
         }
     }
+
     inner class NetworkChangeListener(
         private val context: Context,
         private val onNetworkAvailable: () -> Unit,
@@ -638,10 +736,12 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         override fun onLost(network: Network) {
             super.onLost(network)
             onNetworkUnavailable()
+            showNoInternetSnackbar()
         }
 
         fun register() {
-            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val connectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val networkRequest = NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build()
@@ -649,7 +749,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
 
         fun unregister() {
-            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val connectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             connectivityManager.unregisterNetworkCallback(this)
             snackbar?.dismiss()
             snackbar = null
