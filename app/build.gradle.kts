@@ -11,10 +11,10 @@ android {
 
     defaultConfig {
         applicationId = "com.xenon.store"
-        minSdk = 30
+        minSdk = 31
         targetSdk = 35
         versionCode =10
-        versionName = "1.7.5"
+        versionName = "1.7.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
