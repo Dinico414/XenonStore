@@ -80,6 +80,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         cachedJsonFile = File(context.filesDir, "app_list_cache.json")
         if (cachedJsonFile.exists())
             cachedJsonHash = cachedJsonFile.readText().hashCode()
+        if (appListModel.getList().isEmpty())
+            loadAndRefreshAppListFromUrl()
     }
 
     override fun onCreateView(
@@ -105,7 +107,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         setupRecyclerView()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            refreshAppList(invalidateCaches = true)
+            loadAndRefreshAppListFromUrl()
         }
 
         installPermissionLauncher =
@@ -120,13 +122,10 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         networkChangeListener = NetworkChangeListener(
             requireContext(),
             onNetworkAvailable = {
-                // Re-fetch your JSON data here
-                loadAndRefreshAppListFromUrl()
                 activeSnackbar?.dismiss()
                 activeSnackbar = null
             },
             onNetworkUnavailable = {
-                loadAndRefreshAppListFromCache()
                 showNoInternetSnackbar()
             }
         )
@@ -140,6 +139,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         } else {
             networkChangeListener.onNetworkUnavailable()
         }
+        refreshAppList()
     }
 
     override fun onPause() {
@@ -359,9 +359,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     }
 
                     LiveListViewModel.ListChangedType.OVERWRITTEN -> {
-                        refreshAppList(invalidateCaches = true)
                         adapter.appItems = appListModel.getList()
                         adapter.notifyDataSetChanged()
+                        refreshAppList(invalidateCaches = true)
                     }
                 }
             }
@@ -724,8 +724,6 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             connectivityManager.unregisterNetworkCallback(this)
-            activeSnackbar?.dismiss()
-            activeSnackbar = null
         }
     }
 }
