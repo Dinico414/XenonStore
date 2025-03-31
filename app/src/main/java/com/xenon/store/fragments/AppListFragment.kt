@@ -401,11 +401,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
         if (appItem.state == AppEntryState.DOWNLOADING) {
 //                downloadAppItem(appItem)
-        } else if (appItem.installedVersion != "" && isNewerVersion(
-                appItem.newVersion,
-                appItem.installedVersion
-            )
-        ) {
+        } else if (appItem.isOutdated()) {
             appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
         } else if (appItem.installedVersion != "") {
             appItem.state = AppEntryState.INSTALLED
@@ -423,7 +419,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     override fun onCompleted(version: String, downloadUrl: String) {
                         appItem.newIsPreRelease = preReleases
                         appItem.downloadUrl = downloadUrl
-                        if (isNewerVersion(version, appItem.installedVersion)) {
+                        if (appItem.isNewerVersion(version)) {
                             appItem.newVersion = version
                             if (appItem.state == AppEntryState.INSTALLED) {
                                 appItem.state = AppEntryState.INSTALLED_AND_OUTDATED
@@ -522,25 +518,6 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         } catch (e: PackageManager.NameNotFoundException) {
             null
         }
-    }
-
-    private fun isNewerVersion(latestVersion: String, installedVersion: String): Boolean {
-        if (installedVersion == "") return true
-
-        val latestParts = latestVersion.split(".").map { it.toIntOrNull() ?: 0 }
-        val installedParts = installedVersion.split(".").map { it.toIntOrNull() ?: 0 }
-
-        for (i in 0 until maxOf(latestParts.size, installedParts.size)) {
-            val latestPart = latestParts.getOrElse(i) { 0 }
-            val installedPart = installedParts.getOrElse(i) { 0 }
-
-            if (latestPart > installedPart) {
-                return true
-            } else if (latestPart < installedPart) {
-                return false
-            }
-        }
-        return false
     }
 
     interface DownloadListener {

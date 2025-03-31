@@ -26,6 +26,11 @@ data class AppItem(
     var newVersion: String = ""
     var installedIsPreRelease = false
     var newIsPreRelease = false
+
+    fun isOutdated(): Boolean {
+        return installedVersion != "" && isNewerVersion(newVersion)
+    }
+
     // Download progressbar variables
     var bytesDownloaded: Long = 0
     var fileSize: Long = 0
@@ -44,5 +49,25 @@ data class AppItem(
     fun getDrawableId(context: Context): Int {
         if (iconDirectory == null || iconName == null) return 0
         return context.resources.getIdentifier(iconName, iconDirectory, context.packageName)
+    }
+
+
+    fun isNewerVersion(latestVersion: String): Boolean {
+        if (installedVersion == "") return true
+
+        val latestParts = latestVersion.split(".").map { it.toIntOrNull() ?: 0 }
+        val installedParts = installedVersion.split(".").map { it.toIntOrNull() ?: 0 }
+
+        for (i in 0 until maxOf(latestParts.size, installedParts.size)) {
+            val latestPart = latestParts.getOrElse(i) { 0 }
+            val installedPart = installedParts.getOrElse(i) { 0 }
+
+            if (latestPart > installedPart) {
+                return true
+            } else if (latestPart < installedPart) {
+                return false
+            }
+        }
+        return false
     }
 }
