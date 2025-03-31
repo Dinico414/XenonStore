@@ -1,7 +1,9 @@
 package com.xenon.store
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Paint
+import android.net.Uri
 import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -78,13 +80,21 @@ class AppListAdapter(
             binding.actionButton.setOnClickListener {
                 listener.buttonClicked(appItem, position)
             }
+            binding.delete.setOnClickListener {
+                openUninstallDialog(appItem.packageName)
+            }
 
             val drawableId = appItem.getDrawableId(context)
             if (drawableId != 0) {
                 Log.d("icon", "${appItem.name}: Found drawable for ${appItem.iconPath}")
-                binding.icon.setImageDrawable(ResourcesCompat.getDrawable(context.resources, drawableId, null))
-            }
-            else {
+                binding.icon.setImageDrawable(
+                    ResourcesCompat.getDrawable(
+                        context.resources,
+                        drawableId,
+                        null
+                    )
+                )
+            } else {
                 Log.d("icon", "${appItem.name}: No drawable found for ${appItem.iconPath}")
             }
 
@@ -101,17 +111,19 @@ class AppListAdapter(
                 AppEntryState.NOT_INSTALLED -> {
                     binding.actionButton.text = context.getString(R.string.install)
                 }
+
                 AppEntryState.DOWNLOADING -> {
                     binding.actionButton.text = ""
-
                     binding.progressbar.progress = appItem.bytesDownloaded.toInt()
                     binding.progressbar.max = appItem.fileSize.toInt()
                     progressBarVisibility = View.VISIBLE
                     showVersion = true
                 }
+
                 AppEntryState.INSTALLED -> {
                     binding.actionButton.text = context.getString(R.string.open)
                 }
+
                 AppEntryState.INSTALLED_AND_OUTDATED -> {
                     binding.actionButton.text = context.getString(R.string.update)
                     showVersion = true
@@ -142,5 +154,13 @@ class AppListAdapter(
                 binding.version.visibility = View.GONE
             }
         }
+
+        private fun openUninstallDialog(packageName: String) {
+            val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE).apply {
+                data = Uri.parse("package:$packageName")
+            }
+            context.startActivity(intent)
+        }
     }
 }
+
