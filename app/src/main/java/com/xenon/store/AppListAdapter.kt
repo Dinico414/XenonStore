@@ -130,7 +130,7 @@ class AppListAdapter(
                     progressBarVisibility = View.VISIBLE
                     showVersion = appItem.isOutdated()
                     binding.frameAction.visibility = View.VISIBLE
-                    binding.buttonLayout.visibility = View.VISIBLE
+                    binding.buttonLayout.visibility = if (appItem.isOutdated()) View.VISIBLE else View.GONE
                     setButtonLayoutMarginStart(5)
                 }
 

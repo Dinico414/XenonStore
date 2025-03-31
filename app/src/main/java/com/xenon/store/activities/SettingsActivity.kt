@@ -126,7 +126,11 @@ class SettingsActivity : BaseActivity() {
     private fun setupViews() {
         binding.languageSelectionValue.text = Locale.getDefault().displayLanguage
         binding.languageSelectionHolder.setOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
+                intent.data = Uri.fromParts("package", packageName, null)
+                startActivity(intent)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 showLanguageDialog()
             } else {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
