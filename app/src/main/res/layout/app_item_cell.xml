@@ -113,7 +113,7 @@
                 android:background="@drawable/tile_popup"
                 android:backgroundTint="@color/delete_red"
                 android:src="@drawable/delete"
-                android:tint="@color/delete"
+                app:tint="@color/delete"
                 android:visibility="gone"
                 tools:visibility="visible" />
         </FrameLayout>
