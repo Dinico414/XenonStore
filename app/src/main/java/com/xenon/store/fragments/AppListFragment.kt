@@ -11,6 +11,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -652,33 +653,17 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private fun showNoInternetSnackbar() {
         activity?.runOnUiThread {
             val snackbar =
-                Snackbar.make(binding.root, "You are now offline", Snackbar.LENGTH_INDEFINITE)
+                Snackbar.make(binding.root, "You are at the moment offline", Snackbar.LENGTH_INDEFINITE)
             val backgroundDrawable =
                 ResourcesCompat.getDrawable(resources, drawable.tile_popup, null)
-            val snackbarView = snackbar.view
-
-            val params = snackbarView.layoutParams as ViewGroup.MarginLayoutParams
-            params.setMargins(
-                params.leftMargin,
-                params.topMargin,
-                params.rightMargin,
-                params.bottomMargin + resources.getDimensionPixelSize(R.dimen.snackBar_margin)
-            )
-            snackbarView.layoutParams = params
 
             snackbar.view.background = backgroundDrawable
-            snackbar.setTextColor(
-                resources.getColor(
-                    color.inverseOnSurface,
-                    null
-                )
-            )
-            snackbar.setBackgroundTint(
-                resources.getColor(
-                    color.inverseSurface,
-                    null
-                )
-            )
+            snackbar.setTextColor(resources.getColor(color.inverseOnSurface, null))
+            snackbar.setBackgroundTint(resources.getColor(color.inverseSurface, null))
+            snackbar.setAction("Open Settings") {
+                val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+                startActivity(intent)
+            }
             snackbar.show()
         }
     }
@@ -689,33 +674,10 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             val snackbar = Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT)
             val backgroundDrawable =
                 ResourcesCompat.getDrawable(resources, drawable.tile_popup, null)
-            val snackbarView = snackbar.view
 
-            val params = snackbarView.layoutParams as ViewGroup.MarginLayoutParams
-            params.setMargins(
-                params.leftMargin,
-                params.topMargin,
-                params.rightMargin,
-                params.bottomMargin + resources.getDimensionPixelSize(R.dimen.snackBar_margin)
-            )
-            snackbarView.layoutParams = params
-
-            // Set the background
             snackbar.view.background = backgroundDrawable
-            // Customize text color
-            snackbar.setTextColor(
-                resources.getColor(
-                    color.onError,
-                    null
-                )
-            )
-
-            snackbar.setBackgroundTint(
-                resources.getColor(
-                    color.error,
-                    null
-                )
-            )
+            snackbar.setTextColor(resources.getColor(color.onError, null))
+            snackbar.setBackgroundTint(resources.getColor(color.error, null))
             snackbar.show()
         }
     }
