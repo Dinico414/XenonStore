@@ -32,20 +32,23 @@
                 android:layout_height="wrap_content"
                 android:alpha="0.5"
                 android:text="v.1.0.1"
-                android:textColor="@color/onTertiary" />
+                android:textColor="@color/onTertiary"
+                tools:ignore="HardcodedText,TextContrastCheck,TextContrastCheck" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" >> "
-                android:textColor="@color/onTertiary" />
+                android:textColor="@color/onTertiary"
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/new_version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="v.1.1.0"
-                android:textColor="@color/onTertiary" />
+                android:textColor="@color/onTertiary"
+                tools:ignore="HardcodedText" />
         </LinearLayout>
 
 
@@ -63,27 +66,28 @@
             app:layout_constraintStart_toEndOf="@+id/icon"
             app:layout_constraintTop_toTopOf="@+id/icon" />
 
-        <!-- FrameLayout to overlay the progress indicator behind the button -->
         <FrameLayout
-            android:id="@+id/frame_button"
+            android:id="@+id/frame_download"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:animateLayoutChanges="true"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/frame_delete"
+            app:layout_constraintEnd_toStartOf="@+id/button_layout"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/icon">
-
+            app:layout_constraintTop_toBottomOf="@id/icon"
+            tools:visibility="visible">
 
             <Button
                 android:id="@+id/action_button"
                 style="@style/buttonStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:layout_gravity="center"
+                android:background="@drawable/tile_popup"
                 android:text="Download"
-                tools:ignore="DuplicateSpeakableTextCheck,VisualLintButtonSize" />
+                tools:ignore="DuplicateSpeakableTextCheck,HardcodedText,VisualLintButtonSize,TouchTargetSizeCheck" />
 
             <com.google.android.material.progressindicator.LinearProgressIndicator
                 android:id="@+id/progressbar"
@@ -95,28 +99,52 @@
 
         </FrameLayout>
 
-        <FrameLayout
-            android:id="@+id/frame_delete"
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/button_layout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
             android:layout_marginTop="10dp"
             android:animateLayoutChanges="true"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/icon">
+            app:layout_constraintStart_toEndOf="@+id/frame_download"
+            app:layout_constraintTop_toBottomOf="@id/icon"
+            tools:visibility="visible">
+
+            <Button
+                android:id="@+id/open"
+                style="@style/buttonStyle"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="1dp"
+                android:background="@drawable/connected_left"
+                android:backgroundTint="@color/primary"
+                android:text="@string/open"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/delete"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="VisualLintButtonSize,TouchTargetSizeCheck" />
 
             <ImageButton
                 android:id="@+id/delete"
-                android:layout_width="40dp"
+                android:layout_width="50dp"
                 android:layout_height="40dp"
-                android:layout_marginStart="10dp"
-                android:background="@drawable/tile_popup"
+                android:layout_marginStart="2dp"
+                android:background="@drawable/connected_right"
                 android:backgroundTint="@color/delete_red"
+                android:contentDescription="@string/delete"
                 android:src="@drawable/delete"
-                app:tint="@color/delete"
-                android:visibility="gone"
-                tools:visibility="visible" />
-        </FrameLayout>
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/open"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="TouchTargetSizeCheck" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

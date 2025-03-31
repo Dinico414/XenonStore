@@ -32,4 +32,5 @@
     <string name="no_assets">No assets found for</string>
     <string name="empty_body">Empty response body for</string>
     <string name="no_data">No Data for</string>
+    <string name="delete">Delete</string>
 </resources>
