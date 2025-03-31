@@ -105,7 +105,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         setupRecyclerView()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            refreshAppList()
+            refreshAppList(invalidateCaches = true)
         }
 
         installPermissionLauncher =
@@ -121,11 +121,12 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             requireContext(),
             onNetworkAvailable = {
                 // Re-fetch your JSON data here
-                loadAppListFromUrl()
+                loadAndRefreshAppListFromUrl()
                 activeSnackbar?.dismiss()
+                activeSnackbar = null
             },
             onNetworkUnavailable = {
-                loadAppListFromCache()
+                loadAndRefreshAppListFromCache()
                 showNoInternetSnackbar()
             }
         )
@@ -134,6 +135,11 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     override fun onResume() {
         super.onResume()
         networkChangeListener.register()
+        if (isNetworkAvailable()) {
+            networkChangeListener.onNetworkAvailable()
+        } else {
+            networkChangeListener.onNetworkUnavailable()
+        }
     }
 
     override fun onPause() {
@@ -151,13 +157,13 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
     private fun loadAppList() {
         if (isNetworkAvailable()) {
-            loadAppListFromUrl()
+            loadAndRefreshAppListFromUrl()
         } else {
-            loadAppListFromCache()
+            loadAndRefreshAppListFromCache()
         }
     }
 
-    private fun loadAppListFromUrl() {
+    private fun loadAndRefreshAppListFromUrl() {
         val activity = requireActivity()
         val urlString =
             "https://raw.githubusercontent.com/Dinico414/Xenon-Commons/master/accesspoint/src/main/java/com/xenon/commons/accesspoint/app_list.json"
@@ -177,16 +183,16 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     }
                 } else {
                     Log.e("AppListFragment", "Failed to fetch or read JSON data.")
-                    loadAppListFromCache()
+                    loadAndRefreshAppListFromCache()
                 }
             } catch (e: Exception) {
                 Log.e("AppListFragment", "Error loading app list: ${e.message}")
-                loadAppListFromCache()
+                loadAndRefreshAppListFromCache()
             }
         }
     }
 
-    private fun loadAppListFromCache() {
+    private fun loadAndRefreshAppListFromCache() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 if (cachedJsonFile.exists()) {
@@ -353,7 +359,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     }
 
                     LiveListViewModel.ListChangedType.OVERWRITTEN -> {
-                        refreshAppList()
+                        refreshAppList(invalidateCaches = true)
                         adapter.appItems = appListModel.getList()
                         adapter.notifyDataSetChanged()
                     }
@@ -373,7 +379,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private fun refreshAppList(invalidateCaches: Boolean = false) {
         binding.swipeRefreshLayout.isRefreshing = true
 
-        refreshAppItem(appListModel.storeAppItem)
+        refreshAppItem(appListModel.storeAppItem, invalidateCaches)
 
         for (appItem in appListModel.getList()) {
             refreshAppItem(appItem, invalidateCaches)
@@ -697,14 +703,11 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
             onNetworkAvailable()
-            activeSnackbar?.dismiss()
-            activeSnackbar = null
         }
 
         override fun onLost(network: Network) {
             super.onLost(network)
             onNetworkUnavailable()
-            showNoInternetSnackbar()
         }
 
         fun register() {
@@ -714,9 +717,6 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build()
             connectivityManager.registerNetworkCallback(networkRequest, this)
-
-            if (isNetworkAvailable()) onNetworkUnavailable()
-            else onNetworkUnavailable()
         }
 
         fun unregister() {
