@@ -83,6 +83,10 @@ class AppListAdapter(
                 listener.buttonClicked(appItem, position)
             }
 
+            binding.open.setOnClickListener {
+                openApp(appItem.packageName)
+            }
+
             binding.delete.setOnClickListener {
                 openUninstallDialog(appItem.packageName)
             }
@@ -113,6 +117,8 @@ class AppListAdapter(
             when (appItem.state) {
                 AppEntryState.NOT_INSTALLED -> {
                     binding.actionButton.text = context.getString(R.string.install)
+                    binding.frameAction.visibility = View.VISIBLE
+                    binding.buttonLayout.visibility = View.GONE
                 }
 
                 AppEntryState.DOWNLOADING -> {
@@ -121,15 +127,20 @@ class AppListAdapter(
                     binding.progressbar.max = appItem.fileSize.toInt()
                     progressBarVisibility = View.VISIBLE
                     showVersion = true
+                    binding.frameAction.visibility = View.VISIBLE
+                    binding.buttonLayout.visibility = View.VISIBLE
                 }
 
                 AppEntryState.INSTALLED -> {
-                    binding.actionButton.text = context.getString(R.string.open)
+                    binding.frameAction.visibility = View.GONE
+                    binding.buttonLayout.visibility = View.VISIBLE
                 }
 
                 AppEntryState.INSTALLED_AND_OUTDATED -> {
                     binding.actionButton.text = context.getString(R.string.update)
                     showVersion = true
+                    binding.frameAction.visibility = View.VISIBLE
+                    binding.buttonLayout.visibility = View.VISIBLE
                 }
             }
 
@@ -157,6 +168,12 @@ class AppListAdapter(
                 binding.version.visibility = View.GONE
             }
         }
+
+        private fun openApp(packageName: String) {
+            val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+            context.startActivity(intent)
+        }
+
 
         private fun openUninstallDialog(packageName: String) {
             val intent = Intent(ACTION_UNINSTALL_PACKAGE).apply {
