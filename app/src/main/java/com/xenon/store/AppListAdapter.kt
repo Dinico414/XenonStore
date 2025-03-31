@@ -107,6 +107,7 @@ class AppListAdapter(
                     binding.progressbar.progress = appItem.bytesDownloaded.toInt()
                     binding.progressbar.max = appItem.fileSize.toInt()
                     progressBarVisibility = View.VISIBLE
+                    showVersion = true
                 }
                 AppEntryState.INSTALLED -> {
                     binding.actionButton.text = context.getString(R.string.open)
