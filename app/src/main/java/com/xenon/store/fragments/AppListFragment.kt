@@ -67,6 +67,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private var snackbar: Snackbar? = null
     private lateinit var networkChangeListener: NetworkChangeListener
     private lateinit var cachedJsonFile: File
+    private var cachedJsonHash: Int = 0
 
     private lateinit var installPermissionLauncher: ActivityResultLauncher<Intent>
     private val isDownloadInProgress = AtomicBoolean(false)
@@ -77,8 +78,10 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
         val context = requireContext()
         cachedJsonFile = File(context.filesDir, "app_list_cache.json")
+        if (cachedJsonFile.exists())
+            cachedJsonHash = cachedJsonFile.readText().hashCode()
 
-        if (appListModel.getList().size == 0)
+        if (appListModel.getList().isEmpty())
             loadAppListFromUrl()
     }
 
@@ -179,6 +182,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             try {
                 val jsonString = urlString.fetchJsonFromUrl()
                 if (jsonString != null) {
+                    if (jsonString.hashCode() == cachedJsonHash && cachedJsonHash != 0 && appListModel.getList().isNotEmpty()) {
+                        return@launch
+                    }
                     cacheJson(jsonString)
                     val appList = parseJson(jsonString)
                     withContext(Dispatchers.Main) {
@@ -219,6 +225,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private fun cacheJson(jsonString: String) {
         try {
             cachedJsonFile.writeText(jsonString)
+            cachedJsonHash = jsonString.hashCode()
         } catch (e: IOException) {
             Log.e("AppListFragment", "Error caching JSON: ${e.message}")
         }
@@ -411,7 +418,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
         appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
 
-        if (appItem.downloadUrl == "" || invalidateCaches) {
+        if (isNetworkAvailable() && (appItem.downloadUrl == "" || invalidateCaches)) {
             getNewReleaseVersionGithub(
                 appItem.owner,
                 appItem.repo,
