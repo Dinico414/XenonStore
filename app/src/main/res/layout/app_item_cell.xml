@@ -65,6 +65,7 @@
 
         <!-- FrameLayout to overlay the progress indicator behind the button -->
         <FrameLayout
+            android:id="@+id/frame_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -100,7 +101,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:animateLayoutChanges="true"
-            android:paddingStart="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/icon">
@@ -109,11 +109,13 @@
                 android:id="@+id/delete"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginStart="10dp"
                 android:background="@drawable/tile_popup"
                 android:backgroundTint="@color/delete_red"
                 android:src="@drawable/delete"
                 android:tint="@color/delete"
-                android:visibility="gone" />
+                android:visibility="gone"
+                tools:visibility="visible" />
         </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
