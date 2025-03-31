@@ -64,7 +64,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     private lateinit var binding: FragmentAppListBinding
     private lateinit var appListModel: AppListViewModel
     private lateinit var sharedPreferences: SharedPreferences
-    private var snackbar: Snackbar? = null
+    private var activeSnackbar: Snackbar? = null
     private lateinit var networkChangeListener: NetworkChangeListener
     private lateinit var cachedJsonFile: File
     private var cachedJsonHash: Int = 0
@@ -80,9 +80,6 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         cachedJsonFile = File(context.filesDir, "app_list_cache.json")
         if (cachedJsonFile.exists())
             cachedJsonHash = cachedJsonFile.readText().hashCode()
-
-        if (appListModel.getList().isEmpty())
-            loadAppListFromUrl()
     }
 
     override fun onCreateView(
@@ -125,37 +122,24 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             onNetworkAvailable = {
                 // Re-fetch your JSON data here
                 loadAppListFromUrl()
+                activeSnackbar?.dismiss()
             },
             onNetworkUnavailable = {
+                loadAppListFromCache()
                 showNoInternetSnackbar()
             }
         )
-        checkNetworkAndShowSnackbarIfNeeded()
     }
 
     override fun onResume() {
         super.onResume()
         networkChangeListener.register()
-        // Check for network availability on resume
-        checkNetworkAndShowSnackbarIfNeeded()
-        refreshAppList()
     }
 
     override fun onPause() {
         super.onPause()
         networkChangeListener.unregister()
     }
-
-    private fun checkNetworkAndShowSnackbarIfNeeded() {
-        if (!isNetworkAvailable()) {
-            showNoInternetSnackbar()
-            loadAppListFromCache()
-        } else {
-            snackbar?.dismiss() // Dismiss any existing Snackbar
-            loadAppListFromUrl() // Load data if network is available
-        }
-    }
-
 
     private fun isNetworkAvailable(): Boolean {
         val connectivityManager =
@@ -183,6 +167,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 val jsonString = urlString.fetchJsonFromUrl()
                 if (jsonString != null) {
                     if (jsonString.hashCode() == cachedJsonHash && cachedJsonHash != 0 && appListModel.getList().isNotEmpty()) {
+                        refreshAppList()
                         return@launch
                     }
                     cacheJson(jsonString)
@@ -206,6 +191,10 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             try {
                 if (cachedJsonFile.exists()) {
                     val jsonString = cachedJsonFile.readText()
+                    if (jsonString.hashCode() == cachedJsonHash) {
+                        refreshAppList()
+                        return@launch
+                    }
                     val appList = parseJson(jsonString)
                     withContext(Dispatchers.Main) {
                         appListModel.setList(appList)
@@ -680,10 +669,10 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
                 startActivity(intent)
             }
+            activeSnackbar = snackbar
             snackbar.show()
         }
     }
-
 
     private fun showErrorSnackbar(message: String) {
         activity?.runOnUiThread {
@@ -694,21 +683,22 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             snackbar.view.background = backgroundDrawable
             snackbar.setTextColor(resources.getColor(color.onError, null))
             snackbar.setBackgroundTint(resources.getColor(color.error, null))
+            activeSnackbar = snackbar
             snackbar.show()
         }
     }
 
     inner class NetworkChangeListener(
         private val context: Context,
-        private val onNetworkAvailable: () -> Unit,
-        private val onNetworkUnavailable: () -> Unit
+        val onNetworkAvailable: () -> Unit,
+        val onNetworkUnavailable: () -> Unit
     ) : ConnectivityManager.NetworkCallback() {
 
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
             onNetworkAvailable()
-            snackbar?.dismiss()
-            snackbar = null
+            activeSnackbar?.dismiss()
+            activeSnackbar = null
         }
 
         override fun onLost(network: Network) {
@@ -724,14 +714,17 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build()
             connectivityManager.registerNetworkCallback(networkRequest, this)
+
+            if (isNetworkAvailable()) onNetworkUnavailable()
+            else onNetworkUnavailable()
         }
 
         fun unregister() {
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             connectivityManager.unregisterNetworkCallback(this)
-            snackbar?.dismiss()
-            snackbar = null
+            activeSnackbar?.dismiss()
+            activeSnackbar = null
         }
     }
 }
