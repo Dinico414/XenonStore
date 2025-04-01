@@ -27,12 +27,11 @@ class SettingsActivity : BaseActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private val preReleaseKey = "pre_releases"
     private val amoledDarkKey = "amoled_dark"
+    private val languageKey = "selected_language"
 
-    // Add the supported locales here
     private val supportedLocales = listOf(
-        Locale("en"), // English
-        Locale("de")  // German
-        // Add more locales as needed, e.g., Locale("fr") for French
+        Locale("en"),
+        Locale("de")
     )
 
 
@@ -41,6 +40,9 @@ class SettingsActivity : BaseActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         adjustBottomMargin(binding.layoutMain)
+
+        sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+
         setupViews()
 
         val themeSelectionValue = findViewById<TextView>(R.id.theme_selection_value)
@@ -79,8 +81,6 @@ class SettingsActivity : BaseActivity() {
         binding.toolbar.setNavigationOnClickListener {
             finish()
         }
-        sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
-
 
         val preReleasesSwitch = findViewById<MaterialSwitch>(R.id.release_switch)
 
@@ -111,13 +111,17 @@ class SettingsActivity : BaseActivity() {
             startActivity(intent)
         }
     }
-
     private fun applyAmoledDark(enable: Boolean) {
         if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
             if (enable) {
                 window.decorView.setBackgroundColor(Color.BLACK)
             } else {
-                window.decorView.setBackgroundColor(ContextCompat.getColor(this, com.xenon.commons.accesspoint.R.color.surfaceContainerLowest))
+                window.decorView.setBackgroundColor(
+                    ContextCompat.getColor(
+                        this,
+                        com.xenon.commons.accesspoint.R.color.surfaceContainerLowest
+                    )
+                )
             }
         }
     }
@@ -125,7 +129,11 @@ class SettingsActivity : BaseActivity() {
 
     private fun setupViews() {
         binding.languageSelectionValue.text = Locale.getDefault().displayLanguage
+        val currentLocale = getSavedLocale() ?: Locale.getDefault()
+        binding.languageSelectionValue.text = currentLocale.displayLanguage
+
         binding.languageSelectionHolder.setOnClickListener {
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 val intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
                 intent.data = Uri.fromParts("package", packageName, null)
@@ -139,6 +147,32 @@ class SettingsActivity : BaseActivity() {
             }
         }
     }
+
+    private fun updateLocale(locale: Locale) {
+        Locale.setDefault(locale)
+        saveLocale(locale) // Save the selected locale
+        val resources = this.resources
+        val config = resources.configuration
+        config.setLocale(locale)
+        resources.updateConfiguration(config, resources.displayMetrics)
+
+        // Restart the activity to apply the new locale
+        recreate()
+    }
+
+    private fun saveLocale(locale: Locale) {
+        sharedPreferences.edit().putString(languageKey, locale.language).apply()
+    }
+
+    private fun getSavedLocale(): Locale? {
+        val languageCode = sharedPreferences.getString(languageKey, null)
+        return if (languageCode != null) {
+            Locale(languageCode)
+        } else {
+            null
+        }
+    }
+
 
     private fun showLanguageDialog() {
         val languageList = supportedLocales.map { it.getDisplayName(it) }.toTypedArray()
@@ -159,17 +193,6 @@ class SettingsActivity : BaseActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
-    }
-
-    private fun updateLocale(locale: Locale) {
-        Locale.setDefault(locale)
-        val resources = this.resources
-        val config = resources.configuration
-        config.setLocale(locale)
-        resources.updateConfiguration(config, resources.displayMetrics)
-
-        // Restart the activity to apply the new locale
-        recreate()
     }
 }
 
