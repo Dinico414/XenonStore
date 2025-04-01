@@ -4,14 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.xenon.store.R
@@ -112,17 +110,20 @@ class SettingsActivity : BaseActivity() {
         }
     }
     private fun applyAmoledDark(enable: Boolean) {
-        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
-            if (enable) {
-                window.decorView.setBackgroundColor(Color.BLACK)
-            } else {
-                window.decorView.setBackgroundColor(
-                    ContextCompat.getColor(
-                        this,
-                        com.xenon.commons.accesspoint.R.color.surfaceContainerLowest
-                    )
-                )
-            }
+        val currentTheme = getThemeFromPreferences() // Assuming you have a function to get the current theme
+        if (currentTheme == R.style.Theme_Xenon || currentTheme == R.style.Theme_Xenon_Amoled) {
+            val newTheme = if (enable) R.style.Theme_Xenon_Amoled else R.style.Theme_Xenon
+            setTheme(newTheme)
+            recreate() // Recreate the activity to apply the new theme
+        }
+    }
+
+    // Add a helper function to get the current theme from SharedPreferences if you don't have one
+    private fun getThemeFromPreferences(): Int {
+        return if (sharedPreferences.getBoolean(amoledDarkKey, false)) {
+            R.style.Theme_Xenon_Amoled
+        } else {
+            R.style.Theme_Xenon
         }
     }
 

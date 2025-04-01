@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var appListFragment: AppListFragment
     private lateinit var appListModel: AppListViewModel
-
+    private val amoledDarkKey = "amoled_dark"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedPreferenceManager = SharedPreferenceManager(this)
@@ -45,6 +45,26 @@ class MainActivity : AppCompatActivity() {
         setupAppListFragment()
         setupToolbar()
         setupCollapsingToolbar()
+        applyTheme()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Re-apply the theme in case it was changed in settings while the app was in the background
+        val oldTheme = getThemeFromPreferences() // Store the current theme
+        applyTheme()
+        val newTheme = getThemeFromPreferences() // Get the theme after applying changes
+
+        if (oldTheme != newTheme) {
+            recreate() // Only recreate if the theme actually changed
+        }
+    }
+    private fun getThemeFromPreferences(): Int {
+        return if (sharedPreferences.getBoolean(amoledDarkKey, false)) {
+            R.style.Theme_Xenon_Amoled
+        } else {
+            R.style.Theme_Xenon
+        }
     }
 
     private fun setupAppListFragment() {
@@ -245,29 +265,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun applyAmoledDark(enable: Boolean) {
-        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
-            if (enable) {
-                window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
-            } else {
-                window.decorView.setBackgroundColor(resources.getColor(com.xenon.commons.accesspoint.R.color.surfaceContainerLowest))
-            }
-        }
+    private fun applyTheme() {
+        val isAmoledDarkEnabled = sharedPreferences.getBoolean(amoledDarkKey, false)
+        val theme = if (isAmoledDarkEnabled) R.style.Theme_Xenon_Amoled else R.style.Theme_Xenon
+        setTheme(theme)
     }
-
 
 
     private fun showSnackbar(message: String) {
         runOnUiThread {
             val snackbar = Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT)
-            val backgroundDrawable = resources.getDrawable(com.xenon.commons.accesspoint.R.drawable.tile_popup, null)
+            val backgroundDrawable =
+                resources.getDrawable(com.xenon.commons.accesspoint.R.drawable.tile_popup, null)
             val snackbarView = snackbar.view
 
             val params = snackbarView.layoutParams as ViewGroup.MarginLayoutParams
             params.setMargins(
                 params.leftMargin,
                 params.topMargin,
-                params.rightMargin ,
+                params.rightMargin,
                 params.bottomMargin + resources.getDimensionPixelSize(R.dimen.snackBar_margin)
             )
             snackbarView.layoutParams = params
