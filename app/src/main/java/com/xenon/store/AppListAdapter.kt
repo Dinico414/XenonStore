@@ -131,7 +131,7 @@ class AppListAdapter(
                     showVersion = appItem.isOutdated()
                     binding.frameAction.visibility = View.VISIBLE
                     binding.buttonLayout.visibility = if (appItem.isOutdated()) View.VISIBLE else View.GONE
-                    setButtonLayoutMarginStart(5)
+                    setButtonLayoutMarginStart(10)
                 }
 
                 AppEntryState.INSTALLED -> {
@@ -146,7 +146,7 @@ class AppListAdapter(
                     showVersion = true
                     binding.frameAction.visibility = View.VISIBLE
                     binding.buttonLayout.visibility = View.VISIBLE
-                    setButtonLayoutMarginStart(5)
+                    setButtonLayoutMarginStart(10)
                 }
             }
 
