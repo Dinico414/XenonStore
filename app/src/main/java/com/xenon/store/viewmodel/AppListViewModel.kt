@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class AppListViewModel : LiveListViewModel<AppItem>() {
     val storeAppItemLive: MutableLiveData<AppItem> = MutableLiveData()
     val storeAppItem = AppItem(
-        "Xenon Store",
+        HashMap<String, String>(),
         "@mipmap/ic_launcher",
         "https://github.com/Dinico414/XenonStore",
         "com.xenon.store"
@@ -19,6 +19,7 @@ class AppListViewModel : LiveListViewModel<AppItem>() {
 
     init {
         storeAppItem.id = -1
+        storeAppItem.nameMap["en"] = "Xenon Store"
     }
 
     override fun update(item: AppItem, payload: Any?) {

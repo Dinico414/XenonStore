@@ -35,6 +35,7 @@ import com.xenon.store.AppItem
 import com.xenon.store.AppListAdapter
 import com.xenon.store.AppListChangeType
 import com.xenon.store.R
+import com.xenon.store.Util
 import com.xenon.store.databinding.FragmentAppListBinding
 import com.xenon.store.viewmodel.AppListViewModel
 import com.xenon.store.viewmodel.LiveListViewModel
@@ -202,8 +203,19 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         val appList = ArrayList<AppItem>()
         for (i in 0 until list.length()) {
             val el = list.getJSONObject(i)
+
+            val nameMap = HashMap<String, String>()
+            val name = el.optString("name")
+            if (name != null) nameMap["en"] = name
+            val names = el.optJSONObject("names")
+            if (names != null) {
+                for (lang in names.keys()) {
+                    nameMap[lang] = names.getString(lang)
+                }
+            }
+
             val appItem = AppItem(
-                el.getString("name"),
+                nameMap,
                 el.getString("icon"),
                 el.getString("githubUrl"),
                 el.getString("packageName")
@@ -227,7 +239,8 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                             -> {
                             if (appItem.downloadUrl == "") {
                                 val noData = getString(R.string.no_data)
-                                showErrorSnackbar("$noData ${appItem.name}")
+                                val appName = appItem.getName(Util.getCurrentLanguage(context.resources))
+                                showErrorSnackbar("$noData ${appName}")
                                 return
                             }
 

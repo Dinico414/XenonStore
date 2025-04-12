@@ -14,7 +14,7 @@ enum class AppEntryState {
 }
 
 data class AppItem(
-    val name: String,
+    val nameMap: HashMap<String, String>,
     val iconPath: String,
     val githubUrl: String,
     val packageName: String,
@@ -45,12 +45,14 @@ data class AppItem(
     private val iconDirectory = iconRegex.find(iconPath)?.groups?.get(1)?.value
     private val iconName = iconRegex.find(iconPath)?.groups?.get(2)?.value
 
-    @SuppressLint("DiscouragedApi")
+    fun getName(langCode: String): String {
+        return nameMap.get(langCode) ?: nameMap.get("en") ?: "App"
+    }
+
     fun getDrawableId(context: Context): Int {
         if (iconDirectory == null || iconName == null) return 0
         return context.resources.getIdentifier(iconName, iconDirectory, context.packageName)
     }
-
 
     fun isNewerVersion(latestVersion: String): Boolean {
         if (installedVersion == "") return true

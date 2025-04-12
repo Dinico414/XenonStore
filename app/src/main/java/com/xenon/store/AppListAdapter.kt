@@ -80,7 +80,8 @@ class AppListAdapter(
         private val listener: AppItemListener
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bindItem(appItem: AppItem, position: Int) {
-            binding.name.text = appItem.name
+            val appName = appItem.getName(Util.getCurrentLanguage(context.resources))
+            binding.name.text = appName
 
             binding.actionButton.setOnClickListener {
                 listener.installButtonClicked(appItem, position)
@@ -96,7 +97,7 @@ class AppListAdapter(
 
             val drawableId = appItem.getDrawableId(context)
             if (drawableId != 0) {
-                Log.d("icon", "${appItem.name}: Found drawable for ${appItem.iconPath}")
+                Log.d("icon", "${appName}: Found drawable for ${appItem.iconPath}")
                 binding.icon.setImageDrawable(
                     ResourcesCompat.getDrawable(
                         context.resources,
@@ -105,7 +106,7 @@ class AppListAdapter(
                     )
                 )
             } else {
-                Log.d("icon", "${appItem.name}: No drawable found for ${appItem.iconPath}")
+                Log.d("icon", "${appName}: No drawable found for ${appItem.iconPath}")
             }
 
             handleState(appItem)

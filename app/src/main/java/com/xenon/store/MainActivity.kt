@@ -167,7 +167,10 @@ class MainActivity : AppCompatActivity() {
                     binding.download1.text = ""
 
                     if (appItem.downloadUrl == "") {
-                        showSnackbar(getString(R.string.failed_to_find, appItem.name))
+                        showSnackbar(
+                            getString(R.string.failed_to_find,
+                            appItem.getName(Util.getCurrentLanguage(resources)))
+                        )
                         return
                     }
                     appItem.state = AppEntryState.DOWNLOADING
