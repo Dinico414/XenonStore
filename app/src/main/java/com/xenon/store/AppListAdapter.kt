@@ -68,7 +68,9 @@ class AppListAdapter(
     override fun getItemCount(): Int = appItems.size
 
     interface AppItemListener {
-        fun buttonClicked(appItem: AppItem, position: Int)
+        fun installButtonClicked(appItem: AppItem, position: Int)
+        fun uninstallButtonClicked(appItem: AppItem, position: Int)
+        fun openButtonClicked(appItem: AppItem, position: Int)
     }
 
     @Suppress("DEPRECATION")
@@ -81,15 +83,15 @@ class AppListAdapter(
             binding.name.text = appItem.name
 
             binding.actionButton.setOnClickListener {
-                listener.buttonClicked(appItem, position)
+                listener.installButtonClicked(appItem, position)
             }
 
             binding.open.setOnClickListener {
-                openApp(appItem.packageName)
+                listener.openButtonClicked(appItem, position)
             }
 
             binding.delete.setOnClickListener {
-                openUninstallDialog(appItem.packageName)
+                listener.uninstallButtonClicked(appItem, position)
             }
 
             val drawableId = appItem.getDrawableId(context)
@@ -110,8 +112,8 @@ class AppListAdapter(
         }
 
         fun handleState(appItem: AppItem) {
-            Log.d("bindItem", appItem.id.toString() + " " + appItem.name)
-            Log.d("bindItem", appItem.state.toString())
+//            Log.d("bindItem", appItem.id.toString() + " " + appItem.name)
+//            Log.d("bindItem", appItem.state.toString())
             var progressBarVisibility = View.GONE
             var showVersion = false
 
@@ -178,19 +180,6 @@ class AppListAdapter(
             } else {
                 binding.version.visibility = View.GONE
             }
-        }
-
-        private fun openApp(packageName: String) {
-            val intent = context.packageManager.getLaunchIntentForPackage(packageName)
-            context.startActivity(intent)
-        }
-
-
-        private fun openUninstallDialog(packageName: String) {
-            val intent = Intent(ACTION_UNINSTALL_PACKAGE).apply {
-                data = Uri.parse("package:$packageName")
-            }
-            context.startActivity(intent)
         }
     }
 }

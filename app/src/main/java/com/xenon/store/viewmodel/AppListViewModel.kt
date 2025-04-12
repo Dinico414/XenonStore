@@ -15,6 +15,7 @@ class AppListViewModel : LiveListViewModel<AppItem>() {
     )
     val downloadedApkFile: MutableLiveData<File> = MutableLiveData()
     val downloadedApkQueue: ConcurrentLinkedQueue<File> = ConcurrentLinkedQueue()
+    var cachedJsonHash: Int = 0
 
     init {
         storeAppItem.id = -1
