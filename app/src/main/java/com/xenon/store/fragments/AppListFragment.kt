@@ -24,7 +24,6 @@ import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -38,51 +37,65 @@ import com.xenon.store.R
 import com.xenon.store.databinding.FragmentAppListBinding
 import com.xenon.store.viewmodel.AppListViewModel
 import com.xenon.store.viewmodel.LiveListViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import okhttp3.Cache
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("unused")
 class AppListFragment : Fragment(R.layout.fragment_app_list) {
+    private val TAG = AppListFragment::class.qualifiedName
     private lateinit var binding: FragmentAppListBinding
     private lateinit var appListModel: AppListViewModel
     private lateinit var sharedPreferences: SharedPreferences
     private var activeSnackbar: Snackbar? = null
     private lateinit var networkChangeListener: NetworkChangeListener
-    private lateinit var cachedJsonFile: File
     private var cachedJsonHash: Int = 0
+
+    private lateinit var client: OkHttpClient
 
     private lateinit var installPermissionLauncher: ActivityResultLauncher<Intent>
     private val isDownloadInProgress = AtomicBoolean(false)
+    private val isRefreshInProgress = AtomicBoolean(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         appListModel = ViewModelProvider(this)[AppListViewModel::class.java]
 
         val context = requireContext()
-        cachedJsonFile = File(context.filesDir, "app_list_cache.json")
-        if (cachedJsonFile.exists())
-            cachedJsonHash = cachedJsonFile.readText().hashCode()
+
+        client = OkHttpClient.Builder()
+            .cache(Cache(
+                directory = File(context.cacheDir, "http_cache"),
+                maxSize = 10L * 1024L * 1024L // 10 MiB
+            ))
+            .build()
+
+//        try {
+//            val httpCacheDir = File(context.cacheDir, "http");
+//            val httpCacheSize = 10 * 1024 * 1024; // 10 MiB
+//            HttpResponseCache.install(httpCacheDir, httpCacheSize.toLong());
+//        } catch (e: Exception) {
+//            Log.e(TAG, "HTTP response cache installation failed: $e");
+//        }
+
         if (appListModel.getList().isEmpty())
-            loadAndRefreshAppListFromUrl()
+            fetchAndRefreshAppList(false)
     }
+
+//    override fun onStop() {
+//        super.onStop()
+//        val cache = HttpResponseCache.getInstalled();
+//        cache?.flush()
+//    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -107,7 +120,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         setupRecyclerView()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            loadAndRefreshAppListFromUrl()
+            fetchAndRefreshAppList(true)
         }
 
         installPermissionLauncher =
@@ -124,6 +137,10 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             onNetworkAvailable = {
                 activeSnackbar?.dismiss()
                 activeSnackbar = null
+
+//                activity?.runOnUiThread {
+//                    fetchAndRefreshAppList()
+//                }
             },
             onNetworkUnavailable = {
                 showNoInternetSnackbar()
@@ -139,7 +156,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         } else {
             networkChangeListener.onNetworkUnavailable()
         }
-        refreshAppList()
+//        fetchAndRefreshAppList()
     }
 
     override fun onPause() {
@@ -155,102 +172,29 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
     }
 
-    private fun loadAppList() {
-        if (isNetworkAvailable()) {
-            loadAndRefreshAppListFromUrl()
-        } else {
-            loadAndRefreshAppListFromCache()
-        }
-    }
-
-    private fun loadAndRefreshAppListFromUrl() {
-        val activity = requireActivity()
+    private fun fetchAndRefreshAppList(useCache: Boolean = true) {
         val urlString =
             "https://raw.githubusercontent.com/Dinico414/Xenon-Commons/master/accesspoint/src/main/java/com/xenon/commons/accesspoint/app_list.json"
 
-        activity.lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val jsonString = urlString.fetchJsonFromUrl()
-                if (jsonString != null) {
-                    if (jsonString.hashCode() == cachedJsonHash && cachedJsonHash != 0 && appListModel.getList().isNotEmpty()) {
-                        refreshAppList()
-                        return@launch
-                    }
-                    cacheJson(jsonString)
-                    val appList = parseJson(jsonString)
-                    withContext(Dispatchers.Main) {
-                        appListModel.setList(appList)
-                    }
-                } else {
-                    Log.e("AppListFragment", "Failed to fetch or read JSON data.")
-                    loadAndRefreshAppListFromCache()
+        downloadToString(urlString, useCache, object : DownloadListener<String> {
+            override fun onProgress(downloaded: Long, size: Long) {}
+            override fun onCompleted(result: String) {
+                if (cachedJsonHash != 0 && appListModel.getList().isNotEmpty() && cachedJsonHash == result.hashCode()) {
+                    // app list has not changed
+                    refreshAppList(useCache)
+                    return
                 }
-            } catch (e: Exception) {
-                Log.e("AppListFragment", "Error loading app list: ${e.message}")
-                loadAndRefreshAppListFromCache()
+                val appList = parseAppListJson(result)
+                // Will refresh the list in the MutableLiveData listener
+                appListModel.setList(appList)
             }
-        }
-    }
-
-    private fun loadAndRefreshAppListFromCache() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                if (cachedJsonFile.exists()) {
-                    val jsonString = cachedJsonFile.readText()
-                    if (jsonString.hashCode() == cachedJsonHash) {
-                        refreshAppList()
-                        return@launch
-                    }
-                    val appList = parseJson(jsonString)
-                    withContext(Dispatchers.Main) {
-                        appListModel.setList(appList)
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("AppListFragment", "Error loading from cache: ${e.message}")
-                withContext(Dispatchers.Main) {
-                }
+            override fun onFailure(error: String) {
+                showErrorSnackbar(error)
             }
-        }
+        })
     }
 
-    private fun cacheJson(jsonString: String) {
-        try {
-            cachedJsonFile.writeText(jsonString)
-            cachedJsonHash = jsonString.hashCode()
-        } catch (e: IOException) {
-            Log.e("AppListFragment", "Error caching JSON: ${e.message}")
-        }
-    }
-
-    private fun String.fetchJsonFromUrl(): String? {
-        var urlConnection: HttpURLConnection? = null
-        return try {
-            val url = URL(this)
-            urlConnection = url.openConnection() as HttpURLConnection
-            urlConnection.requestMethod = "GET"
-            urlConnection.connect()
-
-            val inputStream = urlConnection.inputStream
-            val reader = BufferedReader(InputStreamReader(inputStream))
-            val stringBuilder = StringBuilder()
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                stringBuilder.append(line)
-            }
-            stringBuilder.toString()
-        } catch (e: IOException) {
-            Log.e("AppListFragment", "Error fetching JSON: ${e.message}")
-            null
-        } finally {
-            urlConnection?.disconnect()
-        }
-    }
-
-    private fun parseJson(jsonString: String): ArrayList<AppItem> {
+    private fun parseAppListJson(jsonString: String): ArrayList<AppItem> {
         val json = JSONObject(jsonString)
         val list = json.getJSONArray("appList")
         val appList = ArrayList<AppItem>()
@@ -361,7 +305,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     LiveListViewModel.ListChangedType.OVERWRITTEN -> {
                         adapter.appItems = appListModel.getList()
                         adapter.notifyDataSetChanged()
-                        refreshAppList(invalidateCaches = true)
+                        refreshAppList(false)
                     }
                 }
             }
@@ -377,19 +321,22 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     }
 
 
-    private fun refreshAppList(invalidateCaches: Boolean = false) {
+    private fun refreshAppList(useCache: Boolean = true) {
+        val refreshing = isRefreshInProgress.getAndSet(true)
+        if (refreshing) return
         binding.swipeRefreshLayout.isRefreshing = true
 
-        refreshAppItem(appListModel.storeAppItem, invalidateCaches)
+        refreshAppItem(appListModel.storeAppItem, useCache)
 
         for (appItem in appListModel.getList()) {
-            refreshAppItem(appItem, invalidateCaches)
+            refreshAppItem(appItem, useCache)
         }
 
         binding.swipeRefreshLayout.isRefreshing = false
+        isRefreshInProgress.set(false)
     }
 
-    private fun refreshAppItem(appItem: AppItem, invalidateCaches: Boolean = false) {
+    private fun refreshAppItem(appItem: AppItem, useCache: Boolean = true) {
         val preReleases = sharedPreferences.getBoolean("pre_releases", false)
 
         if (appItem.newIsPreRelease != preReleases) {
@@ -399,6 +346,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
 
         appItem.installedVersion = getInstalledAppVersion(appItem.packageName) ?: ""
+
         if (appItem.state == AppEntryState.DOWNLOADING) {
 //                downloadAppItem(appItem)
         } else if (appItem.isOutdated()) {
@@ -410,11 +358,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
         appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
 
-        if (isNetworkAvailable() && (appItem.downloadUrl == "" || invalidateCaches)) {
-            getNewReleaseVersionGithub(
-                appItem.owner,
-                appItem.repo,
-                preReleases,
+        if (isNetworkAvailable() && (appItem.downloadUrl == "" || !useCache)) {
+
+            getNewReleaseVersionGithub(appItem.owner, appItem.repo, preReleases, useCache,
                 object : GithubReleaseAPICallback {
                     override fun onCompleted(version: String, downloadUrl: String) {
                         appItem.newIsPreRelease = preReleases
@@ -444,49 +390,25 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         owner: String,
         repo: String,
         preRelease: Boolean,
+        useCache: Boolean,
         callback: GithubReleaseAPICallback
     ) {
         val url = if (preRelease) "https://api.github.com/repos/$owner/$repo/releases?per_page=1"
         else "https://api.github.com/repos/$owner/$repo/releases/latest"
         Log.d("fetching releases", url)
 
-        val client = OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-            .build()
-        val request = Request.Builder()
-            .url(url)
-            .build()
+        downloadToString(url, useCache, object : DownloadListener<String> {
+            override fun onProgress(downloaded: Long, size: Long) {}
+            override fun onCompleted(result: String) {
+                Log.d("response body $repo", result)
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                callback.onFailure(getString(R.string.failed_to_find))
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if (!response.isSuccessful) {
-                    val responseString = getString(R.string.response_string)
-                    val forString = getString(R.string.for_string)
-                    val errorMessage = "$responseString ${response.code} $forString"
-                    callback.onFailure(errorMessage)
-                    return
-                }
-                val responseBody = response.body?.string()
-                if (responseBody == null) {
-                    callback.onFailure(getString(R.string.empty_body))
-                    return
-                }
-
-                Log.d("response body $repo", responseBody)
-
+                // Parse json
                 val latestRelease: JSONObject
                 if (preRelease) {
-                    val releases = JSONArray(responseBody)
+                    val releases = JSONArray(result)
                     latestRelease = releases.getJSONObject(0)
                 } else {
-                    latestRelease = JSONObject(responseBody)
+                    latestRelease = JSONObject(result)
                 }
 
                 val assets = latestRelease.getJSONArray("assets")
@@ -496,8 +418,11 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     callback.onCompleted(newVersion, asset.getString("browser_download_url"))
                 } else {
                     val noAssets = getString(R.string.no_assets)
-                    showErrorSnackbar("$noAssets $repo")
+                    callback.onFailure("$noAssets $repo")
                 }
+            }
+            override fun onFailure(error: String) {
+                callback.onFailure(error)
             }
         })
     }
@@ -520,20 +445,21 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         }
     }
 
-    interface DownloadListener {
+    interface DownloadListener<T> {
         fun onProgress(downloaded: Long, size: Long)
-        fun onCompleted(tempFile: File)
-        fun onFailure()
+        fun onCompleted(result: T)
+        fun onFailure(error: String)
     }
 
     fun downloadAppItem(appItem: AppItem) {
-        val currentlyDownloading = isDownloadInProgress.getAndSet(true)
-        if (currentlyDownloading) return
+//        val currentlyDownloading = isDownloadInProgress.getAndSet(true)
+//        if (currentlyDownloading) return
 
-        downloadFile(
+        downloadToFile(
             appItem.downloadUrl,
-            appItem.packageName,
-            object : DownloadListener {
+            "${appItem.packageName}.apk",
+            false,
+            object : DownloadListener<File> {
                 override fun onProgress(downloaded: Long, size: Long) {
                     appItem.bytesDownloaded = downloaded
                     appItem.fileSize = size
@@ -546,10 +472,10 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     appItem.state = AppEntryState.NOT_INSTALLED
                     refreshAppItem(appItem)
                     appListModel.update(appItem, AppListChangeType.STATE_CHANGE)
-                    isDownloadInProgress.set(false)
+//                    isDownloadInProgress.set(false)
                 }
 
-                override fun onFailure() {
+                override fun onFailure(error: String) {
                     appItem.state = AppEntryState.NOT_INSTALLED
                     refreshAppItem(appItem)
                     showErrorSnackbar(getString(R.string.download_failed))
@@ -557,16 +483,48 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             })
     }
 
-    private fun downloadFile(
-        downloadUrl: String,
-        name: String,
-        progressListener: DownloadListener,
+    private fun downloadToString(
+        url: String,
+        useCache: Boolean = false,
+        progressListener: DownloadListener<String>,
     ) {
-        val request = Request.Builder().url(downloadUrl).build()
-        OkHttpClient().newCall(request).enqueue(object : Callback {
+        val request = Request.Builder()
+            .url(url)
+            .build()
+        (if (useCache) client else OkHttpClient()).newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
-                    progressListener.onFailure()
+                    progressListener.onFailure(getString(R.string.response_error_code, response.code.toString()))
+                    return
+                }
+
+                val responseBody = response.body?.string()
+                if (responseBody == null) {
+                    progressListener.onFailure(getString(R.string.empty_body))
+                    return
+                }
+                progressListener.onCompleted(responseBody)
+            }
+
+            override fun onFailure(call: Call, e: IOException) {
+                progressListener.onFailure(getString(R.string.download_failed))
+            }
+        })
+    }
+
+    private fun downloadToFile(
+        url: String,
+        filename: String,
+        useCache: Boolean,
+        progressListener: DownloadListener<File>,
+    ) {
+        val request = Request.Builder()
+            .url(url)
+            .build()
+        (if (useCache) client else OkHttpClient()).newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                if (!response.isSuccessful) {
+                    progressListener.onFailure(getString(R.string.response_error_code, response.code.toString()))
                     return
                 }
 
@@ -574,7 +532,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 var downloadedBytes: Long = 0
                 val buffer = ByteArray(8192)
                 val inputStream = response.body?.byteStream()
-                val tempFile = File(activity?.getExternalFilesDir(null), "$name.apk")
+                val tempFile = File(activity?.getExternalFilesDir(null), filename)
                 val outputStream = FileOutputStream(tempFile)
 
                 try {
@@ -586,7 +544,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                     }
                     progressListener.onCompleted(tempFile)
                 } catch (e: Exception) {
-                    progressListener.onFailure()
+                    progressListener.onFailure(getString(R.string.download_failed))
                 } finally {
                     inputStream?.close()
                     outputStream.close()
@@ -594,7 +552,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             }
 
             override fun onFailure(call: Call, e: IOException) {
-                progressListener.onFailure()
+                progressListener.onFailure(getString(R.string.download_failed))
             }
         })
     }
