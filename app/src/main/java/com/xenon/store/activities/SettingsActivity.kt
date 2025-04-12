@@ -32,7 +32,6 @@ class SettingsActivity : BaseActivity() {
         Locale("de")
     )
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
@@ -114,7 +113,7 @@ class SettingsActivity : BaseActivity() {
         if (currentTheme == R.style.Theme_Xenon || currentTheme == R.style.Theme_Xenon_Amoled) {
             val newTheme = if (enable) R.style.Theme_Xenon_Amoled else R.style.Theme_Xenon
             setTheme(newTheme)
-            recreate() // Recreate the activity to apply the new theme
+//            recreate() // Recreate the activity to apply the new theme
         }
     }
 
