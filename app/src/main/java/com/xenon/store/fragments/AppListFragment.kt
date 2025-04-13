@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("unused")
 class AppListFragment : Fragment(R.layout.fragment_app_list) {
-    private val APP_LIST_PROTOCOL_VERSION = "v0.0"
+    private val APP_LIST_PROTOCOL_VERSION = "v0.1"
     private val TAG = AppListFragment::class.qualifiedName
     private lateinit var binding: FragmentAppListBinding
     private lateinit var appListModel: AppListViewModel
