@@ -146,13 +146,13 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
     override fun onResume() {
         super.onResume()
-        // It seems NetworkChangeListener.register is already calling the callbacks
+        Log.d(TAG, "onResume")
         networkChangeListener.register()
-//        if (isNetworkAvailable()) {
-//            networkChangeListener.onNetworkAvailable()
-//        } else {
-//            networkChangeListener.onNetworkUnavailable()
-//        }
+        if (isNetworkAvailable()) {
+            networkChangeListener.onNetworkAvailable()
+        } else {
+            networkChangeListener.onNetworkUnavailable()
+        }
 //        fetchAndRefreshAppList()
     }
 
@@ -171,7 +171,16 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     }
 
     private fun fetchAndRefreshAppList(useCache: Boolean = true, synchronous: Boolean = false) {
+        if (!isNetworkAvailable()) {
+            if (::binding.isInitialized) {
+                activity?.runOnUiThread {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                }
+            }
+            return
+        }
         if (isRefreshInProgress.getAndSet(true)) return
+
         val urlString =
             "https://raw.githubusercontent.com/Dinico414/Xenon-Commons/master/accesspoint/src/main/java/com/xenon/commons/accesspoint/app_list.json"
 
