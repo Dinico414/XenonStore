@@ -102,7 +102,7 @@
 
                 <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/amoled_dark_switch"
-                    style="@style/SettingsTile"
+                    style="@style/SettingsSelectionSwitches"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="5dp"
@@ -113,7 +113,7 @@
 
                 <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/release_switch"
-                    style="@style/SettingsTile"
+                    style="@style/SettingsSelectionSwitches"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="5dp"
