@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -16,6 +17,8 @@ import com.xenon.store.R
 import com.xenon.store.SharedPreferenceManager
 import com.xenon.store.databinding.ActivitySettingsBinding
 import java.util.Locale
+import androidx.core.content.edit
+import androidx.core.net.toUri
 
 
 class SettingsActivity : BaseActivity() {
@@ -26,6 +29,8 @@ class SettingsActivity : BaseActivity() {
     private val preReleaseKey = "pre_releases"
     private val amoledDarkKey = "amoled_dark"
     private val languageKey = "selected_language"
+    lateinit var manager: SharedPreferenceManager
+    private var currentTheme: Int = 0
 
     private val supportedLocales = listOf(
         Locale("en"),
@@ -33,6 +38,8 @@ class SettingsActivity : BaseActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        manager = SharedPreferenceManager(this)
+        applyTheme()
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -44,15 +51,14 @@ class SettingsActivity : BaseActivity() {
 
         val themeSelectionValue = findViewById<TextView>(R.id.theme_selection_value)
 
-        val sharedPreferenceManager = SharedPreferenceManager(this)
-        var checkedTheme = sharedPreferenceManager.theme
-        themeSelectionValue.text = themeTitleList[sharedPreferenceManager.theme]
+        var checkedTheme = manager.theme
+        themeSelectionValue.text = themeTitleList[manager.theme]
 
         val themeDialog = MaterialAlertDialogBuilder(this)
             .setTitle("Select Theme")
             .setPositiveButton("OK") { _, _ ->
-                sharedPreferenceManager.theme = checkedTheme
-                AppCompatDelegate.setDefaultNightMode(sharedPreferenceManager.themeFlag[checkedTheme])
+                manager.theme = checkedTheme
+                AppCompatDelegate.setDefaultNightMode(manager.themeFlag[checkedTheme])
                 themeSelectionValue.text = themeTitleList[checkedTheme]
             }
             .setSingleChoiceItems(themeTitleList, checkedTheme) { _, which ->
@@ -68,7 +74,7 @@ class SettingsActivity : BaseActivity() {
             MaterialAlertDialogBuilder(this)
                 .setPositiveButton(R.string.yes) { _, _ ->
                     val sharedPref = getSharedPreferences(packageName, MODE_PRIVATE)
-                    sharedPref.edit().clear().apply()
+                    sharedPref.edit() { clear() }
                     this.restartApplication()
                 }
                 .setNegativeButton(R.string.cancel, null)
@@ -84,16 +90,16 @@ class SettingsActivity : BaseActivity() {
         preReleasesSwitch.isChecked = sharedPreferences.getBoolean(preReleaseKey, false)
 
         preReleasesSwitch.setOnCheckedChangeListener { _, isChecked ->
-            sharedPreferences.edit().putBoolean(preReleaseKey, isChecked).apply()
+            sharedPreferences.edit() { putBoolean(preReleaseKey, isChecked) }
         }
 
         val amoledDarkSwitch = findViewById<MaterialSwitch>(R.id.amoled_dark_switch)
         amoledDarkSwitch.isChecked = sharedPreferences.getBoolean(amoledDarkKey, false)
         amoledDarkSwitch.setOnCheckedChangeListener { _, isChecked ->
-            sharedPreferences.edit().putBoolean(amoledDarkKey, isChecked).apply()
-            applyAmoledDark(isChecked)
+            manager.amoledDark = isChecked
+            applyTheme(true)
         }
-        applyAmoledDark(sharedPreferences.getBoolean(amoledDarkKey, false))
+
         try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
             val versionName = packageInfo.versionName
@@ -104,28 +110,23 @@ class SettingsActivity : BaseActivity() {
         }
         // Add this block to handle the click on the "about" LinearLayout
         binding.aboutHolder.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://xenonware.com/impressum"))
+            val intent = Intent(Intent.ACTION_VIEW, "https://xenonware.com/impressum".toUri())
             startActivity(intent)
         }
     }
-    private fun applyAmoledDark(enable: Boolean) {
-        val currentTheme = getThemeFromPreferences() // Assuming you have a function to get the current theme
-        if (currentTheme == R.style.Theme_Xenon || currentTheme == R.style.Theme_Xenon_Amoled) {
-            val newTheme = if (enable) R.style.Theme_Xenon_Amoled else R.style.Theme_Xenon
+
+    private fun applyTheme(recreateActivity: Boolean = false) {
+        AppCompatDelegate.setDefaultNightMode(manager.themeFlag[manager.theme])
+
+        if (currentTheme == 0) currentTheme = manager.theme
+        val newTheme = if (manager.amoledDark) R.style.Theme_Xenon_Amoled else manager.theme
+
+        if (currentTheme != newTheme) {
+            currentTheme = newTheme
             setTheme(newTheme)
-//            recreate() // Recreate the activity to apply the new theme
+            if (recreateActivity) recreate()
         }
     }
-
-    // Add a helper function to get the current theme from SharedPreferences if you don't have one
-    private fun getThemeFromPreferences(): Int {
-        return if (sharedPreferences.getBoolean(amoledDarkKey, false)) {
-            R.style.Theme_Xenon_Amoled
-        } else {
-            R.style.Theme_Xenon
-        }
-    }
-
 
     private fun setupViews() {
         binding.languageSelectionValue.text = Locale.getDefault().displayLanguage
@@ -161,7 +162,7 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun saveLocale(locale: Locale) {
-        sharedPreferences.edit().putString(languageKey, locale.language).apply()
+        sharedPreferences.edit() { putString(languageKey, locale.language) }
     }
 
     private fun getSavedLocale(): Locale? {

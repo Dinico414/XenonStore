@@ -29,11 +29,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var appListFragment: AppListFragment
     private lateinit var appListModel: AppListViewModel
-    private val amoledDarkKey = "amoled_dark"
+    private var currentTheme: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val sharedPreferenceManager = SharedPreferenceManager(this)
-        AppCompatDelegate.setDefaultNightMode(sharedPreferenceManager.themeFlag[sharedPreferenceManager.theme])
+        applyTheme()
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -45,26 +44,11 @@ class MainActivity : AppCompatActivity() {
         setupAppListFragment()
         setupToolbar()
         setupCollapsingToolbar()
-        applyTheme()
     }
 
     override fun onResume() {
         super.onResume()
-        // Re-apply the theme in case it was changed in settings while the app was in the background
-        val oldTheme = getThemeFromPreferences() // Store the current theme
-        applyTheme()
-        val newTheme = getThemeFromPreferences() // Get the theme after applying changes
-
-        if (oldTheme != newTheme) {
-            recreate() // Only recreate if the theme actually changed
-        }
-    }
-    private fun getThemeFromPreferences(): Int {
-        return if (sharedPreferences.getBoolean(amoledDarkKey, false)) {
-            R.style.Theme_Xenon_Amoled
-        } else {
-            R.style.Theme_Xenon
-        }
+        applyTheme(true)
     }
 
     private fun setupAppListFragment() {
@@ -268,12 +252,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun applyTheme() {
-        val isAmoledDarkEnabled = sharedPreferences.getBoolean(amoledDarkKey, false)
-        val theme = if (isAmoledDarkEnabled) R.style.Theme_Xenon_Amoled else R.style.Theme_Xenon
-        setTheme(theme)
-    }
+    private fun applyTheme(recreateActivity: Boolean = false) {
+        val preferenceManager = SharedPreferenceManager(this)
 
+        AppCompatDelegate.setDefaultNightMode(preferenceManager.themeFlag[preferenceManager.theme])
+
+        if (currentTheme == 0) currentTheme = preferenceManager.theme
+        val newTheme = if (preferenceManager.amoledDark) R.style.Theme_Xenon_Amoled else preferenceManager.theme
+
+        if (currentTheme != newTheme) {
+            currentTheme = newTheme
+            setTheme(newTheme)
+            if (recreateActivity) recreate()
+        }
+    }
 
     private fun showSnackbar(message: String) {
         runOnUiThread {

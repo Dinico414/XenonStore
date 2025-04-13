@@ -127,7 +127,7 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 }
             }
         networkChangeListener = NetworkChangeListener(
-            requireContext(),
+            context,
             onNetworkAvailable = {
                 Log.d(TAG, "Network connected")
                 activeSnackbar?.dismiss()
@@ -162,8 +162,9 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
     }
 
     private fun isNetworkAvailable(): Boolean {
-        val connectivityManager =
-            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        if (connectivityManager == null) return false
+
         val network = connectivityManager.activeNetwork
         val capabilities = connectivityManager.getNetworkCapabilities(network)
         return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
@@ -625,13 +626,12 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
         val intent = Intent(ACTION_UNINSTALL_PACKAGE).apply {
             data = Uri.parse("package:$packageName")
         }
-        requireContext().startActivity(intent)
+        context?.startActivity(intent)
     }
 
     private fun openApp(packageName: String) {
-        val context = requireContext()
-        val intent = context.packageManager.getLaunchIntentForPackage(packageName)
-        context.startActivity(intent)
+        val intent = context?.packageManager?.getLaunchIntentForPackage(packageName)
+        context?.startActivity(intent)
     }
 
     private fun checkInstallPermission(): Boolean {
