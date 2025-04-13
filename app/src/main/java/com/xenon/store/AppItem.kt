@@ -55,21 +55,6 @@ data class AppItem(
     }
 
     fun isNewerVersion(latestVersion: String): Boolean {
-        if (installedVersion == "") return true
-
-        val latestParts = latestVersion.split(".").map { it.toIntOrNull() ?: 0 }
-        val installedParts = installedVersion.split(".").map { it.toIntOrNull() ?: 0 }
-
-        for (i in 0 until maxOf(latestParts.size, installedParts.size)) {
-            val latestPart = latestParts.getOrElse(i) { 0 }
-            val installedPart = installedParts.getOrElse(i) { 0 }
-
-            if (latestPart > installedPart) {
-                return true
-            } else if (latestPart < installedPart) {
-                return false
-            }
-        }
-        return false
+        return Util.isNewerVersion(installedVersion, latestVersion)
     }
 }

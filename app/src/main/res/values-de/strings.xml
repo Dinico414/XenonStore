@@ -33,4 +33,5 @@
     <string name="empty_body">Leerer Antwortinhalt für</string>
     <string name="no_data">Keine Daten für</string>
     <string name="delete">Deinstallieren</string>
+    <string name="error_outdated">Fehler beim Parsen, Bitte Store updaten</string>
 </resources>

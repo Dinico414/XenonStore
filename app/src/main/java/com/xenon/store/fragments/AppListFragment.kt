@@ -55,6 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("unused")
 class AppListFragment : Fragment(R.layout.fragment_app_list) {
+    private val APP_LIST_PROTOCOL_VERSION = "v0.0"
     private val TAG = AppListFragment::class.qualifiedName
     private lateinit var binding: FragmentAppListBinding
     private lateinit var appListModel: AppListViewModel
@@ -209,8 +210,15 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
 
     private fun parseAppListJson(jsonString: String): ArrayList<AppItem> {
         val json = JSONObject(jsonString)
-        val list = json.getJSONArray("appList")
         val appList = ArrayList<AppItem>()
+
+        val version = json.optString("protocolVersion") ?: "v0.0"
+        if (Util.isNewerVersion(APP_LIST_PROTOCOL_VERSION, version)) {
+            showErrorSnackbar(getString(R.string.error_outdated))
+            return appList
+        }
+
+        val list = json.getJSONArray("appList")
         for (i in 0 until list.length()) {
             val el = list.getJSONObject(i)
 
