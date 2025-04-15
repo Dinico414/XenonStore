@@ -21,7 +21,7 @@
         android:contentDescription="@string/update"
         android:background="@drawable/tile_background_100"
         android:backgroundTint="@color/tertiary"
-        android:src="@drawable/download_24"
+        android:src="@drawable/download"
         app:tint="@color/onTertiary"
         tools:ignore="DuplicateSpeakableTextCheck,VisualLintButtonSize,TouchTargetSizeCheck"
         tools:visibility="visible" />

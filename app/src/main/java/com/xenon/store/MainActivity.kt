@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.xenon.store
 
 import android.content.Intent
@@ -15,6 +13,8 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
+import com.xenon.commons.accesspoint.R.color
+import com.xenon.commons.accesspoint.R.drawable
 import com.xenon.store.R.id
 import com.xenon.store.activities.SettingsActivity
 import com.xenon.store.databinding.ActionUpdateButtonBinding
@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity() {
             binding.progressbar1.visibility = View.GONE
             bindingSmall?.download1Image?.visibility = View.VISIBLE
             bindingSmall?.progressbar1Circle?.visibility = View.GONE
-            bindingSmall?.download1Image?.setImageResource(R.drawable.download_24)
+            bindingSmall?.download1Image?.setImageResource(drawable.download)
         }
 
         appListModel.storeAppItemLive.observe(this) { _ ->
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
 
                     bindingSmall?.download1Image?.visibility = View.VISIBLE
                     bindingSmall?.progressbar1Circle?.visibility = View.GONE
-                    bindingSmall?.download1Image?.setImageResource(R.drawable.download_24)
+                    bindingSmall?.download1Image?.setImageResource(drawable.download)
                 }
             }
         }
@@ -271,7 +271,7 @@ class MainActivity : AppCompatActivity() {
         runOnUiThread {
             val snackbar = Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT)
             val backgroundDrawable =
-                resources.getDrawable(com.xenon.commons.accesspoint.R.drawable.tile_popup, null)
+                resources.getDrawable(drawable.tile_popup, null)
             val snackbarView = snackbar.view
 
             val params = snackbarView.layoutParams as ViewGroup.MarginLayoutParams
@@ -288,14 +288,14 @@ class MainActivity : AppCompatActivity() {
             // Customize text color
             snackbar.setTextColor(
                 resources.getColor(
-                    com.xenon.commons.accesspoint.R.color.onError,
+                    color.onError,
                     null
                 )
             )
 
             snackbar.setBackgroundTint(
                 resources.getColor(
-                    com.xenon.commons.accesspoint.R.color.error,
+                    color.error,
                     null
                 )
             )
