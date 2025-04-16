@@ -8,19 +8,19 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.xenon.store.R
 import com.xenon.store.SharedPreferenceManager
 import com.xenon.store.databinding.ActivitySettingsBinding
 import java.util.Locale
-import androidx.core.content.edit
-import androidx.core.net.toUri
 
 
+@Suppress("DEPRECATION")
 class SettingsActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
