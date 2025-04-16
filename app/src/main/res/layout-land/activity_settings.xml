@@ -10,9 +10,8 @@
         android:id="@+id/layout_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginHorizontal="@dimen/border_margin"
         android:background="@drawable/tile_cutout"
-        android:clipToOutline="true">
+        >
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appbar"
@@ -36,9 +35,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="?attr/actionBarSize"
-            android:background="@drawable/tile_background_100"
-            android:backgroundTint="@color/surfaceContainer"
-            android:clipToOutline="true">
+            android:background="@color/surfaceContainer"
+            >
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -107,7 +105,8 @@
                     android:layout_marginVertical="5dp"
                     android:text="@string/amoled"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:visibility="gone"/>
 
 
                 <com.google.android.material.materialswitch.MaterialSwitch

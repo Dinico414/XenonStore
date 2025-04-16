@@ -9,7 +9,9 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/surfaceContainer"
+        android:background="@drawable/tile_background_100"
+        android:backgroundTint="@color/surfaceContainer"
+        android:clipToOutline="true"
         tools:ignore="PrivateResource">
 
         <androidx.recyclerview.widget.RecyclerView
