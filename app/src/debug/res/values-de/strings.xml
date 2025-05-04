@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Xenon Store(Debug)</string>
+    <string name="settings">Einstellungen</string>
+    <string name="general">Allgemein</string>
+    <string name="language">Sprache</string>
+    <string name="theme">Theme</string>
+    <string name="clear_data">Daten zurücksetzen</string>
+    <string name="download_completed">Download abgeschlossen</string>
+    <string name="download_failed">Download fehlgeschlagen</string>
+    <string name="permission_denied_cannot_download_the_file">Zugriff verweigert. Datei konnte nicht heruntergeladen werden.</string>
+    <string name="update">Aktualisieren</string>
+    <string name="install">Installieren</string>
+    <string name="open">Öffnen</string>
+    <string name="action_share">Teilen</string>
+    <string name="ok">Okay</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
+    <string name="cancel">Abbruch</string>
+    <string name="clear_data_dialog">Willst du wirklich alle App Daten löschen?</string>
+    <string name="prerelease">Vorabversionen suchen</string>
+    <string name="amoled">Ausgeschwärzt</string>
+    <string name="about">About</string>
+    <string name="about_text">Version: %1$s</string>
+    <string name="version_with_prefix">v.%1$s</string>
+    <string name="offline_message">Sie sind aktuell Offline</string>
+    <string name="open_settings">Öffne Einstellungen</string>
+    <string name="failed_to_find">Fehler beim finden von %1$s</string>
+    <string name="response_error_code">Fehler %1$s für</string>
+    <string name="permission_denied">Berechtigung verweigert</string>
+    <string name="permission_granted">Berechtigung erteilt</string>
+    <string name="no_assets">Keine Assets gefunden für</string>
+    <string name="empty_body">Leerer Antwortinhalt für</string>
+    <string name="no_data">Keine Daten für</string>
+    <string name="delete">Deinstallieren</string>
+    <string name="error_outdated">Fehler beim Aufschlüsseln, bitte Store updaten</string>
+</resources>
