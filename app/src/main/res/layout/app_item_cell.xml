@@ -11,13 +11,13 @@
         android:id="@+id/card_con"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="10dp">
+        android:padding="15dp">
 
         <LinearLayout
             android:id="@+id/version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/tile_background_100"
+            android:background="@drawable/pill_background"
             android:backgroundTint="@color/tertiary"
             android:padding="5dp"
             android:visibility="gone"
@@ -116,12 +116,11 @@
 
             <Button
                 android:id="@+id/open"
-                style="@style/buttonStyle"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_marginEnd="1dp"
+                android:backgroundTint="@color/secondaryContainer"
                 android:background="@drawable/connected_left"
-                android:backgroundTint="@color/primary"
                 android:text="@string/open"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/delete"
@@ -135,13 +134,13 @@
                 android:layout_height="40dp"
                 android:layout_marginStart="1dp"
                 android:background="@drawable/connected_right"
-                android:backgroundTint="@color/primary"
                 android:contentDescription="@string/delete"
                 android:src="@drawable/uninstall"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/open"
                 app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/primary"
                 tools:ignore="TouchTargetSizeCheck" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 

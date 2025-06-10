@@ -19,7 +19,7 @@
         android:layout_height="35dp"
         android:layout_gravity="center"
         android:contentDescription="@string/update"
-        android:background="@drawable/tile_background_100"
+        android:background="@drawable/pill_background"
         android:backgroundTint="@color/tertiary"
         android:src="@drawable/download"
         app:tint="@color/onTertiary"

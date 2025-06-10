@@ -4,17 +4,17 @@
     </style>
 
     <style name="Theme.Xenon" parent="Base.Theme.Xenon" >
-        <item name="android:navigationBarColor">@color/surfaceContainerLowest</item>
-        <item name="android:statusBarColor">@color/surfaceContainerLowest</item>
-        <item name="android:windowBackground">@color/surfaceContainerLowest</item>
+        <item name="android:navigationBarColor">@color/surfaceContainer</item>
+        <item name="android:statusBarColor">@color/surface</item>
+        <item name="android:windowBackground">@color/surface</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:enforceStatusBarContrast">true</item>
     </style>
 
     <style name="Theme.Xenon.Amoled" parent="Base.Theme.Xenon" >
-        <item name="android:navigationBarColor">@color/surfaceContainerLowest</item>
-        <item name="android:statusBarColor">@color/surfaceContainerLowest</item>
-        <item name="android:windowBackground">@color/surfaceContainerLowest</item>
+        <item name="android:navigationBarColor">@color/surfaceContainer</item>
+        <item name="android:statusBarColor">@color/surface</item>
+        <item name="android:windowBackground">@color/surface</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:enforceStatusBarContrast">true</item>
     </style>

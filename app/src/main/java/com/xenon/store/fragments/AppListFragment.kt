@@ -522,40 +522,61 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
             useCache = false)
     }
 
+
     private fun downloadToString(
         url: String,
         progressListener: DownloadListener<String>,
         useCache: Boolean = true,
         synchronous: Boolean = false,
     ) {
-        Log.d(TAG, "downloadToString(url=$url, useCache=$useCache)")
+        Log.d(TAG, "downloadToString(url=$url, useCache=$useCache, synchronous=$synchronous)")
         val request = Request.Builder()
             .url(url)
             .build()
-        (if (useCache) client else OkHttpClient()).newCall(request).apply {
+
+        // Choose the client based on whether caching is desired
+        val currentClient = if (useCache) client else OkHttpClient()
+
+        currentClient.newCall(request).apply {
             val callback = object : Callback {
                 override fun onResponse(call: Call, response: Response) {
+                    Log.d(TAG, "onResponse for $url. Code: ${response.code}")
                     if (!response.isSuccessful) {
+                        val errorBody = response.body?.string() // Consume body to release resources
+                        Log.e(TAG, "Unsuccessful response for $url. Code: ${response.code}, Message: ${response.message}, Body: $errorBody")
                         progressListener.onFailure(getString(R.string.response_error_code, response.code.toString()))
+                        response.close() // Ensure the response is closed
                         return
                     }
 
                     val responseBody = response.body?.string()
                     if (responseBody == null) {
+                        Log.w(TAG, "Empty response body for $url")
                         progressListener.onFailure(getString(R.string.empty_body))
-                        return
+                    } else {
+                        Log.d(TAG, "Successfully fetched string for $url. Length: ${responseBody.length}")
+                        // Log first 500 chars for debugging if needed
+                        // Log.v(TAG, "Response body preview: ${responseBody.take(500)}")
+                        progressListener.onCompleted(responseBody)
                     }
-                    progressListener.onCompleted(responseBody)
+                    response.close() // Ensure the response is closed
                 }
 
                 override fun onFailure(call: Call, e: IOException) {
-                    progressListener.onFailure(getString(R.string.download_failed))
+                    Log.e(TAG, "onFailure for $url: ${e.message}", e)
+                    progressListener.onFailure(getString(R.string.download_failed) + ": " + e.message)
                 }
             }
-            if (!synchronous) this.enqueue(callback)
-            else {
+
+            if (!synchronous) {
+                Log.d(TAG, "Enqueueing asynchronous request for $url")
+                this.enqueue(callback)
+            } else {
+                Log.d(TAG, "Executing synchronous request for $url")
                 try {
-                    val response = this.execute()
+                    // Execute the call and directly use the callback's methods
+                    // This ensures consistent handling logic for both sync and async paths
+                    val response = this.execute() // This blocks the current thread
                     callback.onResponse(this, response)
                 } catch (e: IOException) {
                     callback.onFailure(this, e)
