@@ -45,84 +45,65 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    style="@style/SettingsTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/general"
-                    android:textAlignment="center" />
-
-
                 <LinearLayout
-                    android:id="@+id/language_selection_holder"
-                    style="@style/SettingsTile"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
 
-                    <TextView
-                        style="@style/SettingsSelectionTitle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/language" />
-
-                    <TextView
-                        android:id="@+id/language_selection_value"
-                        style="@style/SettingsSelectionValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="English"
-                        tools:ignore="HardcodedText,TextContrastCheck" />
-
-                </LinearLayout>
-
-                <LinearLayout
                     android:id="@+id/theme_selection_holder"
-                    style="@style/SettingsTile"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/settingstile_top"
+                    android:backgroundTint="@color/surfaceBright"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="16dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <TextView
-                        style="@style/SettingsSelectionTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/theme" />
+                        android:textColor="@color/onPrimaryContainer"
+                        android:text="@string/theme"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="5dp"/>
 
                     <TextView
                         android:id="@+id/theme_selection_value"
-                        style="@style/SettingsSelectionValue"
                         android:layout_width="wrap_content"
+                        android:textColor="@color/onPrimaryContainer"
                         android:layout_height="wrap_content"
                         android:text="System"
-                        tools:ignore="HardcodedText,TextContrastCheck" />
+                        tools:ignore="HardcodedText,TextContrastCheck"
+                        android:layout_marginVertical="5dp"
+                        android:layout_marginStart="10dp"
+                        android:textSize="16sp"
+                        android:alpha="0.6"/>
 
                 </LinearLayout>
 
                 <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/amoled_dark_switch"
-                    style="@style/SettingsSelectionSwitches"
+                    android:textColor="@color/onPrimaryContainer"
+                    android:backgroundTint="@color/surfaceBright"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginVertical="5dp"
                     android:text="@string/amoled"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/release_switch"
-                    style="@style/SettingsSelectionSwitches"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="5dp"
-                    android:text="@string/prerelease"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/settingstile_bottom"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="24dp"/>
 
                 <LinearLayout
-                    android:id="@+id/clear_button_holder"
-                    style="@style/SettingsTile"
+                    android:id="@+id/language_selection_holder"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/settingstile"
+                    android:backgroundTint="@color/surfaceBright"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="16dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -131,29 +112,93 @@
                         style="@style/SettingsSelectionTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/clear_data" />
+                        android:textColor="@color/onPrimaryContainer"
+                        android:text="@string/language"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="5dp"/>
+
+                    <TextView
+                        android:id="@+id/language_selection_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/onPrimaryContainer"
+                        android:text="English"
+                        android:layout_marginVertical="5dp"
+                        android:layout_marginStart="10dp"
+                        android:textSize="16sp"
+                        android:alpha="0.6"/>
+
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/release_switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/onPrimaryContainer"
+                    android:text="@string/prerelease"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/settingstile_top"
+                    android:backgroundTint="@color/surfaceBright"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="24dp"/>
+
+                <LinearLayout
+                    android:id="@+id/clear_button_holder"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/settingstile_middle"
+                    android:backgroundTint="@color/surfaceBright"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="16dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:textColor="@color/onPrimaryContainer"
+                        android:layout_height="wrap_content"
+                        android:text="@string/clear_data"
+                        android:textSize="20sp"
+                        android:textStyle="bold"/>
 
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/about_holder"
-                    style="@style/SettingsTile"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/settingstile_bottom"
+                    android:backgroundTint="@color/surfaceBright"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="16dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <TextView
-                        style="@style/SettingsSelectionTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/about" />
+                        android:textColor="@color/onPrimaryContainer"
+                        android:text="@string/about"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="5dp"/>
 
                     <TextView
                         android:id="@+id/about_text"
-                        style="@style/SettingsSelectionValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Version" />
+                        android:textColor="@color/onPrimaryContainer"
+                        android:text="Version"
+                        android:layout_marginVertical="5dp"
+                        android:layout_marginStart="10dp"
+                        android:textSize="16sp"
+                        android:alpha="0.6"/>
 
                 </LinearLayout>
 
