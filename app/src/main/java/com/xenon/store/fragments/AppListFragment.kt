@@ -296,18 +296,20 @@ class AppListFragment : Fragment(R.layout.fragment_app_list) {
                 super.getItemOffsets(outRect, view, parent, state)
                 val marginInPx = TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP,
-                    10.toFloat(),
+                    16.toFloat(), // Changed from 10.toFloat()
                     view.context.resources.displayMetrics
                 ).toInt()
 
+                outRect.left = marginInPx
+                outRect.right = marginInPx
+                outRect.bottom = 0 // No bottom margin between items
+
                 val position = parent.getChildAdapterPosition(view)
-                if (position == RecyclerView.NO_POSITION) {
-                    val oldPosition = parent.getChildViewHolder(view)?.oldPosition
-                    if (oldPosition == 0) {
-                        outRect.top = marginInPx
-                    }
-                } else if (position == 0) {
+                // Apply top margin only to the first item
+                if (position == 0) {
                     outRect.top = marginInPx
+                } else {
+                    outRect.top = marginInPx/2
                 }
             }
         })

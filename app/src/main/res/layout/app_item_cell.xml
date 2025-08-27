@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card"
     style="@style/cardStyle"
-    android:layout_marginBottom="10dp"
     android:backgroundTint="@color/secondaryContainer"
     tools:ignore="ContentDescription">
 
@@ -11,7 +10,7 @@
         android:id="@+id/card_con"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="15dp">
+        android:padding="8dp">
 
         <LinearLayout
             android:id="@+id/version"

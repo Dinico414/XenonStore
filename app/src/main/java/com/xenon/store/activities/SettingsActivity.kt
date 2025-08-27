@@ -43,7 +43,6 @@ class SettingsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adjustBottomMargin(binding.layoutMain)
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
 

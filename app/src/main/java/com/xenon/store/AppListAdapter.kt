@@ -35,15 +35,17 @@ class AppListAdapter(
     override fun onBindViewHolder(holder: AppListViewHolder, position: Int) {
         holder.bindItem(appItems[position], position)
 
-        val horizontalMarginInPx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            10.toFloat(),
-            context.resources.displayMetrics
-        ).toInt()
-
-        val layoutParams = holder.itemView.layoutParams as RecyclerView.LayoutParams
-        layoutParams.setMargins(horizontalMarginInPx, 0, horizontalMarginInPx, horizontalMarginInPx)
-        holder.itemView.layoutParams = layoutParams
+        // The ItemDecoration in AppListFragment.kt now handles margins.
+        // If you need to set margins here, ensure it doesn't conflict with the ItemDecoration.
+        // For example, to set only horizontal margins here if ItemDecoration only handles vertical:
+        // val horizontalMarginInPx = TypedValue.applyDimension(
+        //     TypedValue.COMPLEX_UNIT_DIP,
+        //     16.toFloat(),
+        //     context.resources.displayMetrics
+        // ).toInt()
+        // val layoutParams = holder.itemView.layoutParams as RecyclerView.LayoutParams
+        // layoutParams.setMargins(horizontalMarginInPx, 0, horizontalMarginInPx, 0)
+        // holder.itemView.layoutParams = layoutParams
     }
 
     override fun onBindViewHolder(
