@@ -52,7 +52,7 @@
                     android:background="@drawable/settingstile_top"
                     android:backgroundTint="@color/surfaceBright"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="16dp"
+                    android:paddingVertical="20dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -62,7 +62,7 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/onPrimaryContainer"
                         android:text="@string/theme"
-                        android:textSize="20sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="5dp"/>
 
@@ -74,8 +74,7 @@
                         android:text="System"
                         tools:ignore="HardcodedText,TextContrastCheck"
                         android:layout_marginVertical="5dp"
-                        android:layout_marginStart="10dp"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:alpha="0.6"/>
 
                 </LinearLayout>
@@ -87,13 +86,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/amoled"
-                    android:textSize="20sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
                     android:background="@drawable/settingstile_bottom"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="24dp"/>
+                    android:paddingVertical="28dp"/>
 
                 <LinearLayout
                     android:id="@+id/language_selection_holder"
@@ -102,7 +101,7 @@
                     android:background="@drawable/settingstile"
                     android:backgroundTint="@color/surfaceBright"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="16dp"
+                    android:paddingVertical="20dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -113,7 +112,7 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/onPrimaryContainer"
                         android:text="@string/language"
-                        android:textSize="20sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="5dp"/>
 
@@ -124,8 +123,7 @@
                         android:textColor="@color/onPrimaryContainer"
                         android:text="English"
                         android:layout_marginVertical="5dp"
-                        android:layout_marginStart="10dp"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:alpha="0.6"/>
 
                 </LinearLayout>
@@ -136,23 +134,23 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/onPrimaryContainer"
                     android:text="@string/prerelease"
-                    android:textSize="20sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginHorizontal="16dp"
                     android:layout_marginTop="16dp"
                     android:background="@drawable/settingstile_top"
                     android:backgroundTint="@color/surfaceBright"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="24dp"/>
+                    android:paddingVertical="28dp"/>
 
                 <LinearLayout
                     android:id="@+id/clear_button_holder"
                     android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
                     android:background="@drawable/settingstile_middle"
                     android:backgroundTint="@color/surfaceBright"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="16dp"
+                    android:paddingVertical="20dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -162,7 +160,7 @@
                         android:textColor="@color/onPrimaryContainer"
                         android:layout_height="wrap_content"
                         android:text="@string/clear_data"
-                        android:textSize="20sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"/>
 
                 </LinearLayout>
@@ -170,11 +168,11 @@
                 <LinearLayout
                     android:id="@+id/about_holder"
                     android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
                     android:background="@drawable/settingstile_bottom"
                     android:backgroundTint="@color/surfaceBright"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="16dp"
+                    android:paddingVertical="20dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -184,7 +182,7 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/onPrimaryContainer"
                         android:text="@string/about"
-                        android:textSize="20sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="5dp"/>
 
@@ -195,8 +193,7 @@
                         android:textColor="@color/onPrimaryContainer"
                         android:text="Version"
                         android:layout_marginVertical="5dp"
-                        android:layout_marginStart="10dp"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:alpha="0.6"/>
 
                 </LinearLayout>
